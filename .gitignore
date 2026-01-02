@@ -1,0 +1,25 @@
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+.pub-cache/
+.pub/
+
+# Node.js (Next.js)
+node_modules/
+.next/
+out/
+.env
+.env.local
+.DS_Store
+coverage/
+
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.launchSettings.json
