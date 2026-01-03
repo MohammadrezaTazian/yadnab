@@ -61,7 +61,7 @@ namespace DigitalStore.Application.Services
             });
         }
 
-        public async Task<QuestionDto> GetQuestionByIdAsync(int id, int? currentUserId = null)
+        public async Task<QuestionDto?> GetQuestionByIdAsync(int id, int? currentUserId = null)
         {
             var q = await _questionRepository.GetQuestionByIdAsync(id, currentUserId);
             if (q == null) return null;

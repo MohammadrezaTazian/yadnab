@@ -23,7 +23,7 @@ namespace DigitalStore.Application.Services
             return contents.Select(MapToDto);
         }
 
-        public async Task<EducationContentDto> GetContentByIdAsync(int id, int? currentUserId = null)
+        public async Task<EducationContentDto?> GetContentByIdAsync(int id, int? currentUserId = null)
         {
             var content = await _repository.GetByIdAsync(id, currentUserId);
             if (content == null) return null;

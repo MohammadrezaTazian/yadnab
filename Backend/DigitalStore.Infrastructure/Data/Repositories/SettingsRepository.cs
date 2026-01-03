@@ -16,7 +16,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             _context = context;
         }
 
-        public async Task<Setting> GetSettingByKeyAsync(int userId, string key)
+        public async Task<Setting?> GetSettingByKeyAsync(int userId, string key)
         {
             // Use EF Core directly instead of stored procedure
             return await _context.Settings

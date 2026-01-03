@@ -17,7 +17,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             _context = context;
         }
 
-        public async Task<User> GetUserByPhoneNumberAsync(string phoneNumber)
+        public async Task<User?> GetUserByPhoneNumberAsync(string phoneNumber)
         {
             var param = new SqlParameter("@PhoneNumber", phoneNumber);
             // Assuming sp_GetUserByPhoneNumber returns the user record
@@ -28,7 +28,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             return users.FirstOrDefault();
         }
 
-        public async Task<User> CreateUserAsync(User user)
+        public async Task<User?> CreateUserAsync(User user)
         {
             var phoneParam = new SqlParameter("@PhoneNumber", user.PhoneNumber);
             // Assuming sp_CreateUser creates user and returns the new user
@@ -52,7 +52,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                 idParam, firstParam, lastParam, gradeParam, refreshParam, expiryParam);
         }
 
-        public async Task<User> GetUserByRefreshTokenAsync(string refreshToken)
+        public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
         {
             var param = new SqlParameter("@RefreshToken", refreshToken);
             var users = await _context.Users
@@ -61,7 +61,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             return users.FirstOrDefault();
         }
 
-        public async Task<User> UpdateProfilePictureAsync(int userId, string base64Image)
+        public async Task<User?> UpdateProfilePictureAsync(int userId, string base64Image)
         {
             var userIdParam = new SqlParameter("@UserId", userId);
             var pictureParam = new SqlParameter("@ProfilePicture", (object)base64Image ?? DBNull.Value);

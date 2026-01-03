@@ -1,0 +1,14 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="400" height="300" fill="#fefefe"/>
+  <!-- Outer membrane -->
+  <ellipse cx="200" cy="150" rx="180" ry="100" fill="#ffcc99" stroke="#cc6600" stroke-width="3"/>
+  <!-- Inner membrane -->
+  <ellipse cx="200" cy="150" rx="150" ry="75" fill="#ffeecc" stroke="#cc6600" stroke-width="2"/>
+  <!-- Cristae -->
+  <path d="M80 120 Q120 80 160 120" fill="none" stroke="#cc6600" stroke-width="2"/>
+  <path d="M100 180 Q140 220 180 180" fill="none" stroke="#cc6600" stroke-width="2"/>
+  <path d="M220 120 Q260 80 300 120" fill="none" stroke="#cc6600" stroke-width="2"/>
+  <path d="M240 180 Q280 220 320 180" fill="none" stroke="#cc6600" stroke-width="2"/>
+  <!-- Matrix dot -->
+  <circle cx="200" cy="150" r="20" fill="#ff9966"/>
+</svg>

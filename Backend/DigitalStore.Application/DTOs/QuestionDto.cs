@@ -6,11 +6,11 @@ namespace DigitalStore.Application.DTOs
     {
         public int Id { get; set; }
         public int TopicItemId { get; set; }
-        public string QuestionText { get; set; }
-        public string Option1 { get; set; }
-        public string Option2 { get; set; }
-        public string Option3 { get; set; }
-        public string Option4 { get; set; }
+        public required string QuestionText { get; set; }
+        public required string Option1 { get; set; }
+        public required string Option2 { get; set; }
+        public required string Option3 { get; set; }
+        public required string Option4 { get; set; }
         public int CorrectOption { get; set; }
         public List<ContentImageDto> QuestionImages { get; set; } = new List<ContentImageDto>();
         public string? QuestionDesigner { get; set; }
@@ -26,7 +26,7 @@ namespace DigitalStore.Application.DTOs
     {
         public int Id { get; set; }
         public int QuestionId { get; set; }
-        public string AnswerText { get; set; }
+        public required string AnswerText { get; set; }
         public List<ContentImageDto> AnswerImages { get; set; } = new List<ContentImageDto>();
         public string? AnswerAuthor { get; set; }
         public int AnswerYear { get; set; }

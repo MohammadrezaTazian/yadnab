@@ -23,9 +23,9 @@ namespace DigitalStore.Application.Services
             {
                 Id = p.Id,
                 Title = p.Title,
-                Description = p.Description,
-                Category = p.Category,
-                ImageUrl = p.ImageUrl,
+                Description = p.Description ?? string.Empty,
+                Category = p.Category ?? string.Empty,
+                ImageUrl = p.ImageUrl ?? string.Empty,
                 Price = p.Price
             });
         }
@@ -37,9 +37,9 @@ namespace DigitalStore.Application.Services
             {
                 Id = p.Id,
                 Title = p.Title,
-                Description = p.Description,
-                Category = p.Category,
-                ImageUrl = p.ImageUrl,
+                Description = p.Description ?? string.Empty,
+                Category = p.Category ?? string.Empty,
+                ImageUrl = p.ImageUrl ?? string.Empty,
                 Price = p.Price
             });
         }

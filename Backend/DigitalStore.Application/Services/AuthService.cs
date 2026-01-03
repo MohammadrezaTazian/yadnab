@@ -23,6 +23,7 @@ namespace DigitalStore.Application.Services
         public async Task<string> SendOtpAsync(string phoneNumber)
         {
             // Mock OTP generation
+            await Task.CompletedTask;
             return "12345";
         }
 

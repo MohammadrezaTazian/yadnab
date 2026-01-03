@@ -81,9 +81,9 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             return contentsMap.Values;
         }
 
-        public async Task<EducationContent> GetByIdAsync(int id, int? currentUserId = null)
+        public async Task<EducationContent?> GetByIdAsync(int id, int? currentUserId = null)
         {
-            EducationContent content = null;
+            EducationContent? content = null;
             var connection = _context.Database.GetDbConnection();
             bool wasOpen = connection.State == ConnectionState.Open;
             if (!wasOpen) await connection.OpenAsync();

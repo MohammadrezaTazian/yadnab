@@ -5,7 +5,7 @@ namespace DigitalStore.Domain.Interfaces
 {
     public interface ISettingsRepository
     {
-        Task<Setting> GetSettingByKeyAsync(int userId, string key);
+        Task<Setting?> GetSettingByKeyAsync(int userId, string key);
         Task UpdateSettingAsync(int userId, Setting setting);
         Task InitializeUserSettingsAsync(int userId);
     }

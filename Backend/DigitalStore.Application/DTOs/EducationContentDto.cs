@@ -4,12 +4,12 @@ namespace DigitalStore.Application.DTOs
     {
         public int Id { get; set; }
         public int TopicItemId { get; set; }
-        public string Title { get; set; }
-        public string ContentText { get; set; }
+        public required string Title { get; set; }
+        public required string ContentText { get; set; }
         public string? MediaUrl { get; set; }
-        public string MediaType { get; set; } // "Text", "Image", "Video"
+        public required string MediaType { get; set; } // "Text", "Image", "Video"
         public string? TeacherName { get; set; }
-        public string CreatedAt { get; set; } // Formatted Date
+        public required string CreatedAt { get; set; } // Formatted Date
         public bool IsLiked { get; set; }
         public List<ContentImageDto> Images { get; set; } = new List<ContentImageDto>();
     }

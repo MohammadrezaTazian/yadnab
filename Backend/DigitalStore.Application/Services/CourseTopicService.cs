@@ -15,7 +15,7 @@ namespace DigitalStore.Application.Services
             _courseTopicRepository = courseTopicRepository;
         }
 
-        public async Task<CourseTopicDto> GetTopicsByCategoryAsync(string category)
+        public async Task<CourseTopicDto?> GetTopicsByCategoryAsync(string category)
         {
             var courseTopic = await _courseTopicRepository.GetTopicsByCategoryAsync(category);
             

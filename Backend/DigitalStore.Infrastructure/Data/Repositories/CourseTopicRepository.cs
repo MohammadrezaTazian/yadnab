@@ -22,9 +22,9 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             return await _context.CourseTopics.Include(x => x.TopicItems).ToListAsync();
         }
 
-        public async Task<CourseTopic> GetTopicsByCategoryAsync(string category)
+        public async Task<CourseTopic?> GetTopicsByCategoryAsync(string category)
         {
-            CourseTopic courseTopic = null;
+            CourseTopic? courseTopic = null;
             var connection = _context.Database.GetDbConnection();
             bool wasOpen = connection.State == ConnectionState.Open;
             if (!wasOpen) await connection.OpenAsync();

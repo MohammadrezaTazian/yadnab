@@ -5,6 +5,6 @@ namespace DigitalStore.Domain.Interfaces
 {
     public interface ICourseTopicRepository
     {
-        Task<CourseTopic> GetTopicsByCategoryAsync(string category);
+        Task<CourseTopic?> GetTopicsByCategoryAsync(string category);
     }
 }

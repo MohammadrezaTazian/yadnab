@@ -18,7 +18,7 @@ namespace DigitalStore.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProducts([FromQuery] string category = null)
+        public async Task<IActionResult> GetProducts([FromQuery] string? category = null)
         {
             if (string.IsNullOrEmpty(category))
             {

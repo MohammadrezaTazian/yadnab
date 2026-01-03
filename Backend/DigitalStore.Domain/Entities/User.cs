@@ -4,7 +4,7 @@ namespace DigitalStore.Domain.Entities
 {
     public class User : BaseEntity
     {
-        public string PhoneNumber { get; set; }
+        public required string PhoneNumber { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? Email { get; set; }
