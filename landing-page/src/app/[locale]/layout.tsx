@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Vazirmatn } from "next/font/google";
+import localFont from "next/font/local";
 import "../globals.css";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { locales } from "../../i18n";
 
-const vazir = Vazirmatn({
-    subsets: ["arabic"],
+const vazir = localFont({
+    src: "../../fonts/Vazirmatn-RD-Regular.woff2",
     variable: "--font-vazir",
 });
 
@@ -47,9 +47,12 @@ export default async function LocaleLayout({
     params,
 }: {
     children: React.ReactNode;
-    params: { locale: string };
+    params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
+
+    // Enable static rendering
+    setRequestLocale(locale);
 
     if (!locales.includes(locale as any)) {
         notFound();
@@ -61,6 +64,7 @@ export default async function LocaleLayout({
     return (
         <html lang={locale} dir={isRtl ? "rtl" : "ltr"}>
             <body className={`${vazir.variable} font-sans antialiased`}>
+                <script src="/config.js" defer></script>
                 <NextIntlClientProvider messages={messages}>
                     {children}
                 </NextIntlClientProvider>

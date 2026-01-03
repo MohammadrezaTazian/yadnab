@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Icons as SVG components
 const VideoIcon = () => (
@@ -42,7 +42,7 @@ const SupportIcon = () => (
     </svg>
 );
 
-const iconMap: Record<string, () => JSX.Element> = {
+const iconMap: Record<string, () => React.ReactNode> = {
     video: VideoIcon,
     quiz: QuizIcon,
     book: BookIcon,
@@ -58,7 +58,13 @@ export default function LandingPage() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    const appUrl = "http://localhost:5200"; // Change this to your Flutter app URL
+    const [appUrl, setAppUrl] = useState("http://localhost:5200");
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && (window as any).YADNAB_CONFIG) {
+            setAppUrl((window as any).YADNAB_CONFIG.APP_URL);
+        }
+    }, []);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -70,7 +76,7 @@ export default function LandingPage() {
                             <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
                                 <span className="text-white font-bold text-xl">📚</span>
                             </div>
-                            <span className="text-white font-bold text-lg">Education App</span>
+                            <span className="text-white font-bold text-lg">{isRtl ? "یادناب" : "Yadnab"}</span>
                         </div>
 
                         {/* Desktop Nav */}
@@ -306,7 +312,7 @@ export default function LandingPage() {
                                 <span className="text-white font-bold text-xl">📚</span>
                             </div>
                             <div>
-                                <span className="text-white font-bold">Education App</span>
+                                <span className="text-white font-bold">{isRtl ? "یادناب" : "Yadnab"}</span>
                                 <p className="text-gray-500 text-sm">{t("footer.description")}</p>
                             </div>
                         </div>
