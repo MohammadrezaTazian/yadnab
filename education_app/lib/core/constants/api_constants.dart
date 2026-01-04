@@ -1,5 +1,7 @@
+import 'package:education_app/core/config/config_service.dart';
+
 class ApiConstants {
-  static const String baseUrl = 'http://localhost:5100/api';
+  static String get baseUrl => ConfigService().apiBaseUrl;
   
   // Auth endpoints
   static const String sendOtp = '/Auth/send-otp';

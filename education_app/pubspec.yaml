@@ -85,6 +85,7 @@ l10n:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/icons/
+    - assets/config.json
 
   # To add custom fonts to your application, add a fonts section here,
   fonts:

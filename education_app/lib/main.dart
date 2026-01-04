@@ -14,8 +14,11 @@ import 'package:education_app/shared/theme/app_theme.dart';
 import 'package:education_app/core/routes/app_routes.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 
+import 'package:education_app/core/config/config_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ConfigService().load();
   await setupDependencyInjection();
   runApp(const MyApp());
 }
