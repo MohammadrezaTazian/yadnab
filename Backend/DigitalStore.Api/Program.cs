@@ -82,6 +82,8 @@ builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<ILikeRepository, LikeRepository>();
 builder.Services.AddScoped<ILikeService, LikeService>();
+builder.Services.AddScoped<IContentManagementRepository, ContentManagementRepository>();
+builder.Services.AddScoped<IContentManagementService, ContentManagementService>();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

@@ -99,6 +99,15 @@ class AppDrawer extends StatelessWidget {
                     mainNav?.navigateToIndex(2);
                   },
                 ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.add_photo_alternate_rounded,
+                  title: 'آپلود تصویر',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/upload');
+                  },
+                ),
                 const Divider(height: 32),
                 _buildNavItem(
                   context,

@@ -41,11 +41,11 @@ namespace DigitalStore.Infrastructure.Data.Repositories
         public async Task UpdateUserAsync(User user)
         {
             var idParam = new SqlParameter("@Id", user.Id);
-            var firstParam = new SqlParameter("@FirstName", (object)user.FirstName ?? DBNull.Value);
-            var lastParam = new SqlParameter("@LastName", (object)user.LastName ?? DBNull.Value);
-            var gradeParam = new SqlParameter("@Grade", (object)user.Grade ?? DBNull.Value);
-            var refreshParam = new SqlParameter("@RefreshToken", (object)user.RefreshToken ?? DBNull.Value);
-            var expiryParam = new SqlParameter("@RefreshTokenExpiryTime", (object)user.RefreshTokenExpiryTime ?? DBNull.Value);
+            var firstParam = new SqlParameter("@FirstName", (object?)user.FirstName ?? DBNull.Value);
+            var lastParam = new SqlParameter("@LastName", (object?)user.LastName ?? DBNull.Value);
+            var gradeParam = new SqlParameter("@Grade", (object?)user.Grade ?? DBNull.Value);
+            var refreshParam = new SqlParameter("@RefreshToken", (object?)user.RefreshToken ?? DBNull.Value);
+            var expiryParam = new SqlParameter("@RefreshTokenExpiryTime", (object?)user.RefreshTokenExpiryTime ?? DBNull.Value);
 
             await _context.Database.ExecuteSqlRawAsync(
                 "EXEC sp_UpdateUser @Id, @FirstName, @LastName, @Grade, @RefreshToken, @RefreshTokenExpiryTime",

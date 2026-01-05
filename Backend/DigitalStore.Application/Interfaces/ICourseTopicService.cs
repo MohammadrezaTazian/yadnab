@@ -5,6 +5,6 @@ namespace DigitalStore.Application.Interfaces
 {
     public interface ICourseTopicService
     {
-        Task<CourseTopicDto> GetTopicsByCategoryAsync(string category);
+        Task<CourseTopicDto?> GetTopicsByCategoryAsync(string category);
     }
 }

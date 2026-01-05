@@ -20,6 +20,7 @@ namespace DigitalStore.Infrastructure.Data
         public DbSet<Question> Questions { get; set; }
         public DbSet<DetailedAnswer> DetailedAnswers { get; set; }
         public DbSet<EducationContent> EducationContents { get; set; }
+        public DbSet<ContentImage> ContentImages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

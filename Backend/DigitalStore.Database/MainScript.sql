@@ -499,6 +499,71 @@ BEGIN
 END
 GO
 
+-- SP: Search Entities (Questions, Answers, EducationContents)
+CREATE PROCEDURE sp_SearchEntities
+    @EntityTypeId INT,
+    @SearchText NVARCHAR(100) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- 1 = Question
+    IF @EntityTypeId = 1
+    BEGIN
+        SELECT TOP 50
+            Id,
+            LEFT(QuestionText, 100) AS Title, -- Use text preview as title
+            (SELECT TOP 1 ImageUrl FROM ContentImages WHERE EntityTypeId = 1 AND EntityId = Questions.Id) AS ExistingImageUrl
+        FROM Questions
+        WHERE (@SearchText IS NULL OR QuestionText LIKE N'%' + @SearchText + N'%')
+        ORDER BY Id DESC;
+    END
+
+    -- 2 = DetailedAnswer
+    ELSE IF @EntityTypeId = 2
+    BEGIN
+        SELECT TOP 50
+            da.Id,
+            N'پاسخ سوال: ' + LEFT(q.QuestionText, 50) + '...' AS Title,
+            (SELECT TOP 1 ImageUrl FROM ContentImages WHERE EntityTypeId = 2 AND EntityId = da.Id) AS ExistingImageUrl
+        FROM DetailedAnswers da
+        JOIN Questions q ON da.QuestionId = q.Id
+        WHERE (@SearchText IS NULL OR q.QuestionText LIKE N'%' + @SearchText + N'%')
+        ORDER BY da.Id DESC;
+    END
+
+    -- 3 = EducationContent
+    ELSE IF @EntityTypeId = 3
+    BEGIN
+        SELECT TOP 50
+            Id,
+            Title,
+            (SELECT TOP 1 ImageUrl FROM ContentImages WHERE EntityTypeId = 3 AND EntityId = EducationContents.Id) AS ExistingImageUrl
+        FROM EducationContents
+        WHERE (@SearchText IS NULL OR Title LIKE N'%' + @SearchText + N'%')
+        ORDER BY Id DESC;
+    END
+END
+GO
+
+-- SP: Add Content Image
+CREATE PROCEDURE sp_AddContentImage
+    @EntityTypeId INT,
+    @EntityId INT,
+    @ImageUrl NVARCHAR(500),
+    @AltText NVARCHAR(200) = NULL,
+    @DisplayOrder INT = 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    INSERT INTO ContentImages (EntityTypeId, EntityId, ImageUrl, AltText, DisplayOrder)
+    VALUES (@EntityTypeId, @EntityId, @ImageUrl, @AltText, @DisplayOrder);
+    
+    SELECT * FROM ContentImages WHERE Id = SCOPE_IDENTITY();
+END
+GO
+
 -- =============================================
 -- 3. Seed Data
 -- =============================================

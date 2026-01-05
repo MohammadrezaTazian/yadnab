@@ -9,6 +9,7 @@ import 'package:education_app/features/settings/presentation/bloc/settings_event
 import 'package:education_app/features/settings/presentation/bloc/settings_state.dart';
 import 'package:education_app/features/auth/presentation/pages/login_page.dart';
 import 'package:education_app/features/settings/presentation/pages/settings_page.dart';
+import 'package:education_app/features/upload/presentation/pages/image_upload_page.dart';
 import 'package:education_app/shared/widgets/main_navigation.dart';
 import 'package:education_app/shared/theme/app_theme.dart';
 import 'package:education_app/core/routes/app_routes.dart';
@@ -61,6 +62,7 @@ class MyApp extends StatelessWidget {
               AppRoutes.login: (context) => const LoginPage(),
               AppRoutes.home: (context) => const MainNavigationPage(),
               AppRoutes.settings: (context) => const SettingsPage(),
+              AppRoutes.upload: (context) => const ImageUploadPage(),
             },
           );
         },
