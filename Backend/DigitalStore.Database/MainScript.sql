@@ -883,18 +883,18 @@ VALUES (
 -- Bio Question Images
 INSERT INTO ContentImages (ImageUrl, DisplayOrder, AltText, EntityTypeId, EntityId)
 VALUES 
-('http://localhost:5100/images/questions/mitochondria.svg', 0, N'میتوکندری', 1, @BioQId2);
+('/images/questions/mitochondria.svg', 0, N'میتوکندری', 1, @BioQId2);
 
 -- Math Question Images
 INSERT INTO ContentImages (ImageUrl, DisplayOrder, AltText, EntityTypeId, EntityId)
 VALUES 
-('http://localhost:5100/images/questions/math_p1.svg', 0, N'شکل ۱', 1, @MathQId),
-('http://localhost:5100/images/questions/math_p2.svg', 1, N'شکل ۲', 1, @MathQId);
+('/images/questions/math_p1.svg', 0, N'شکل ۱', 1, @MathQId),
+('/images/questions/math_p2.svg', 1, N'شکل ۲', 1, @MathQId);
 
 -- Bio Detailed Answer Image (Example)
 INSERT INTO ContentImages (ImageUrl, DisplayOrder, AltText, EntityTypeId, EntityId)
 VALUES
-('http://localhost:5100/images/questions/mitochondria_diagram.svg', 0, N'دیاگرام', 2, @BioDAId);
+('/images/questions/mitochondria_diagram.svg', 0, N'دیاگرام', 2, @BioDAId);
 GO
 
 -- Seed Education Contents for Organelles (Extra Request)
@@ -932,11 +932,11 @@ DECLARE @EduContentId2 INT = (SELECT Id FROM EducationContents WHERE Title = N'�
 -- Images for Mitochondria Content (EntityTypeId = 3)
 INSERT INTO ContentImages (ImageUrl, DisplayOrder, AltText, EntityTypeId, EntityId)
 VALUES 
-('http://localhost:5100/images/questions/mitochondria.svg', 0, N'شمای کلی میتوکندری', 3, @EduContentId1),
-('http://localhost:5100/images/questions/mitochondria_diagram.svg', 1, N'جزئیات غشای درونی', 3, @EduContentId1);
+('/images/questions/mitochondria.svg', 0, N'شمای کلی میتوکندری', 3, @EduContentId1),
+('/images/questions/mitochondria_diagram.svg', 1, N'جزئیات غشای درونی', 3, @EduContentId1);
 
 -- Images for ER Content
 INSERT INTO ContentImages (ImageUrl, DisplayOrder, AltText, EntityTypeId, EntityId)
 VALUES 
-('http://localhost:5100/images/questions/mitochondria_diagram.svg', 0, N'دیاگرام شبکه آندوپلاسمی', 3, @EduContentId2);
+('/images/questions/mitochondria_diagram.svg', 0, N'دیاگرام شبکه آندوپلاسمی', 3, @EduContentId2);
 GO

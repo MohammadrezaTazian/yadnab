@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:education_app/injection_container.dart';
 import '../bloc/comment_bloc.dart';
 import '../../domain/entities/comment.dart';
+import 'package:education_app/core/utils/url_helper.dart';
 import 'like_button.dart';
 
 class CommentSectionWidget extends StatelessWidget {
@@ -203,7 +204,7 @@ class _CommentItem extends StatelessWidget {
               CircleAvatar(
                 radius: 16,
                 backgroundImage: comment.userAvatar != null
-                    ? NetworkImage(comment.userAvatar!)
+                    ? NetworkImage(UrlHelper.resolve(comment.userAvatar!))
                     : null,
                 child: comment.userAvatar == null
                     ? const Icon(Icons.person, size: 20)

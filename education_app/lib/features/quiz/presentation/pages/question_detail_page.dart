@@ -7,6 +7,7 @@ import 'package:education_app/features/comment/presentation/widgets/comment_sect
 import 'package:education_app/shared/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:education_app/shared/widgets/dio_network_svg_image.dart';
+import 'package:education_app/core/utils/url_helper.dart';
 
 class QuestionDetailPage extends StatefulWidget {
   final Question question;
@@ -385,17 +386,18 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
   }
 
   Widget _buildImage(String imagePath, double height, ColorScheme colorScheme) {
-    final isSvg = imagePath.toLowerCase().endsWith('.svg');
-    final isNetwork = imagePath.toLowerCase().startsWith('http');
+    final resolvedPath = imagePath.startsWith('assets/') ? imagePath : UrlHelper.resolve(imagePath);
+    final isSvg = resolvedPath.toLowerCase().endsWith('.svg');
+    final isNetwork = resolvedPath.toLowerCase().startsWith('http');
 
     if (isNetwork) {
       if (isSvg) {
-        return DioNetworkSvgImage(imageUrl: imagePath, height: height);
+        return DioNetworkSvgImage(imageUrl: resolvedPath, height: height);
       } else {
         return ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: Image.network(
-            imagePath,
+            resolvedPath,
             height: height,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;

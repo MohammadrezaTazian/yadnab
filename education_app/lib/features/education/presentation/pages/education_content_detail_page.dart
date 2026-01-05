@@ -8,6 +8,7 @@ import 'package:education_app/features/comment/presentation/widgets/comment_sect
 import 'package:education_app/shared/widgets/dio_network_svg_image.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:education_app/core/utils/url_helper.dart';
 
 class EducationContentDetailPage extends StatefulWidget {
   final EducationContent content;
@@ -63,7 +64,7 @@ class _EducationContentDetailPageState extends State<EducationContentDetailPage>
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: Image.network(
-                              currentContent.mediaUrl!,
+                              UrlHelper.resolve(currentContent.mediaUrl!),
                               width: double.infinity,
                               height: 200,
                               fit: BoxFit.cover,
@@ -111,20 +112,21 @@ class _EducationContentDetailPageState extends State<EducationContentDetailPage>
                             runSpacing: 8.0,
                             children: currentContent.images.map((image) {
                               final imagePath = image.imageUrl;
-                              final isSvg = imagePath.toLowerCase().endsWith('.svg');
-                              final isNetwork = imagePath.toLowerCase().startsWith('http');
+                              final resolvedPath = imagePath.startsWith('assets/') ? imagePath : UrlHelper.resolve(imagePath);
+                              final isSvg = resolvedPath.toLowerCase().endsWith('.svg');
+                              final isNetwork = resolvedPath.toLowerCase().startsWith('http');
 
                               if (isNetwork) {
                                 if (isSvg) {
                                   return DioNetworkSvgImage(
-                                    imageUrl: imagePath,
+                                    imageUrl: resolvedPath,
                                     height: 180,
                                   );
                                 } else {
                                   return ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
                                     child: Image.network(
-                                      imagePath,
+                                      resolvedPath,
                                       height: 180,
                                       loadingBuilder: (context, child, loadingProgress) {
                                         if (loadingProgress == null) return child;
