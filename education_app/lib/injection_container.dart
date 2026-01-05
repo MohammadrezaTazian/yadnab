@@ -35,7 +35,6 @@ import 'package:education_app/features/comment/presentation/bloc/comment_bloc.da
 import 'package:education_app/features/upload/data/datasources/upload_data_source.dart';
 import 'package:education_app/features/upload/data/repositories/upload_repository_impl.dart';
 import 'package:education_app/features/upload/presentation/bloc/upload_bloc.dart';
-import 'package:education_app/features/upload/presentation/pages/image_upload_page.dart';  // Optional but safe
 import 'package:education_app/core/config/config_service.dart';
 
 final getIt = GetIt.instance;

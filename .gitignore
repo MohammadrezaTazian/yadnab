@@ -23,3 +23,7 @@ obj/
 *.suo
 *.userprefs
 *.launchSettings.json
+
+# Publish
+publish/
+**/publish/

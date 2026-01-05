@@ -19,7 +19,7 @@ namespace DigitalStore.Api.Controllers
         public async Task<IActionResult> GetQuestionsByTopicId(int topicItemId)
         {
             int? userId = null;
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
                 if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int id))
@@ -35,7 +35,7 @@ namespace DigitalStore.Api.Controllers
         public async Task<IActionResult> GetQuestionById(int id)
         {
             int? userId = null;
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
                 if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int uid))

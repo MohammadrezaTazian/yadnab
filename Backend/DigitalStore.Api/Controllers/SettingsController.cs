@@ -21,6 +21,7 @@ namespace DigitalStore.Api.Controllers
         private int GetUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null) throw new System.UnauthorizedAccessException();
             return int.Parse(userIdClaim);
         }
 

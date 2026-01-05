@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:education_app/features/upload/data/repositories/upload_repository_impl.dart';
 import 'package:education_app/features/upload/presentation/bloc/upload_event.dart';
 import 'package:education_app/features/upload/presentation/bloc/upload_state.dart';

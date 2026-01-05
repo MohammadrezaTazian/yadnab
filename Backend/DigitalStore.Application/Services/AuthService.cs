@@ -42,6 +42,11 @@ namespace DigitalStore.Application.Services
                 user = await _authRepository.CreateUserAsync(user);
             }
 
+            if (user == null)
+            {
+                throw new Exception("Failed to create or retrieve user.");
+            }
+
             var accessToken = _jwtService.GenerateAccessToken(user);
             var refreshToken = _jwtService.GenerateRefreshToken();
 

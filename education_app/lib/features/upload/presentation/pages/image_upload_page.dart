@@ -242,7 +242,7 @@ class _ImageUploadViewState extends State<_ImageUploadView> {
                       decoration: BoxDecoration(
                         border: Border.all(color: colorScheme.outline, style: BorderStyle.solid),
                         borderRadius: BorderRadius.circular(8),
-                        color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

@@ -1,8 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:education_app/core/config/config_service.dart';
-import 'package:education_app/core/constants/api_constants.dart';
 import 'package:education_app/core/error/failures.dart';
 import 'package:education_app/features/upload/data/models/entity_search_result.dart';
 import 'package:image_picker/image_picker.dart';
