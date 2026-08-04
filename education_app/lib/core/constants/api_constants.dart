@@ -8,8 +8,8 @@ class ApiConstants {
   static const String login = '/Auth/login';
   static const String refreshToken = '/Auth/refresh-token';
   
-  // Products endpoints
-  static const String products = '/Products';
+  // Packages endpoints
+  static const String packages = '/Packages';
   
   // Settings endpoints
   static const String settings = '/Settings';
@@ -20,5 +20,5 @@ class ApiConstants {
   // User endpoints
   static const String userProfile = '/User/profile';
   static const String updateProfile = '/User/profile';
-  static const String grades = '/User/grades';
+  static const String educationalLevels = '/User/educationallevels'; // previously grades
 }

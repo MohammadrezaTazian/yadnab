@@ -18,7 +18,9 @@ namespace DigitalStore.Infrastructure.Data.Repositories
 
         public async Task<User?> GetByIdAsync(int id)
         {
-            return await _context.Users.FindAsync(id);
+            return await _context.Users
+                .Include(u => u.EducationalLevel)
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task UpdateAsync(User user)
@@ -27,9 +29,9 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Grade>> GetGradesAsync()
+        public async Task<IEnumerable<EducationalLevel>> GetEducationalLevelsAsync()
         {
-            return await _context.Grades.ToListAsync();
+            return await _context.EducationalLevels.ToListAsync();
         }
     }
 }

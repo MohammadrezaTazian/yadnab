@@ -90,16 +90,17 @@ Future<void> setupDependencyInjection() async {
   );
   getIt.registerLazySingleton(() => GetProfileUseCase(getIt()));
   getIt.registerLazySingleton(() => UpdateProfileUseCase(getIt()));
-  getIt.registerLazySingleton(() => GetGradesUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetEducationalLevelsUseCase(getIt()));
   
   getIt.registerFactory(
     () => ProfileBloc(
       getProfileUseCase: getIt(),
       updateProfileUseCase: getIt(),
-      getGradesUseCase: getIt(),
+      getEducationalLevelsUseCase: getIt(),
       apiService: getIt(),
     ),
   );
+
 
   // Settings Feature
   getIt.registerFactory(

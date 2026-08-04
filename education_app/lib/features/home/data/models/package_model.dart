@@ -1,7 +1,7 @@
-import 'package:education_app/features/home/domain/entities/product.dart';
+import 'package:education_app/features/home/domain/entities/package.dart';
 
-class ProductModel extends Product {
-  const ProductModel({
+class PackageModel extends Package {
+  const PackageModel({
     required super.id,
     required super.title,
     required super.description,
@@ -10,8 +10,8 @@ class ProductModel extends Product {
     required super.price,
   });
 
-  factory ProductModel.fromJson(Map<String, dynamic> json) {
-    return ProductModel(
+  factory PackageModel.fromJson(Map<String, dynamic> json) {
+    return PackageModel(
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
       description: json['description'] ?? '',

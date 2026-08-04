@@ -61,13 +61,13 @@ namespace DigitalStore.Api.Controllers
             }
         }
 
-        [HttpGet("grades")]
-        public async Task<IActionResult> GetGrades()
+        [HttpGet("educationallevels")]
+        public async Task<IActionResult> GetEducationalLevels()
         {
             try
             {
-                var grades = await _userService.GetGradesAsync();
-                return Ok(grades);
+                var levels = await _userService.GetEducationalLevelsAsync();
+                return Ok(levels);
             }
             catch (System.Exception ex)
             {

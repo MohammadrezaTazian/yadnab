@@ -95,7 +95,7 @@ class _ImageUploadViewState extends State<_ImageUploadView> {
               children: [
                 // Entity Type Dropdown
                 DropdownButtonFormField<int>(
-                  value: _selectedEntityTypeId,
+                  initialValue: _selectedEntityTypeId,
                   decoration: const InputDecoration(
                     labelText: 'نوع محتوا',
                     border: OutlineInputBorder(),

@@ -33,7 +33,8 @@ namespace DigitalStore.Application.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                Grade = user.Grade,
+                EducationalLevelId = user.EducationalLevelId,
+                EducationalLevelName = user.EducationalLevel?.Name,
                 ProfilePicture = user.ProfilePicture,
                 AccessToken = string.Empty, // Not needed for profile retrieval
                 RefreshToken = string.Empty
@@ -58,10 +59,13 @@ namespace DigitalStore.Application.Services
             if (updateDto.Email != null)
                 user.Email = updateDto.Email;
             
-            if (updateDto.Grade != null)
-                user.Grade = updateDto.Grade;
+            if (updateDto.EducationalLevelId != null)
+                user.EducationalLevelId = updateDto.EducationalLevelId;
 
             await _userRepository.UpdateAsync(user);
+
+            // Re-fetch user to include newly associated EducationalLevel navigation info
+            user = await _userRepository.GetByIdAsync(userId) ?? user;
 
             return new UserDto
             {
@@ -70,21 +74,22 @@ namespace DigitalStore.Application.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                Grade = user.Grade,
+                EducationalLevelId = user.EducationalLevelId,
+                EducationalLevelName = user.EducationalLevel?.Name,
                 ProfilePicture = user.ProfilePicture,
                 AccessToken = string.Empty,
                 RefreshToken = string.Empty
             };
         }
 
-        public async Task<IEnumerable<GradeDto>> GetGradesAsync()
+        public async Task<IEnumerable<EducationalLevelDto>> GetEducationalLevelsAsync()
         {
-            var grades = await _userRepository.GetGradesAsync();
+            var levels = await _userRepository.GetEducationalLevelsAsync();
 
-            return grades.Select(g => new GradeDto
+            return levels.Select(l => new EducationalLevelDto
             {
-                Id = g.Id,
-                Name = g.Name
+                Id = l.Id,
+                Name = l.Name
             }).ToList();
         }
 
@@ -97,15 +102,19 @@ namespace DigitalStore.Application.Services
                 throw new System.Exception("Failed to update profile picture");
             }
 
+            // Fetch complete user profile with navigation property
+            var user = await _userRepository.GetByIdAsync(userId) ?? updatedUser;
+
             return new UserDto
             {
-                Id = updatedUser.Id,
-                PhoneNumber = updatedUser.PhoneNumber,
-                FirstName = updatedUser.FirstName,
-                LastName = updatedUser.LastName,
-                Email = updatedUser.Email,
-                Grade = updatedUser.Grade,
-                ProfilePicture = updatedUser.ProfilePicture,
+                Id = user.Id,
+                PhoneNumber = user.PhoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                EducationalLevelId = user.EducationalLevelId,
+                EducationalLevelName = user.EducationalLevel?.Name,
+                ProfilePicture = user.ProfilePicture,
                 AccessToken = string.Empty,
                 RefreshToken = string.Empty
             };

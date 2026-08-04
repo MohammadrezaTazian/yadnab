@@ -9,23 +9,23 @@ abstract class ProfileEvent extends Equatable {
 
 class LoadProfileEvent extends ProfileEvent {}
 
-class LoadGradesEvent extends ProfileEvent {}
+class LoadEducationalLevelsEvent extends ProfileEvent {}
 
 class UpdateProfileEvent extends ProfileEvent {
   final String? firstName;
   final String? lastName;
   final String? email;
-  final String? grade;
+  final int? educationalLevelId;
 
   const UpdateProfileEvent({
     this.firstName,
     this.lastName,
     this.email,
-    this.grade,
+    this.educationalLevelId,
   });
 
   @override
-  List<Object?> get props => [firstName, lastName, email, grade];
+  List<Object?> get props => [firstName, lastName, email, educationalLevelId];
 }
 
 class UpdateProfilePictureEvent extends ProfileEvent {
@@ -36,3 +36,4 @@ class UpdateProfilePictureEvent extends ProfileEvent {
   @override
   List<Object> get props => [base64Image];
 }
+

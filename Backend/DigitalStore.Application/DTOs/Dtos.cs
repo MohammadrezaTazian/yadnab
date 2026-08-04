@@ -13,7 +13,8 @@ namespace DigitalStore.Application.DTOs
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? Email { get; set; }
-        public string? Grade { get; set; }
+        public int? EducationalLevelId { get; set; }
+        public string? EducationalLevelName { get; set; }
         public string? ProfilePicture { get; set; }
         public required string AccessToken { get; set; }
         public required string RefreshToken { get; set; }
@@ -24,16 +25,16 @@ namespace DigitalStore.Application.DTOs
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? Email { get; set; }
-        public string? Grade { get; set; }
+        public int? EducationalLevelId { get; set; }
     }
 
-    public class GradeDto
+    public class EducationalLevelDto
     {
         public int Id { get; set; }
         public required string Name { get; set; }
     }
 
-    public class ProductDto
+    public class PackageDto
     {
         public int Id { get; set; }
         public required string Title { get; set; }

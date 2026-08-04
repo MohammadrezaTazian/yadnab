@@ -17,14 +17,14 @@ namespace DigitalStore.Api.Controllers
             _courseTopicService = courseTopicService;
         }
 
-        [HttpGet("{category}")]
-        public async Task<IActionResult> GetTopicsByCategory(string category)
+        [HttpGet("{packageId:int}")]
+        public async Task<IActionResult> GetTopicsByPackage(int packageId)
         {
-            var topics = await _courseTopicService.GetTopicsByCategoryAsync(category);
+            var topics = await _courseTopicService.GetTopicsByPackageAsync(packageId);
             
             if (topics == null)
             {
-                return NotFound(new { message = $"No topics found for category: {category}" });
+                return NotFound(new { message = $"No topics found for package ID: {packageId}" });
             }
 
             return Ok(topics);

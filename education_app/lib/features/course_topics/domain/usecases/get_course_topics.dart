@@ -6,7 +6,8 @@ class GetCourseTopics {
 
   GetCourseTopics(this.repository);
 
-  Future<CourseTopic> call(String category) async {
-    return await repository.getTopicsByCategory(category);
+  Future<CourseTopic> call(int packageId) async {
+    return await repository.getTopicsByPackage(packageId);
   }
 }
+

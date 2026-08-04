@@ -11,10 +11,10 @@ namespace DigitalStore.Application.Interfaces
         Task<UserDto> RefreshTokenAsync(string refreshToken);
     }
 
-    public interface IProductService
+    public interface IPackageService
     {
-        Task<IEnumerable<ProductDto>> GetProductsAsync(string category);
-        Task<IEnumerable<ProductDto>> GetAllProductsAsync();
+        Task<IEnumerable<PackageDto>> GetPackagesAsync(string category);
+        Task<IEnumerable<PackageDto>> GetAllPackagesAsync();
     }
 
     public interface ISettingsService
@@ -33,7 +33,7 @@ namespace DigitalStore.Application.Interfaces
     {
         Task<UserDto> GetProfileAsync(int userId);
         Task<UserDto> UpdateProfileAsync(int userId, UpdateProfileDto updateDto);
-        Task<IEnumerable<GradeDto>> GetGradesAsync();
+        Task<IEnumerable<EducationalLevelDto>> GetEducationalLevelsAsync();
         Task<UserDto> UpdateProfilePictureAsync(int userId, string base64Image);
     }
 }

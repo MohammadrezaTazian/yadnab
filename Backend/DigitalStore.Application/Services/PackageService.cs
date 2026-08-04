@@ -7,19 +7,19 @@ using DigitalStore.Domain.Interfaces;
 
 namespace DigitalStore.Application.Services
 {
-    public class ProductService : IProductService
+    public class PackageService : IPackageService
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IPackageRepository _packageRepository;
 
-        public ProductService(IProductRepository productRepository)
+        public PackageService(IPackageRepository packageRepository)
         {
-            _productRepository = productRepository;
+            _packageRepository = packageRepository;
         }
 
-        public async Task<IEnumerable<ProductDto>> GetProductsAsync(string category)
+        public async Task<IEnumerable<PackageDto>> GetPackagesAsync(string category)
         {
-            var products = await _productRepository.GetProductsByCategoryAsync(category);
-            return products.Select(p => new ProductDto
+            var packages = await _packageRepository.GetPackagesByCategoryAsync(category);
+            return packages.Select(p => new PackageDto
             {
                 Id = p.Id,
                 Title = p.Title,
@@ -30,10 +30,10 @@ namespace DigitalStore.Application.Services
             });
         }
 
-        public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
+        public async Task<IEnumerable<PackageDto>> GetAllPackagesAsync()
         {
-            var products = await _productRepository.GetAllProductsAsync();
-            return products.Select(p => new ProductDto
+            var packages = await _packageRepository.GetAllPackagesAsync();
+            return packages.Select(p => new PackageDto
             {
                 Id = p.Id,
                 Title = p.Title,

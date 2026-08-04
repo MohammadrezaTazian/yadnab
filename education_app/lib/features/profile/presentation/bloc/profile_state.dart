@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:education_app/features/auth/domain/entities/user.dart';
-import 'package:education_app/features/profile/domain/entities/grade.dart';
+import 'package:education_app/features/profile/domain/entities/educational_level.dart';
 
 abstract class ProfileState extends Equatable {
   const ProfileState();
@@ -15,28 +15,28 @@ class ProfileLoading extends ProfileState {}
 
 class ProfileLoaded extends ProfileState {
   final User user;
-  final List<Grade> grades;
+  final List<EducationalLevel> educationalLevels;
 
   const ProfileLoaded({
     required this.user,
-    required this.grades,
+    required this.educationalLevels,
   });
 
   @override
-  List<Object?> get props => [user, grades];
+  List<Object?> get props => [user, educationalLevels];
 }
 
 class ProfileUpdating extends ProfileState {
   final User user;
-  final List<Grade> grades;
+  final List<EducationalLevel> educationalLevels;
 
   const ProfileUpdating({
     required this.user,
-    required this.grades,
+    required this.educationalLevels,
   });
 
   @override
-  List<Object?> get props => [user, grades];
+  List<Object?> get props => [user, educationalLevels];
 }
 
 class ProfileError extends ProfileState {
@@ -50,13 +50,14 @@ class ProfileError extends ProfileState {
 
 class ProfileUpdated extends ProfileState {
   final User user;
-  final List<Grade> grades;
+  final List<EducationalLevel> educationalLevels;
 
   const ProfileUpdated({
     required this.user,
-    required this.grades,
+    required this.educationalLevels,
   });
 
   @override
-  List<Object?> get props => [user, grades];
+  List<Object?> get props => [user, educationalLevels];
 }
+

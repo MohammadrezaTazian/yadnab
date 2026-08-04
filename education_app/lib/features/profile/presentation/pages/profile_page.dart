@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:education_app/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:education_app/features/profile/presentation/bloc/profile_event.dart';
 import 'package:education_app/features/profile/presentation/bloc/profile_state.dart';
-import 'package:education_app/features/profile/domain/entities/grade.dart';
+import 'package:education_app/features/profile/domain/entities/educational_level.dart';
 import 'package:education_app/features/auth/domain/entities/user.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_event.dart';
@@ -26,7 +26,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _emailController;
-  String? _selectedGrade;
+  int? _selectedEducationalLevelId;
 
   @override
   void initState() {
@@ -49,7 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _firstNameController.text = user.firstName ?? '';
     _lastNameController.text = user.lastName ?? '';
     _emailController.text = user.email ?? '';
-    _selectedGrade = (user.grade != null && user.grade!.isNotEmpty) ? user.grade : null;
+    _selectedEducationalLevelId = user.educationalLevelId;
   }
 
   Future<void> _pickAndUploadImage(BuildContext context) async {
@@ -250,7 +250,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             _buildProfileField(
                               context,
                               controller: _firstNameController,
-                              icon: Icons.person_outline_rounded,
+                              icon: Icons.person_rounded,
                               label: AppLocalizations.of(context)!.firstName,
                               hint: AppLocalizations.of(context)!.enterFirstName,
                               iconColor: colorScheme.primary,
@@ -268,7 +268,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             _buildProfileField(
                               context,
                               controller: _emailController,
-                              icon: Icons.email_outlined,
+                              icon: Icons.email_rounded,
                               label: AppLocalizations.of(context)!.email,
                               hint: AppLocalizations.of(context)!.enterEmail,
                               iconColor: AppColors.accentLight,
@@ -287,11 +287,11 @@ class _ProfilePageState extends State<ProfilePage> {
                               },
                             ),
                             const SizedBox(height: 16),
-                            _buildGradeDropdown(
+                            _buildEducationalLevelDropdown(
                               context,
                               (state is ProfileLoaded)
-                                  ? state.grades
-                                  : (state as ProfileUpdated).grades,
+                                  ? state.educationalLevels
+                                  : (state as ProfileUpdated).educationalLevels,
                             ),
                             const SizedBox(height: 32),
                             
@@ -307,7 +307,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                             firstName: _firstNameController.text,
                                             lastName: _lastNameController.text,
                                             email: _emailController.text,
-                                            grade: _selectedGrade,
+                                            educationalLevelId: _selectedEducationalLevelId,
                                           ),
                                         );
                                   }
@@ -381,13 +381,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildGradeDropdown(BuildContext context, List<Grade> grades) {
+  Widget _buildEducationalLevelDropdown(BuildContext context, List<EducationalLevel> levels) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final gradeNames = grades.map((g) => g.name).toList();
-    final validSelectedGrade = (_selectedGrade != null && gradeNames.contains(_selectedGrade))
-        ? _selectedGrade
+    final levelIds = levels.map((l) => l.id).toList();
+    final validSelectedId = (_selectedEducationalLevelId != null && levelIds.contains(_selectedEducationalLevelId))
+        ? _selectedEducationalLevelId
         : null;
 
     return Container(
@@ -398,12 +398,12 @@ class _ProfilePageState extends State<ProfilePage> {
           color: colorScheme.outline.withValues(alpha: 0.3),
         ),
       ),
-      child: DropdownButtonFormField<String>(
-        value: validSelectedGrade,
+      child: DropdownButtonFormField<int>(
+        initialValue: validSelectedId,
         dropdownColor: colorScheme.surface,
         style: textTheme.bodyLarge,
         decoration: InputDecoration(
-          labelText: AppLocalizations.of(context)!.grade,
+          labelText: AppLocalizations.of(context)!.selectGrade,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           prefixIcon: Container(
@@ -416,19 +416,18 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Icon(Icons.school_rounded, color: AppColors.onPrimary, size: 20),
           ),
         ),
-        items: grades.map((Grade grade) {
-          return DropdownMenuItem<String>(
-            value: grade.name,
-            child: Text(grade.name),
+        items: levels.map((EducationalLevel level) {
+          return DropdownMenuItem<int>(
+            value: level.id,
+            child: Text(level.name),
           );
         }).toList(),
-        onChanged: (String? newValue) {
+        onChanged: (int? newValue) {
           setState(() {
-            _selectedGrade = newValue;
+            _selectedEducationalLevelId = newValue;
           });
         },
       ),
     );
   }
 }
-

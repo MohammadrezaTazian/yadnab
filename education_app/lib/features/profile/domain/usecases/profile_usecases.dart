@@ -1,5 +1,5 @@
 import 'package:education_app/features/auth/domain/entities/user.dart';
-import 'package:education_app/features/profile/domain/entities/grade.dart';
+import 'package:education_app/features/profile/domain/entities/educational_level.dart';
 import 'package:education_app/features/profile/domain/repositories/profile_repository.dart';
 
 class GetProfileUseCase {
@@ -21,23 +21,24 @@ class UpdateProfileUseCase {
     String? firstName,
     String? lastName,
     String? email,
-    String? grade,
+    int? educationalLevelId,
   }) {
     return repository.updateProfile(
       firstName: firstName,
       lastName: lastName,
       email: email,
-      grade: grade,
+      educationalLevelId: educationalLevelId,
     );
   }
 }
 
-class GetGradesUseCase {
+class GetEducationalLevelsUseCase {
   final ProfileRepository repository;
 
-  GetGradesUseCase(this.repository);
+  GetEducationalLevelsUseCase(this.repository);
 
-  Future<List<Grade>> call() {
-    return repository.getGrades();
+  Future<List<EducationalLevel>> call() {
+    return repository.getEducationalLevels();
   }
 }
+

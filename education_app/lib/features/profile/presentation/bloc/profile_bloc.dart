@@ -8,17 +8,17 @@ import 'package:education_app/features/auth/domain/entities/user.dart';
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final GetProfileUseCase getProfileUseCase;
   final UpdateProfileUseCase updateProfileUseCase;
-  final GetGradesUseCase getGradesUseCase;
+  final GetEducationalLevelsUseCase getEducationalLevelsUseCase;
   final ApiService apiService;
 
   ProfileBloc({
     required this.getProfileUseCase,
     required this.updateProfileUseCase,
-    required this.getGradesUseCase,
+    required this.getEducationalLevelsUseCase,
     required this.apiService,
   }) : super(ProfileInitial()) {
     on<LoadProfileEvent>(_onLoadProfile);
-    on<LoadGradesEvent>(_onLoadGrades);
+    on<LoadEducationalLevelsEvent>(_onLoadEducationalLevels);
     on<UpdateProfileEvent>(_onUpdateProfile);
     on<UpdateProfilePictureEvent>(_onUpdateProfilePicture);
   }
@@ -31,24 +31,24 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(ProfileLoading());
       
       final user = await getProfileUseCase();
-      final grades = await getGradesUseCase();
+      final educationalLevels = await getEducationalLevelsUseCase();
       
-      emit(ProfileLoaded(user: user, grades: grades));
+      emit(ProfileLoaded(user: user, educationalLevels: educationalLevels));
     } catch (e) {
       emit(ProfileError(e.toString()));
     }
   }
 
-  Future<void> _onLoadGrades(
-    LoadGradesEvent event,
+  Future<void> _onLoadEducationalLevels(
+    LoadEducationalLevelsEvent event,
     Emitter<ProfileState> emit,
   ) async {
     try {
-      final grades = await getGradesUseCase();
+      final educationalLevels = await getEducationalLevelsUseCase();
       
       if (state is ProfileLoaded) {
         final currentState = state as ProfileLoaded;
-        emit(ProfileLoaded(user: currentState.user, grades: grades));
+        emit(ProfileLoaded(user: currentState.user, educationalLevels: educationalLevels));
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
@@ -62,16 +62,16 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     try {
       if (state is ProfileLoaded) {
         final currentState = state as ProfileLoaded;
-        emit(ProfileUpdating(user: currentState.user, grades: currentState.grades));
+        emit(ProfileUpdating(user: currentState.user, educationalLevels: currentState.educationalLevels));
         
         final updatedUser = await updateProfileUseCase(
           firstName: event.firstName,
           lastName: event.lastName,
           email: event.email,
-          grade: event.grade,
+          educationalLevelId: event.educationalLevelId,
         );
         
-        emit(ProfileLoaded(user: updatedUser, grades: currentState.grades));
+        emit(ProfileLoaded(user: updatedUser, educationalLevels: currentState.educationalLevels));
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
@@ -85,7 +85,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     try {
       if (state is ProfileLoaded) {
         final currentState = state as ProfileLoaded;
-        emit(ProfileUpdating(user: currentState.user, grades: currentState.grades));
+        emit(ProfileUpdating(user: currentState.user, educationalLevels: currentState.educationalLevels));
         
         final response = await apiService.updateProfilePicture(event.base64Image);
         
@@ -96,14 +96,16 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           firstName: currentState.user.firstName,
           lastName: currentState.user.lastName,
           email: currentState.user.email,
-          grade: currentState.user.grade,
+          educationalLevelId: currentState.user.educationalLevelId,
+          educationalLevelName: currentState.user.educationalLevelName,
           profilePicture: response['profilePicture'],
         );
         
-        emit(ProfileLoaded(user: updatedUser, grades: currentState.grades));
+        emit(ProfileLoaded(user: updatedUser, educationalLevels: currentState.educationalLevels));
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
     }
   }
 }
+

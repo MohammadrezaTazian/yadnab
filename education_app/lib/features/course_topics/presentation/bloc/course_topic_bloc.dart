@@ -16,10 +16,11 @@ class CourseTopicBloc extends Bloc<CourseTopicEvent, CourseTopicState> {
   ) async {
     emit(CourseTopicLoading());
     try {
-      final courseTopic = await getCourseTopics(event.category);
+      final courseTopic = await getCourseTopics(event.packageId);
       emit(CourseTopicLoaded(courseTopic));
     } catch (e) {
       emit(CourseTopicError(e.toString()));
     }
   }
 }
+

@@ -67,7 +67,7 @@ class SettingsPage extends StatelessWidget {
                             Icons.dark_mode_rounded,
                             color: colorScheme.primary,
                           ),
-                          activeColor: colorScheme.primary,
+                          activeThumbColor: colorScheme.primary,
                         ),
                         const Divider(),
                         ListTile(

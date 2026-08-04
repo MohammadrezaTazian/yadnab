@@ -9,28 +9,30 @@ import 'package:education_app/features/quiz/presentation/pages/quiz_list_page.da
 import 'package:education_app/features/education/presentation/pages/education_content_list_page.dart';
 
 class CourseTopicsPage extends StatelessWidget {
-  final String category;
+  final int packageId;
   final String title;
 
   const CourseTopicsPage({
     super.key,
-    required this.category,
+    required this.packageId,
     required this.title,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => sl<CourseTopicBloc>()..add(LoadCourseTopics(category)),
-      child: _CourseTopicsPageContent(title: title),
+      create: (context) => sl<CourseTopicBloc>()..add(LoadCourseTopics(packageId)),
+      child: _CourseTopicsPageContent(packageId: packageId, title: title),
     );
   }
 }
 
 class _CourseTopicsPageContent extends StatelessWidget {
+  final int packageId;
   final String title;
 
-  const _CourseTopicsPageContent({required this.title});
+  const _CourseTopicsPageContent({required this.packageId, required this.title});
+
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +144,7 @@ class _CourseTopicsPageContent extends StatelessWidget {
                             const SizedBox(height: 16),
                             ElevatedButton.icon(
                               onPressed: () {
-                                context.read<CourseTopicBloc>().add(LoadCourseTopics(category));
+                                context.read<CourseTopicBloc>().add(LoadCourseTopics(packageId));
                               },
                               icon: const Icon(Icons.refresh),
                               label: const Text('تلاش مجدد'),

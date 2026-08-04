@@ -1,5 +1,5 @@
 import 'package:education_app/features/auth/domain/entities/user.dart';
-import 'package:education_app/features/profile/domain/entities/grade.dart';
+import 'package:education_app/features/profile/domain/entities/educational_level.dart';
 
 abstract class ProfileRepository {
   Future<User> getProfile();
@@ -7,7 +7,8 @@ abstract class ProfileRepository {
     String? firstName,
     String? lastName,
     String? email,
-    String? grade,
+    int? educationalLevelId,
   });
-  Future<List<Grade>> getGrades();
+  Future<List<EducationalLevel>> getEducationalLevels();
 }
+

@@ -11,12 +11,14 @@ class CourseTopicModel extends CourseTopic {
 
   factory CourseTopicModel.fromJson(Map<String, dynamic> json) {
     return CourseTopicModel(
-      id: json['id'],
-      category: json['category'],
+      id: json['id'] ?? 0,
+      category: json['category'] ?? json['packageId']?.toString() ?? '',
       title: json['title'] ?? '',
-      topics: (json['topics'] as List<dynamic>)
-          .map((e) => TopicItemModel.fromJson(e))
-          .toList(),
+      topics: json['topics'] != null
+          ? (json['topics'] as List<dynamic>)
+              .map((e) => TopicItemModel.fromJson(e))
+              .toList()
+          : [],
     );
   }
 

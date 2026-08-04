@@ -11,9 +11,9 @@ namespace DigitalStore.Infrastructure.Data
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Product> Products { get; set; }
+        public DbSet<Package> Packages { get; set; }
         public DbSet<Setting> Settings { get; set; }
-        public DbSet<Grade> Grades { get; set; }
+        public DbSet<EducationalLevel> EducationalLevels { get; set; }
         public DbSet<CourseTopic> CourseTopics { get; set; } // Ensure CourseTopics is here
         public DbSet<TopicItem> TopicItems { get; set; }
         public DbSet<DifficultyLevel> DifficultyLevels { get; set; }

@@ -10,7 +10,8 @@ class UserModel extends User {
     super.firstName,
     super.lastName,
     super.email,
-    super.grade,
+    super.educationalLevelId,
+    super.educationalLevelName,
     super.profilePicture,
     required this.accessToken,
     required this.refreshToken,
@@ -23,7 +24,8 @@ class UserModel extends User {
       firstName: json['firstName'],
       lastName: json['lastName'],
       email: json['email'],
-      grade: json['grade'],
+      educationalLevelId: json['educationalLevelId'],
+      educationalLevelName: json['educationalLevelName'],
       profilePicture: json['profilePicture'],
       accessToken: json['accessToken'] ?? '',
       refreshToken: json['refreshToken'] ?? '',
@@ -37,10 +39,12 @@ class UserModel extends User {
       'firstName': firstName,
       'lastName': lastName,
       'email': email,
-      'grade': grade,
+      'educationalLevelId': educationalLevelId,
+      'educationalLevelName': educationalLevelName,
       'profilePicture': profilePicture,
       'accessToken': accessToken,
       'refreshToken': refreshToken,
     };
   }
 }
+

@@ -1,7 +1,7 @@
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:education_app/core/constants/api_constants.dart';
-import 'package:education_app/features/home/data/models/product_model.dart';
+import 'package:education_app/features/home/data/models/package_model.dart';
 import 'package:education_app/features/settings/data/models/settings_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,19 +24,19 @@ class ApiService {
     );
   }
 
-  // Products API
-  Future<List<ProductModel>> getProducts({String? category}) async {
+  // Packages API
+  Future<List<PackageModel>> getPackages({String? category}) async {
     final url = category != null && category.isNotEmpty
-        ? '${ApiConstants.baseUrl}${ApiConstants.products}?category=$category'
-        : '${ApiConstants.baseUrl}${ApiConstants.products}';
+        ? '${ApiConstants.baseUrl}${ApiConstants.packages}?category=$category'
+        : '${ApiConstants.baseUrl}${ApiConstants.packages}';
 
     final response = await dio.get(url, options: _getOptions());
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = response.data;
-      return jsonList.map((json) => ProductModel.fromJson(json)).toList();
+      return jsonList.map((json) => PackageModel.fromJson(json)).toList();
     } else {
-      throw Exception('Failed to load products');
+      throw Exception('Failed to load packages');
     }
   }
 
@@ -112,9 +112,9 @@ class ApiService {
   }
 
   // Course Topics API
-  Future<Map<String, dynamic>> getCourseTopics(String category) async {
+  Future<Map<String, dynamic>> getCourseTopics(int packageId) async {
     final response = await dio.get(
-      '${ApiConstants.baseUrl}/CourseTopics/$category',
+      '${ApiConstants.baseUrl}/CourseTopics/$packageId',
       options: _getOptions(),
     );
 
@@ -161,7 +161,8 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return response.data;
+      final List<dynamic> jsonList = response.data;
+      return jsonList;
     } else {
       throw Exception('Failed to load comments');
     }

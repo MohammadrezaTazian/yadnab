@@ -16,13 +16,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<CourseTopic>> GetAllAsync()
-        {
-            // For now, using EF Core for simple GetAll, though SP is available
-            return await _context.CourseTopics.Include(x => x.TopicItems).ToListAsync();
-        }
-
-        public async Task<CourseTopic?> GetTopicsByCategoryAsync(string category)
+        public async Task<CourseTopic?> GetTopicsByPackageAsync(int packageId)
         {
             CourseTopic? courseTopic = null;
             var connection = _context.Database.GetDbConnection();
@@ -33,19 +27,20 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             {
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "sp_GetCourseTopicsByCategory";
+                    command.CommandText = "sp_GetCourseTopicsByPackage";
                     command.CommandType = CommandType.StoredProcedure;
                     
                     var param = command.CreateParameter();
-                    param.ParameterName = "@Category";
-                    param.Value = category;
+                    param.ParameterName = "@PackageId";
+                    param.DbType = DbType.Int32;
+                    param.Value = packageId;
                     command.Parameters.Add(param);
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {
                         var topicItems = new List<TopicItem>();
                         int ctId = 0;
-                        string ctCategory = "";
+                        int ctPackageId = 0;
                         string? ctTitle = null;
 
                         while (await reader.ReadAsync())
@@ -53,7 +48,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                             if (ctId == 0)
                             {
                                 ctId = reader.GetInt32(reader.GetOrdinal("CourseTopicId"));
-                                ctCategory = reader.GetString(reader.GetOrdinal("Category"));
+                                ctPackageId = reader.GetInt32(reader.GetOrdinal("PackageId"));
                                 if (!reader.IsDBNull(reader.GetOrdinal("CategoryTitle")))
                                     ctTitle = reader.GetString(reader.GetOrdinal("CategoryTitle"));
                             }
@@ -76,7 +71,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                             courseTopic = new CourseTopic
                             {
                                 Id = ctId,
-                                Category = ctCategory,
+                                PackageId = ctPackageId,
                                 Title = ctTitle,
                                 TopicItems = topicItems
                             };
@@ -90,29 +85,6 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             }
 
             return courseTopic;
-        }
-
-        public async Task<CourseTopic> AddAsync(CourseTopic entity)
-        {
-             _context.CourseTopics.Add(entity);
-             await _context.SaveChangesAsync();
-             return entity;
-        }
-
-        public async Task UpdateAsync(CourseTopic entity)
-        {
-            _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var entity = await _context.CourseTopics.FindAsync(id);
-            if (entity != null)
-            {
-                _context.CourseTopics.Remove(entity);
-                await _context.SaveChangesAsync();
-            }
         }
     }
 }

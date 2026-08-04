@@ -8,6 +8,6 @@ namespace DigitalStore.Domain.Interfaces
     {
         Task<User?> GetByIdAsync(int id);
         Task UpdateAsync(User user);
-        Task<IEnumerable<Grade>> GetGradesAsync();
+        Task<IEnumerable<EducationalLevel>> GetEducationalLevelsAsync();
     }
 }

@@ -1,6 +1,7 @@
 using DigitalStore.Application.DTOs;
 using DigitalStore.Application.Interfaces;
 using DigitalStore.Domain.Interfaces;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 
@@ -15,9 +16,9 @@ namespace DigitalStore.Application.Services
             _courseTopicRepository = courseTopicRepository;
         }
 
-        public async Task<CourseTopicDto?> GetTopicsByCategoryAsync(string category)
+        public async Task<CourseTopicDto?> GetTopicsByPackageAsync(int packageId)
         {
-            var courseTopic = await _courseTopicRepository.GetTopicsByCategoryAsync(category);
+            var courseTopic = await _courseTopicRepository.GetTopicsByPackageAsync(packageId);
             
             if (courseTopic == null) return null;
 
@@ -29,7 +30,7 @@ namespace DigitalStore.Application.Services
                 ParentId = t.ParentId,
                 Title = t.Title,
                 ImageUrl = t.ImageUrl,
-                Children = new List<TopicItemDto>() // Initialize list
+                Children = new List<TopicItemDto>()
             }).ToList();
 
             // 2. Build Hierarchy
@@ -51,9 +52,9 @@ namespace DigitalStore.Application.Services
             return new CourseTopicDto
             {
                 Id = courseTopic.Id,
-                Category = courseTopic.Category,
+                PackageId = courseTopic.PackageId,
                 Title = courseTopic.Title,
-                Topics = rootNodes // Return only top-level nodes, children are nested
+                Topics = rootNodes
             };
         }
     }

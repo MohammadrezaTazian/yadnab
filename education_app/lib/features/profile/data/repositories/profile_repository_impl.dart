@@ -1,6 +1,6 @@
 import 'package:education_app/features/auth/domain/entities/user.dart';
 import 'package:education_app/features/profile/data/datasources/profile_remote_data_source.dart';
-import 'package:education_app/features/profile/domain/entities/grade.dart';
+import 'package:education_app/features/profile/domain/entities/educational_level.dart';
 import 'package:education_app/features/profile/domain/repositories/profile_repository.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
@@ -18,18 +18,19 @@ class ProfileRepositoryImpl implements ProfileRepository {
     String? firstName,
     String? lastName,
     String? email,
-    String? grade,
+    int? educationalLevelId,
   }) async {
     return await remoteDataSource.updateProfile(
       firstName: firstName,
       lastName: lastName,
       email: email,
-      grade: grade,
+      educationalLevelId: educationalLevelId,
     );
   }
 
   @override
-  Future<List<Grade>> getGrades() async {
-    return await remoteDataSource.getGrades();
+  Future<List<EducationalLevel>> getEducationalLevels() async {
+    return await remoteDataSource.getEducationalLevels();
   }
 }
+

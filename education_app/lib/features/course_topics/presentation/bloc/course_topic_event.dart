@@ -8,10 +8,11 @@ abstract class CourseTopicEvent extends Equatable {
 }
 
 class LoadCourseTopics extends CourseTopicEvent {
-  final String category;
+  final int packageId;
 
-  const LoadCourseTopics(this.category);
+  const LoadCourseTopics(this.packageId);
 
   @override
-  List<Object> get props => [category];
+  List<Object> get props => [packageId];
 }
+

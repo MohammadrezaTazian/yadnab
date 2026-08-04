@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/core/services/api_service.dart';
-import 'package:education_app/features/home/data/models/product_model.dart';
+import 'package:education_app/features/home/data/models/package_model.dart';
 import 'package:education_app/injection_container.dart';
 import 'package:education_app/features/course_topics/presentation/pages/course_topics_page.dart';
 import 'package:education_app/shared/widgets/app_drawer.dart';
@@ -16,27 +16,27 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final ApiService _apiService = sl<ApiService>();
-  List<ProductModel> _products = [];
+  List<PackageModel> _packages = [];
   bool _isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    _loadPackages();
   }
 
-  Future<void> _loadProducts() async {
+  Future<void> _loadPackages() async {
     try {
       setState(() {
         _isLoading = true;
         _error = null;
       });
 
-      final products = await _apiService.getProducts();
+      final packages = await _apiService.getPackages();
 
       setState(() {
-        _products = products;
+        _packages = packages;
         _isLoading = false;
       });
     } catch (e) {
@@ -148,13 +148,13 @@ class _HomePageState extends State<HomePage> {
                               ),
                               IconButton(
                                 icon: Icon(Icons.refresh_rounded, color: colorScheme.primary),
-                                onPressed: _loadProducts,
+                                onPressed: _loadPackages,
                               ),
                             ],
                           ),
                         ),
                       ),
-                    if (!_isLoading && _products.isEmpty && _error == null)
+                    if (!_isLoading && _packages.isEmpty && _error == null)
                       Center(
                         child: Padding(
                           padding: const EdgeInsets.all(32.0),
@@ -167,18 +167,18 @@ class _HomePageState extends State<HomePage> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'No products available',
+                                'No packages available',
                                 style: textTheme.bodyLarge,
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ..._products.map((product) => _buildProductCard(
+                    ..._packages.map((package) => _buildPackageCard(
                           context,
-                          product,
-                          _getIconForCategory(product.category),
-                          _getColorForCategory(product.category, colorScheme),
+                          package,
+                          _getIconForCategory(package.category),
+                          _getColorForCategory(package.category, colorScheme),
                           colorScheme,
                           textTheme,
                         )),
@@ -225,9 +225,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Widget _buildProductCard(
+  Widget _buildPackageCard(
     BuildContext context,
-    ProductModel product,
+    PackageModel package,
     IconData icon,
     Color color,
     ColorScheme colorScheme,
@@ -240,8 +240,8 @@ class _HomePageState extends State<HomePage> {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => CourseTopicsPage(
-                category: product.category,
-                title: product.title,
+                packageId: package.id,
+                title: package.title,
               ),
             ),
           );
@@ -269,14 +269,14 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      product.title,
+                      package.title,
                       style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (product.description.isNotEmpty)
+                    if (package.description.isNotEmpty)
                       Text(
-                        product.description,
+                        package.description,
                         style: textTheme.bodySmall,
                       ),
                   ],

@@ -9,8 +9,9 @@ class CourseTopicRepositoryImpl implements CourseTopicRepository {
   CourseTopicRepositoryImpl(this.apiService);
 
   @override
-  Future<CourseTopic> getTopicsByCategory(String category) async {
-    final response = await apiService.getCourseTopics(category);
+  Future<CourseTopic> getTopicsByPackage(int packageId) async {
+    final response = await apiService.getCourseTopics(packageId);
     return CourseTopicModel.fromJson(response);
   }
 }
+

@@ -61,7 +61,8 @@ namespace DigitalStore.Application.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                Grade = user.Grade,
+                EducationalLevelId = user.EducationalLevelId,
+                EducationalLevelName = user.EducationalLevel?.Name,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
@@ -88,7 +89,8 @@ namespace DigitalStore.Application.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                Grade = user.Grade,
+                EducationalLevelId = user.EducationalLevelId,
+                EducationalLevelName = user.EducationalLevel?.Name,
                 AccessToken = newAccessToken,
                 RefreshToken = newRefreshToken
             };

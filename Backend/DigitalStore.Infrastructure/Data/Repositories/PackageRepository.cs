@@ -8,27 +8,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DigitalStore.Infrastructure.Data.Repositories
 {
-    public class ProductRepository : IProductRepository
+    public class PackageRepository : IPackageRepository
     {
         private readonly ApplicationDbContext _context;
 
-        public ProductRepository(ApplicationDbContext context)
+        public PackageRepository(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        public async Task<IEnumerable<Package>> GetAllPackagesAsync()
         {
-            return await _context.Products
-                .FromSqlRaw("EXEC sp_GetAllProducts")
+            return await _context.Packages
+                .FromSqlRaw("EXEC sp_GetAllPackages")
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category)
+        public async Task<IEnumerable<Package>> GetPackagesByCategoryAsync(string category)
         {
             var param = new SqlParameter("@Category", category);
-            return await _context.Products
-                .FromSqlRaw("EXEC sp_GetProductsByCategory @Category", param)
+            return await _context.Packages
+                .FromSqlRaw("EXEC sp_GetPackagesByCategory @Category", param)
                 .ToListAsync();
         }
     }

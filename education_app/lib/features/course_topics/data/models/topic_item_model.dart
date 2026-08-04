@@ -19,10 +19,10 @@ class TopicItemModel extends Equatable {
 
   factory TopicItemModel.fromJson(Map<String, dynamic> json) {
     return TopicItemModel(
-      id: json['id'],
-      courseTopicId: json['courseTopicId'],
+      id: json['id'] ?? 0,
+      courseTopicId: json['courseTopicId'] ?? 0,
       parentId: json['parentId'],
-      title: json['title'],
+      title: json['title'] ?? '',
       imageUrl: json['imageUrl'],
       children: json['children'] != null
           ? (json['children'] as List)
