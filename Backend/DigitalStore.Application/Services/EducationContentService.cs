@@ -17,9 +17,9 @@ namespace DigitalStore.Application.Services
             _repository = repository;
         }
 
-        public async Task<IEnumerable<EducationContentDto>> GetContentsByTopicItemIdAsync(int topicItemId, int? currentUserId = null)
+        public async Task<IEnumerable<EducationContentDto>> GetContentsByTopicIdAsync(int topicId, int? currentUserId = null)
         {
-            var contents = await _repository.GetByTopicItemIdAsync(topicItemId, currentUserId);
+            var contents = await _repository.GetByTopicIdAsync(topicId, currentUserId);
             return contents.Select(MapToDto);
         }
 
@@ -35,7 +35,7 @@ namespace DigitalStore.Application.Services
             return new EducationContentDto
             {
                 Id = entity.Id,
-                TopicItemId = entity.TopicItemId,
+                TopicId = entity.TopicId,
                 Title = entity.Title,
                 ContentText = entity.ContentText,
                 MediaUrl = entity.MediaUrl,

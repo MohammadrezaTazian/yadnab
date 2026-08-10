@@ -23,7 +23,7 @@ namespace DigitalStore.Application.Services
             return questions.Select(q => new QuestionDto
             {
                 Id = q.Id,
-                TopicItemId = q.TopicItemId,
+                TopicId = q.TopicId,
                 QuestionText = q.QuestionText,
                 Option1 = q.Option1,
                 Option2 = q.Option2,
@@ -69,7 +69,7 @@ namespace DigitalStore.Application.Services
             return new QuestionDto
             {
                 Id = q.Id,
-                TopicItemId = q.TopicItemId,
+                TopicId = q.TopicId,
                 QuestionText = q.QuestionText,
                 Option1 = q.Option1,
                 Option2 = q.Option2,

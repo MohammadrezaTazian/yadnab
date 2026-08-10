@@ -17,7 +17,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Question>> GetQuestionsByTopicIdAsync(int topicItemId, int? currentUserId = null)
+        public async Task<IEnumerable<Question>> GetQuestionsByTopicIdAsync(int topicId, int? currentUserId = null)
         {
             var questionsMap = new Dictionary<int, Question>();
             var connection = _context.Database.GetDbConnection();
@@ -28,12 +28,12 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             {
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "sp_GetQuestionsByTopicItemId";
+                    command.CommandText = "sp_GetQuestionsByTopicId";
                     command.CommandType = CommandType.StoredProcedure;
                     
                     var param = command.CreateParameter();
-                    param.ParameterName = "@TopicItemId";
-                    param.Value = topicItemId;
+                    param.ParameterName = "@TopicId";
+                    param.Value = topicId;
                     command.Parameters.Add(param);
                     
                     var userParam = command.CreateParameter();
@@ -49,7 +49,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                             var q = new Question
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                TopicItemId = reader.GetInt32(reader.GetOrdinal("TopicItemId")),
+                                TopicId = reader.GetInt32(reader.GetOrdinal("TopicId")),
                                 QuestionText = reader.GetString(reader.GetOrdinal("QuestionText")),
                                 Option1 = reader.GetString(reader.GetOrdinal("Option1")),
                                 Option2 = reader.GetString(reader.GetOrdinal("Option2")),
@@ -166,7 +166,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                             question = new Question
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                TopicItemId = reader.GetInt32(reader.GetOrdinal("TopicItemId")),
+                                TopicId = reader.GetInt32(reader.GetOrdinal("TopicId")),
                                 QuestionText = reader.GetString(reader.GetOrdinal("QuestionText")),
                                 Option1 = reader.GetString(reader.GetOrdinal("Option1")),
                                 Option2 = reader.GetString(reader.GetOrdinal("Option2")),

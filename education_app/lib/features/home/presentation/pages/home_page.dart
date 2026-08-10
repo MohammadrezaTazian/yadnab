@@ -3,7 +3,7 @@ import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/core/services/api_service.dart';
 import 'package:education_app/features/home/data/models/package_model.dart';
 import 'package:education_app/injection_container.dart';
-import 'package:education_app/features/course_topics/presentation/pages/course_topics_page.dart';
+import 'package:education_app/features/topics/presentation/pages/topics_page.dart';
 import 'package:education_app/shared/widgets/app_drawer.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
 
@@ -239,7 +239,7 @@ class _HomePageState extends State<HomePage> {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => CourseTopicsPage(
+              builder: (context) => TopicsPage(
                 packageId: package.id,
                 title: package.title,
               ),

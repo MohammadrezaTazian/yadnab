@@ -4,7 +4,7 @@ namespace DigitalStore.Domain.Entities
 {
     public class EducationContent : BaseEntity
     {
-        public int TopicItemId { get; set; }
+        public int TopicId { get; set; }
         public required string Title { get; set; }
         public required string ContentText { get; set; }
         public string? MediaUrl { get; set; }
@@ -12,7 +12,7 @@ namespace DigitalStore.Domain.Entities
         public string? TeacherName { get; set; }
         
         // Navigation Property
-        public TopicItem TopicItem { get; set; } = null!;
+        public Topic Topic { get; set; } = null!;
         public List<ContentImage> Images { get; set; } = new List<ContentImage>();
         
         public bool IsLiked { get; set; }

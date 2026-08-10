@@ -5,7 +5,7 @@ namespace DigitalStore.Application.DTOs
     public class QuestionDto
     {
         public int Id { get; set; }
-        public int TopicItemId { get; set; }
+        public int TopicId { get; set; }
         public required string QuestionText { get; set; }
         public required string Option1 { get; set; }
         public required string Option2 { get; set; }

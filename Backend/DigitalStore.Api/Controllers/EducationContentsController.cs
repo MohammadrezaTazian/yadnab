@@ -19,8 +19,8 @@ namespace DigitalStore.Api.Controllers
             _service = service;
         }
 
-        [HttpGet("topic/{topicItemId}")]
-        public async Task<ActionResult<IEnumerable<EducationContentDto>>> GetByTopicItemId(int topicItemId)
+        [HttpGet("topic/{topicId}")]
+        public async Task<ActionResult<IEnumerable<EducationContentDto>>> GetByTopicId(int topicId)
         {
             int? userId = null;
             if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -31,7 +31,7 @@ namespace DigitalStore.Api.Controllers
                     userId = id;
                 }
             }
-            var contents = await _service.GetContentsByTopicItemIdAsync(topicItemId, userId);
+            var contents = await _service.GetContentsByTopicIdAsync(topicId, userId);
             return Ok(contents);
         }
 

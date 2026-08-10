@@ -5,7 +5,7 @@ namespace DigitalStore.Domain.Entities
 {
     public class Question : BaseEntity
     {
-        public int TopicItemId { get; set; }
+        public int TopicId { get; set; }
         public required string QuestionText { get; set; }
         public required string Option1 { get; set; }
         public required string Option2 { get; set; }
@@ -18,7 +18,7 @@ namespace DigitalStore.Domain.Entities
         public int QuestionYear { get; set; }
         public int DifficultyLevelId { get; set; }
         
-        public TopicItem TopicItem { get; set; } = null!;
+        public Topic Topic { get; set; } = null!;
         public DifficultyLevel DifficultyLevel { get; set; } = null!;
         public DetailedAnswer DetailedAnswer { get; set; } = null!;
 

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:education_app/features/course_topics/presentation/bloc/course_topic_bloc.dart';
-import 'package:education_app/features/course_topics/presentation/bloc/course_topic_event.dart';
-import 'package:education_app/features/course_topics/presentation/bloc/course_topic_state.dart';
-import 'package:education_app/features/course_topics/data/models/topic_item_model.dart';
+import 'package:education_app/features/topics/presentation/bloc/topic_bloc.dart';
+import 'package:education_app/features/topics/presentation/bloc/topic_event.dart';
+import 'package:education_app/features/topics/presentation/bloc/topic_state.dart';
+import 'package:education_app/features/topics/domain/entities/topic.dart';
 import 'package:education_app/injection_container.dart';
 import 'package:education_app/features/quiz/presentation/pages/quiz_list_page.dart';
 import 'package:education_app/features/education/presentation/pages/education_content_list_page.dart';
 
-class CourseTopicsPage extends StatelessWidget {
+class TopicsPage extends StatelessWidget {
   final int packageId;
   final String title;
 
-  const CourseTopicsPage({
+  const TopicsPage({
     super.key,
     required this.packageId,
     required this.title,
@@ -21,18 +21,17 @@ class CourseTopicsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => sl<CourseTopicBloc>()..add(LoadCourseTopics(packageId)),
-      child: _CourseTopicsPageContent(packageId: packageId, title: title),
+      create: (context) => sl<TopicBloc>()..add(LoadTopics(packageId)),
+      child: _TopicsPageContent(packageId: packageId, title: title),
     );
   }
 }
 
-class _CourseTopicsPageContent extends StatelessWidget {
+class _TopicsPageContent extends StatelessWidget {
   final int packageId;
   final String title;
 
-  const _CourseTopicsPageContent({required this.packageId, required this.title});
-
+  const _TopicsPageContent({required this.packageId, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -103,15 +102,15 @@ class _CourseTopicsPageContent extends StatelessWidget {
                 ),
               ),
             ),
-            BlocBuilder<CourseTopicBloc, CourseTopicState>(
+            BlocBuilder<TopicBloc, TopicState>(
               builder: (context, state) {
-                if (state is CourseTopicLoading) {
+                if (state is TopicLoading) {
                   return const SliverFillRemaining(
                     child: Center(
                       child: CircularProgressIndicator(),
                     ),
                   );
-                } else if (state is CourseTopicError) {
+                } else if (state is TopicError) {
                   return SliverFillRemaining(
                     child: Center(
                       child: Padding(
@@ -126,7 +125,7 @@ class _CourseTopicsPageContent extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'خطا در بارگذاری',
+                              'خطا در بارگذاری سرفصل‌ها',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -144,7 +143,7 @@ class _CourseTopicsPageContent extends StatelessWidget {
                             const SizedBox(height: 16),
                             ElevatedButton.icon(
                               onPressed: () {
-                                context.read<CourseTopicBloc>().add(LoadCourseTopics(packageId));
+                                context.read<TopicBloc>().add(LoadTopics(packageId));
                               },
                               icon: const Icon(Icons.refresh),
                               label: const Text('تلاش مجدد'),
@@ -154,28 +153,28 @@ class _CourseTopicsPageContent extends StatelessWidget {
                       ),
                     ),
                   );
-                } else if (state is CourseTopicLoaded) {
+                } else if (state is TopicLoaded) {
                   return SliverPadding(
                     padding: const EdgeInsets.all(16.0),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final topicItem = state.courseTopic.topics[index];
+                          final topic = state.topics[index];
                           return _buildTopicItem(
                             context,
-                            topicItem,
+                            topic,
                             index,
                             isDark,
                           );
                         },
-                        childCount: state.courseTopic.topics.length,
+                        childCount: state.topics.length,
                       ),
                     ),
                   );
                 }
                 return const SliverFillRemaining(
                   child: Center(
-                    child: Text('No data'),
+                    child: Text('داده‌ای یافت نشد'),
                   ),
                 );
               },
@@ -186,8 +185,8 @@ class _CourseTopicsPageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildTopicItem(BuildContext context, TopicItemModel topicItem, int index, bool isDark) {
-    final hasChildren = topicItem.children.isNotEmpty;
+  Widget _buildTopicItem(BuildContext context, Topic topic, int index, bool isDark) {
+    final hasChildren = topic.children.isNotEmpty;
 
     final colors = [
       Colors.blue,
@@ -225,7 +224,7 @@ class _CourseTopicsPageContent extends StatelessWidget {
               child: Icon(Icons.folder_open, color: color),
             ),
             title: Text(
-              topicItem.title,
+              topic.title,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -233,7 +232,7 @@ class _CourseTopicsPageContent extends StatelessWidget {
               ),
             ),
             childrenPadding: const EdgeInsets.only(left: 16, bottom: 8),
-            children: topicItem.children
+            children: topic.children
                 .asMap()
                 .entries
                 .map((entry) => _buildTopicItem(context, entry.value, entry.key, isDark))
@@ -242,7 +241,7 @@ class _CourseTopicsPageContent extends StatelessWidget {
         ),
       );
     } else {
-      // Leaf Node (Original Design)
+      // Leaf Node
       return TweenAnimationBuilder<double>(
         duration: Duration(milliseconds: 300 + (index * 100)),
         tween: Tween(begin: 0.0, end: 1.0),
@@ -269,7 +268,7 @@ class _CourseTopicsPageContent extends StatelessWidget {
                 : BorderSide.none,
           ),
           child: InkWell(
-            onTap: () => _showContentSelectionSheet(context, topicItem, isDark),
+            onTap: () => _showContentSelectionSheet(context, topic, isDark),
             borderRadius: BorderRadius.circular(12),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -283,9 +282,9 @@ class _CourseTopicsPageContent extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
-                      child: topicItem.imageUrl != null && topicItem.imageUrl!.isNotEmpty
+                      child: topic.imageUrl != null && topic.imageUrl!.isNotEmpty
                           ? Image.asset(
-                              topicItem.imageUrl!,
+                              topic.imageUrl!,
                               width: 30,
                               errorBuilder: (context, error, stackTrace) {
                                 return Icon(
@@ -308,7 +307,7 @@ class _CourseTopicsPageContent extends StatelessWidget {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      topicItem.title,
+                      topic.title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: isDark ? const Color(0xFFE8E8F0) : Colors.black87,
@@ -329,105 +328,112 @@ class _CourseTopicsPageContent extends StatelessWidget {
     }
   }
 
-  void _showContentSelectionSheet(BuildContext context, TopicItemModel topicItem, bool isDark) {
+  void _showContentSelectionSheet(BuildContext context, Topic topic, bool isDark) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1A1F3A) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'انتخاب نوع محتوا',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.school, color: Colors.blue),
-              ),
-              title: Text(
-                'آموزش',
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1A1F3A) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'انتخاب نوع محتوا',
                 style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
                 ),
               ),
-              subtitle: Text(
-                'مشاهده ویدیوها و درس‌نامه‌ها',
-                style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EducationContentListPage(
-                      topicItemId: topicItem.id,
-                      topicTitle: topicItem.title,
+              const SizedBox(height: 24),
+              Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.school, color: Colors.blue),
+                  ),
+                  title: Text(
+                    'آموزش',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.quiz, color: Colors.green),
-              ),
-              title: Text(
-                'آزمون',
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black87,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              subtitle: Text(
-                'حل سوالات تستی و تمرین',
-                style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => QuizListPage(
-                      topicItemId: topicItem.id,
-                      topicTitle: topicItem.title,
+                  subtitle: Text(
+                    'مشاهده ویدیوها و درس‌نامه‌ها',
+                    style: TextStyle(
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
                     ),
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EducationContentListPage(
+                          topicItemId: topic.id,
+                          topicTitle: topic.title,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.quiz, color: Colors.green),
+                  ),
+                  title: Text(
+                    'آزمون',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'حل سوالات تستی و تمرین',
+                    style: TextStyle(
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => QuizListPage(
+                          topicItemId: topic.id,
+                          topicTitle: topic.title,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
   }
-
-  String get category => title; // Helper getter
 }

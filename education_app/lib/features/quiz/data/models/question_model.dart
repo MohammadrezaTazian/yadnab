@@ -23,26 +23,26 @@ class QuestionModel extends Question {
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) {
     return QuestionModel(
-      id: json['id'],
-      topicItemId: json['topicItemId'],
-      questionText: json['questionText'],
-      option1: json['option1'],
-      option2: json['option2'],
-      option3: json['option3'],
-      option4: json['option4'],
-      correctOption: json['correctOption'],
+      id: json['id'] as int? ?? 0,
+      topicItemId: json['topicId'] as int? ?? json['topicItemId'] as int? ?? 0,
+      questionText: json['questionText'] as String? ?? '',
+      option1: json['option1'] as String? ?? '',
+      option2: json['option2'] as String? ?? '',
+      option3: json['option3'] as String? ?? '',
+      option4: json['option4'] as String? ?? '',
+      correctOption: json['correctOption'] as int? ?? 0,
       questionImages: (json['questionImages'] as List<dynamic>?)
               ?.map((e) => ContentImageModel.fromJson(e))
               .toList() ??
           [],
-      questionDesigner: json['questionDesigner'],
-      questionYear: json['questionYear'] ?? 0,
-      difficultyLevelId: json['difficultyLevelId'],
-      difficultyLevelName: json['difficultyLevelName'],
+      questionDesigner: json['questionDesigner'] as String?,
+      questionYear: json['questionYear'] as int? ?? 0,
+      difficultyLevelId: json['difficultyLevelId'] as int? ?? 0,
+      difficultyLevelName: json['difficultyLevelName'] as String?,
       detailedAnswer: json['detailedAnswer'] != null
           ? DetailedAnswerModel.fromJson(json['detailedAnswer'])
           : null,
-      isLiked: json['isLiked'] ?? false,
+      isLiked: json['isLiked'] as bool? ?? false,
     );
   }
 

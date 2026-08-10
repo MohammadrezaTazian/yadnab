@@ -15,8 +15,8 @@ namespace DigitalStore.Api.Controllers
             _questionService = questionService;
         }
 
-        [HttpGet("topic/{topicItemId}")]
-        public async Task<IActionResult> GetQuestionsByTopicId(int topicItemId)
+        [HttpGet("topic/{topicId}")]
+        public async Task<IActionResult> GetQuestionsByTopicId(int topicId)
         {
             int? userId = null;
             if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -27,7 +27,7 @@ namespace DigitalStore.Api.Controllers
                     userId = id;
                 }
             }
-            var questions = await _questionService.GetQuestionsByTopicIdAsync(topicItemId, userId);
+            var questions = await _questionService.GetQuestionsByTopicIdAsync(topicId, userId);
             return Ok(questions);
         }
 

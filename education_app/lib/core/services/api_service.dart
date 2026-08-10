@@ -111,10 +111,10 @@ class ApiService {
     }
   }
 
-  // Course Topics API
-  Future<Map<String, dynamic>> getCourseTopics(int packageId) async {
+  // Topics API
+  Future<dynamic> getTopics(int packageId) async {
     final response = await dio.get(
-      '${ApiConstants.baseUrl}/CourseTopics/$packageId',
+      '${ApiConstants.baseUrl}/Topics/$packageId',
       options: _getOptions(),
     );
 
@@ -126,9 +126,9 @@ class ApiService {
   }
 
   // Questions API
-  Future<dynamic> getQuestionsByTopic(int topicItemId) async {
+  Future<dynamic> getQuestionsByTopic(int topicId) async {
     final response = await dio.get(
-      '${ApiConstants.baseUrl}/Questions/topic/$topicItemId',
+      '${ApiConstants.baseUrl}/Questions/topic/$topicId',
       options: _getOptions(),
     );
 
@@ -140,9 +140,9 @@ class ApiService {
   }
 
   // Education Contents API
-  Future<dynamic> getEducationContentsByTopic(int topicItemId) async {
+  Future<dynamic> getEducationContentsByTopic(int topicId) async {
     final response = await dio.get(
-      '${ApiConstants.baseUrl}/EducationContents/topic/$topicItemId',
+      '${ApiConstants.baseUrl}/EducationContents/topic/$topicId',
       options: _getOptions(),
     );
 

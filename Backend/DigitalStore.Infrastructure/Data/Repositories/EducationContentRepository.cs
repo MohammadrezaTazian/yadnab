@@ -16,7 +16,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<EducationContent>> GetByTopicItemIdAsync(int topicItemId, int? currentUserId = null)
+        public async Task<IEnumerable<EducationContent>> GetByTopicIdAsync(int topicId, int? currentUserId = null)
         {
             var contentsMap = new Dictionary<int, EducationContent>();
             var connection = _context.Database.GetDbConnection();
@@ -31,8 +31,8 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                     command.CommandType = CommandType.StoredProcedure;
                     
                     var param = command.CreateParameter();
-                    param.ParameterName = "@TopicItemId";
-                    param.Value = topicItemId;
+                    param.ParameterName = "@TopicId";
+                    param.Value = topicId;
                     command.Parameters.Add(param);
 
                     var userParam = command.CreateParameter();
@@ -146,7 +146,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             return new EducationContent
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                TopicItemId = reader.GetInt32(reader.GetOrdinal("TopicItemId")),
+                TopicId = reader.GetInt32(reader.GetOrdinal("TopicId")),
                 Title = reader.GetString(reader.GetOrdinal("Title")),
                 ContentText = reader.IsDBNull(reader.GetOrdinal("ContentText")) ? "" : reader.GetString(reader.GetOrdinal("ContentText")),
                 MediaUrl = reader.IsDBNull(reader.GetOrdinal("MediaUrl")) ? null : reader.GetString(reader.GetOrdinal("MediaUrl")),

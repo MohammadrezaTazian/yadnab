@@ -14,10 +14,10 @@ import 'package:education_app/features/profile/domain/repositories/profile_repos
 import 'package:education_app/features/profile/domain/usecases/profile_usecases.dart';
 import 'package:education_app/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:education_app/features/settings/presentation/bloc/settings_bloc.dart';
-import 'package:education_app/features/course_topics/data/repositories/course_topic_repository_impl.dart';
-import 'package:education_app/features/course_topics/domain/repositories/course_topic_repository.dart';
-import 'package:education_app/features/course_topics/domain/usecases/get_course_topics.dart';
-import 'package:education_app/features/course_topics/presentation/bloc/course_topic_bloc.dart';
+import 'package:education_app/features/topics/data/repositories/topic_repository_impl.dart';
+import 'package:education_app/features/topics/domain/repositories/topic_repository.dart';
+import 'package:education_app/features/topics/domain/usecases/get_topics.dart';
+import 'package:education_app/features/topics/presentation/bloc/topic_bloc.dart';
 import 'package:education_app/features/quiz/data/repositories/question_repository_impl.dart';
 import 'package:education_app/features/quiz/domain/repositories/question_repository.dart';
 import 'package:education_app/features/quiz/domain/usecases/get_questions_by_topic.dart';
@@ -110,15 +110,15 @@ Future<void> setupDependencyInjection() async {
     ),
   );
 
-  // Course Topics Feature
-  getIt.registerLazySingleton<CourseTopicRepository>(
-    () => CourseTopicRepositoryImpl(getIt()),
+  // Topics Feature
+  getIt.registerLazySingleton<TopicRepository>(
+    () => TopicRepositoryImpl(getIt()),
   );
-  getIt.registerLazySingleton(() => GetCourseTopics(getIt()));
+  getIt.registerLazySingleton(() => GetTopics(getIt()));
   
   getIt.registerFactory(
-    () => CourseTopicBloc(
-      getCourseTopics: getIt(),
+    () => TopicBloc(
+      getTopics: getIt(),
     ),
   );
 

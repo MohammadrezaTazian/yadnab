@@ -8,19 +8,19 @@ namespace DigitalStore.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class CourseTopicsController : ControllerBase
+    public class TopicsController : ControllerBase
     {
-        private readonly ICourseTopicService _courseTopicService;
+        private readonly ITopicService _topicService;
 
-        public CourseTopicsController(ICourseTopicService courseTopicService)
+        public TopicsController(ITopicService topicService)
         {
-            _courseTopicService = courseTopicService;
+            _topicService = topicService;
         }
 
         [HttpGet("{packageId:int}")]
         public async Task<IActionResult> GetTopicsByPackage(int packageId)
         {
-            var topics = await _courseTopicService.GetTopicsByPackageAsync(packageId);
+            var topics = await _topicService.GetTopicsByPackageAsync(packageId);
             
             if (topics == null)
             {

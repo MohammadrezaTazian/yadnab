@@ -19,15 +19,15 @@ class EducationContentModel extends EducationContent {
 
   factory EducationContentModel.fromJson(Map<String, dynamic> json) {
     return EducationContentModel(
-      id: json['id'],
-      topicItemId: json['topicItemId'],
-      title: json['title'],
-      contentText: json['contentText'] ?? '',
-      mediaUrl: json['mediaUrl'],
-      mediaType: json['mediaType'] ?? 'Text',
-      teacherName: json['teacherName'],
-      createdAt: json['createdAt'] ?? '',
-      isLiked: json['isLiked'] ?? false,
+      id: json['id'] as int? ?? 0,
+      topicItemId: json['topicId'] as int? ?? json['topicItemId'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      contentText: json['contentText'] as String? ?? '',
+      mediaUrl: json['mediaUrl'] as String?,
+      mediaType: json['mediaType'] as String? ?? 'Text',
+      teacherName: json['teacherName'] as String?,
+      createdAt: json['createdAt'] as String? ?? '',
+      isLiked: json['isLiked'] as bool? ?? false,
       images: (json['images'] as List<dynamic>?)
               ?.map((e) => ContentImageModel.fromJson(e))
               .toList() ??

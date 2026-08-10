@@ -90,33 +90,31 @@ INSERT INTO EntityTypes (Id, TypeName) VALUES
 SET IDENTITY_INSERT EntityTypes OFF;
 GO
 
--- CourseTopics Table (linked to Packages)
-CREATE TABLE CourseTopics (
+-- Topics Table (Independent Hierarchical Tree)
+CREATE TABLE Topics (
     Id INT IDENTITY(1,1) PRIMARY KEY,
-    PackageId INT NOT NULL, -- Foreign Key to Packages
-    Title NVARCHAR(200) NOT NULL,    -- e.g. "پایه ششم"
+    ParentId INT, -- Self-Referencing for hierarchy
+    Title NVARCHAR(200) NOT NULL,
+    ImageUrl NVARCHAR(MAX),
     CreatedAt DATETIME2 DEFAULT GETDATE(),
-    CONSTRAINT FK_CourseTopics_Packages FOREIGN KEY (PackageId) REFERENCES Packages(Id) ON DELETE CASCADE
+    CONSTRAINT FK_Topics_Parent FOREIGN KEY (ParentId) REFERENCES Topics(Id)
 );
 GO
 
--- TopicItems Table (Sub-topics)
-CREATE TABLE TopicItems (
+-- PackageTopics Table (Many-to-Many mapping between Packages and Topics)
+CREATE TABLE PackageTopics (
     Id INT IDENTITY(1,1) PRIMARY KEY,
-    CourseTopicId INT NOT NULL,
-    ParentId INT, -- Self-Referencing for hierarchy
-    Title NVARCHAR(200) NOT NULL,    -- e.g. "هوش کلامی"
-    ImageUrl NVARCHAR(MAX),
-    CreatedAt DATETIME2 DEFAULT GETDATE(),
-    CONSTRAINT FK_TopicItems_CourseTopics FOREIGN KEY (CourseTopicId) REFERENCES CourseTopics(Id) ON DELETE CASCADE,
-    CONSTRAINT FK_TopicItems_Parent FOREIGN KEY (ParentId) REFERENCES TopicItems(Id)
+    PackageId INT NOT NULL,
+    TopicId INT NOT NULL,
+    CONSTRAINT FK_PackageTopics_Packages FOREIGN KEY (PackageId) REFERENCES Packages(Id) ON DELETE CASCADE,
+    CONSTRAINT FK_PackageTopics_Topics FOREIGN KEY (TopicId) REFERENCES Topics(Id) ON DELETE CASCADE
 );
 GO
 
 -- Questions Table
 CREATE TABLE Questions (
     Id INT IDENTITY(1,1) PRIMARY KEY,
-    TopicItemId INT NOT NULL,
+    TopicId INT NOT NULL,
     QuestionText NVARCHAR(MAX) NOT NULL,
     Option1 NVARCHAR(MAX) NOT NULL,
     Option2 NVARCHAR(MAX) NOT NULL,
@@ -127,7 +125,7 @@ CREATE TABLE Questions (
     QuestionYear INT,
     DifficultyLevelId INT NOT NULL,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
-    CONSTRAINT FK_Questions_TopicItems FOREIGN KEY (TopicItemId) REFERENCES TopicItems(Id) ON DELETE CASCADE,
+    CONSTRAINT FK_Questions_Topics FOREIGN KEY (TopicId) REFERENCES Topics(Id) ON DELETE CASCADE,
     CONSTRAINT FK_Questions_DifficultyLevels FOREIGN KEY (DifficultyLevelId) REFERENCES DifficultyLevels(Id)
 );
 GO
@@ -147,14 +145,14 @@ GO
 -- EducationContents Table
 CREATE TABLE EducationContents (
     Id INT IDENTITY(1,1) PRIMARY KEY,
-    TopicItemId INT NOT NULL,
+    TopicId INT NOT NULL,
     Title NVARCHAR(200) NOT NULL,
     ContentText NVARCHAR(MAX),
     MediaUrl NVARCHAR(MAX),
     MediaType NVARCHAR(50), -- 'Text', 'Image', 'Video'
     TeacherName NVARCHAR(100),
     CreatedAt DATETIME2 DEFAULT GETDATE(),
-    CONSTRAINT FK_EducationContents_TopicItems FOREIGN KEY (TopicItemId) REFERENCES TopicItems(Id) ON DELETE CASCADE
+    CONSTRAINT FK_EducationContents_Topics FOREIGN KEY (TopicId) REFERENCES Topics(Id) ON DELETE CASCADE
 );
 GO
 
@@ -301,30 +299,43 @@ GO
 -- Course Topic & Question Procedures
 -- ---------------------------------------------
 
--- SP: Get Course Topics By PackageId (Joins CourseTopics and TopicItems)
-CREATE PROCEDURE sp_GetCourseTopicsByPackage
+-- SP: Get Topics By PackageId (Using Recursive CTE for full topic hierarchy)
+CREATE PROCEDURE sp_GetTopicsByPackage
     @PackageId INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT 
-        ct.Id AS CourseTopicId,
-        ct.PackageId,
-        ct.Title AS CategoryTitle,
-        ti.Id AS TopicItemId,
-        ti.ParentId,
-        ti.Title AS TopicTitle,
-        ti.ImageUrl AS TopicImageUrl
-    FROM CourseTopics ct
-    LEFT JOIN TopicItems ti ON ct.Id = ti.CourseTopicId
-    WHERE ct.PackageId = @PackageId
-    ORDER BY ti.ParentId, ti.Id;
+
+    WITH TopicHierarchy AS (
+        -- Anchor member: topics directly mapped to the package
+        SELECT 
+            t.Id,
+            t.ParentId,
+            t.Title,
+            t.ImageUrl
+        FROM Topics t
+        INNER JOIN PackageTopics pt ON t.Id = pt.TopicId
+        WHERE pt.PackageId = @PackageId
+
+        UNION ALL
+
+        -- Recursive member: child topics of topics in TopicHierarchy
+        SELECT 
+            child.Id,
+            child.ParentId,
+            child.Title,
+            child.ImageUrl
+        FROM Topics child
+        INNER JOIN TopicHierarchy parent ON child.ParentId = parent.Id
+    )
+    SELECT DISTINCT Id, ParentId, Title, ImageUrl
+    FROM TopicHierarchy;
 END
 GO
 
--- SP: Get Questions By TopicItemId
-CREATE PROCEDURE sp_GetQuestionsByTopicItemId
-    @TopicItemId INT,
+-- SP: Get Questions By TopicId
+CREATE PROCEDURE sp_GetQuestionsByTopicId
+    @TopicId INT,
     @CurrentUserId INT = NULL
 AS
 BEGIN
@@ -332,7 +343,7 @@ BEGIN
     -- 1. Get Questions and Answers
     SELECT 
         q.Id,
-        q.TopicItemId,
+        q.TopicId,
         q.QuestionText,
         q.Option1,
         q.Option2,
@@ -357,7 +368,7 @@ BEGIN
     LEFT JOIN DetailedAnswers da ON q.Id = da.QuestionId
     LEFT JOIN UserLikes ulq ON q.Id = ulq.TargetId AND ulq.TargetType = 1 AND ulq.UserId = @CurrentUserId
     LEFT JOIN UserLikes ulda ON da.Id = ulda.TargetId AND ulda.TargetType = 2 AND ulda.UserId = @CurrentUserId
-    WHERE q.TopicItemId = @TopicItemId;
+    WHERE q.TopicId = @TopicId;
 
     -- Return the questions
     SELECT * FROM #TempQuestions;
@@ -382,7 +393,7 @@ BEGIN
     -- 1. Get Question
     SELECT 
         q.Id,
-        q.TopicItemId,
+        q.TopicId,
         q.QuestionText,
         q.Option1,
         q.Option2,
@@ -421,9 +432,9 @@ BEGIN
 END
 GO
 
--- SP: Get EducationContents By TopicItemId
+-- SP: Get EducationContents By TopicId
 CREATE PROCEDURE sp_GetEducationContentsByTopicId
-    @TopicItemId INT,
+    @TopicId INT,
     @CurrentUserId INT = NULL
 AS
 BEGIN
@@ -435,7 +446,7 @@ BEGIN
     INTO #TempContents
     FROM EducationContents ec
     LEFT JOIN UserLikes ul ON ec.Id = ul.TargetId AND ul.TargetType = 3 AND ul.UserId = @CurrentUserId
-    WHERE ec.TopicItemId = @TopicItemId;
+    WHERE ec.TopicId = @TopicId;
 
     SELECT * FROM #TempContents;
 
@@ -708,49 +719,53 @@ INSERT INTO Packages (Title, Description, Price, Category) VALUES
 (N'پکیج جامع کنکور تجربی', N'شامل زیست، شیمی، فیزیک و ریاضی با پاسخ تشریحی', 1200000, 'KonkurTajrobi');
 GO
 
--- Seed Course Topics (referencing Packages)
-INSERT INTO CourseTopics (PackageId, Title) VALUES 
-((SELECT Id FROM Packages WHERE Category = 'Grade6'), N'هوش ششم'),
-((SELECT Id FROM Packages WHERE Category = 'MathPhysics'), N'ریاضی و فیزیک'),
-((SELECT Id FROM Packages WHERE Category = 'KonkurTajrobi'), N'کنکور تجربی');
-GO
-
--- Seed Topic Items
-DECLARE @Grade6Id INT = (SELECT ct.Id FROM CourseTopics ct JOIN Packages p ON ct.PackageId = p.Id WHERE p.Category = 'Grade6');
-DECLARE @MathId INT = (SELECT ct.Id FROM CourseTopics ct JOIN Packages p ON ct.PackageId = p.Id WHERE p.Category = 'MathPhysics');
-DECLARE @KonkurTajrobiId INT = (SELECT ct.Id FROM CourseTopics ct JOIN Packages p ON ct.PackageId = p.Id WHERE p.Category = 'KonkurTajrobi');
-
-INSERT INTO TopicItems (CourseTopicId, Title, ImageUrl) VALUES 
-(@Grade6Id, N'هوش کلامی', 'assets/images/topics/verbal.png'),
-(@Grade6Id, N'هوش ریاضی', 'assets/images/topics/math.png'),
-(@Grade6Id, N'هوش تصویری', 'assets/images/topics/visual.png'),
-(@MathId, N'فیزیک', 'assets/images/topics/physics.png'),
-(@KonkurTajrobiId, N'زیست شناسی', 'assets/images/topics/biology.png'),
-(@KonkurTajrobiId, N'شیمی', 'assets/images/topics/chemistry.png'),
-(@KonkurTajrobiId, N'فیزیک', 'assets/images/topics/physics_tajrobi.png'),
-(@KonkurTajrobiId, N'ریاضیات', 'assets/images/topics/math_tajrobi.png');
+-- Seed Topics (Independent Hierarchical Tree)
+INSERT INTO Topics (Title, ImageUrl) VALUES 
+(N'هوش کلامی', 'assets/images/topics/verbal.png'),
+(N'هوش ریاضی', 'assets/images/topics/math.png'),
+(N'هوش تصویری', 'assets/images/topics/visual.png'),
+(N'فیزیک', 'assets/images/topics/physics.png'),
+(N'زیست شناسی', 'assets/images/topics/biology.png'),
+(N'شیمی', 'assets/images/topics/chemistry.png'),
+(N'ریاضیات', 'assets/images/topics/math_tajrobi.png');
 
 -- Seed Nested Topics for Biology
-DECLARE @BioId INT = (SELECT Id FROM TopicItems WHERE Title = N'زیست شناسی' AND ParentId IS NULL);
+DECLARE @BioId INT = (SELECT Id FROM Topics WHERE Title = N'زیست شناسی' AND ParentId IS NULL);
 
-INSERT INTO TopicItems (CourseTopicId, ParentId, Title, ImageUrl) VALUES 
-(@KonkurTajrobiId, @BioId, N'سلول', 'assets/images/topics/cell.png'),
-(@KonkurTajrobiId, @BioId, N'ژنتیک', 'assets/images/topics/genetics.png');
+INSERT INTO Topics (ParentId, Title, ImageUrl) VALUES 
+(@BioId, N'سلول', 'assets/images/topics/cell.png'),
+(@BioId, N'ژنتیک', 'assets/images/topics/genetics.png');
 
-DECLARE @CellId INT = (SELECT Id FROM TopicItems WHERE Title = N'سلول' AND ParentId = @BioId);
+DECLARE @CellId INT = (SELECT Id FROM Topics WHERE Title = N'سلول' AND ParentId = @BioId);
 
-INSERT INTO TopicItems (CourseTopicId, ParentId, Title, ImageUrl) VALUES
-(@KonkurTajrobiId, @CellId, N'اندامک‌ها', 'assets/images/topics/organelles.png'),
-(@KonkurTajrobiId, @CellId, N'غشا', 'assets/images/topics/membrane.png');
+INSERT INTO Topics (ParentId, Title, ImageUrl) VALUES
+(@CellId, N'اندامک‌ها', 'assets/images/topics/organelles.png'),
+(@CellId, N'غشا', 'assets/images/topics/membrane.png');
+
+-- Seed PackageTopics (Mapping Packages to Topics)
+DECLARE @PkgGrade6 INT = (SELECT Id FROM Packages WHERE Category = 'Grade6');
+DECLARE @PkgMath INT = (SELECT Id FROM Packages WHERE Category = 'MathPhysics');
+DECLARE @PkgKonkur INT = (SELECT Id FROM Packages WHERE Category = 'KonkurTajrobi');
+
+INSERT INTO PackageTopics (PackageId, TopicId) VALUES
+(@PkgGrade6, (SELECT Id FROM Topics WHERE Title = N'هوش کلامی')),
+(@PkgGrade6, (SELECT Id FROM Topics WHERE Title = N'هوش ریاضی')),
+(@PkgGrade6, (SELECT Id FROM Topics WHERE Title = N'هوش تصویری')),
+(@PkgMath, (SELECT Id FROM Topics WHERE Title = N'فیزیک')),
+(@PkgMath, (SELECT Id FROM Topics WHERE Title = N'ریاضیات')),
+(@PkgKonkur, (SELECT Id FROM Topics WHERE Title = N'زیست شناسی')),
+(@PkgKonkur, (SELECT Id FROM Topics WHERE Title = N'شیمی')),
+(@PkgKonkur, (SELECT Id FROM Topics WHERE Title = N'فیزیک')),
+(@PkgKonkur, (SELECT Id FROM Topics WHERE Title = N'ریاضیات'));
 GO
 
 -- Seed Questions
-DECLARE @VerbalId INT = (SELECT Id FROM TopicItems WHERE Title = N'هوش کلامی');
+DECLARE @VerbalId INT = (SELECT Id FROM Topics WHERE Title = N'هوش کلامی');
 DECLARE @DiffEasy INT = (SELECT Id FROM DifficultyLevels WHERE NameEn = 'Easy');
 DECLARE @DiffMed INT = (SELECT Id FROM DifficultyLevels WHERE NameEn = 'Medium');
 
 -- Question 1
-INSERT INTO Questions (TopicItemId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption, QuestionYear, DifficultyLevelId)
+INSERT INTO Questions (TopicId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption, QuestionYear, DifficultyLevelId)
 VALUES (
     @VerbalId, 
     N'رابطه "درخت" به "جنگل" مانند رابطه "قطره" است به ...؟', 
@@ -761,7 +776,7 @@ VALUES (
 );
 
 -- Question 2
-INSERT INTO Questions (TopicItemId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption, QuestionYear, DifficultyLevelId)
+INSERT INTO Questions (TopicId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption, QuestionYear, DifficultyLevelId)
 VALUES (
     @VerbalId, 
     N'متضاد کلمه "آغاز" کدام است؟', 
@@ -772,9 +787,9 @@ VALUES (
 );
 
 -- Question 3 (Biology - Konkur)
-DECLARE @BiologyId INT = (SELECT Id FROM TopicItems WHERE Title = N'اندامک‌ها');
+DECLARE @BiologyId INT = (SELECT Id FROM Topics WHERE Title = N'اندامک‌ها');
 
-INSERT INTO Questions (TopicItemId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption, QuestionYear, DifficultyLevelId)
+INSERT INTO Questions (TopicId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption, QuestionYear, DifficultyLevelId)
 VALUES (
     @BiologyId, 
     N'کدام اندامک مسئول تولید انرژی در سلول است؟', 
@@ -809,10 +824,10 @@ VALUES (
 GO
 
 -- Seed Education Contents
-DECLARE @VerbalId_Edu INT = (SELECT Id FROM TopicItems WHERE Title = N'هوش کلامی');
-DECLARE @BiologyId INT = (SELECT Id FROM TopicItems WHERE Title = N'زیست شناسی');
+DECLARE @VerbalId_Edu INT = (SELECT Id FROM Topics WHERE Title = N'هوش کلامی');
+DECLARE @BiologyId INT = (SELECT Id FROM Topics WHERE Title = N'زیست شناسی');
 
-INSERT INTO EducationContents (TopicItemId, Title, ContentText, MediaUrl, MediaType, TeacherName)
+INSERT INTO EducationContents (TopicId, Title, ContentText, MediaUrl, MediaType, TeacherName)
 VALUES 
 (
     @VerbalId_Edu,
@@ -869,14 +884,14 @@ VALUES (@TestUserId, @Q1_Id, 1, @ParentCommId, N'خواهش می‌کنم، دق
 GO
 
 -- Seed Questions with Images
-DECLARE @BioTopicId INT = (SELECT Id FROM TopicItems WHERE Title = N'زیست شناسی' AND ParentId IS NOT NULL);
+DECLARE @BioTopicId INT = (SELECT Id FROM Topics WHERE Title = N'زیست شناسی' AND ParentId IS NOT NULL);
 IF @BioTopicId IS NULL
 BEGIN
-    INSERT INTO TopicItems (CourseTopicId, Title) VALUES ((SELECT ct.Id FROM CourseTopics ct JOIN Packages p ON ct.PackageId = p.Id WHERE p.Category = 'KonkurTajrobi'), N'زیست‌شناسی سلولی');
+    INSERT INTO Topics (Title) VALUES (N'زیست‌شناسی سلولی');
     SET @BioTopicId = SCOPE_IDENTITY();
 END
 
-INSERT INTO Questions (TopicItemId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption, QuestionYear, DifficultyLevelId)
+INSERT INTO Questions (TopicId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption, QuestionYear, DifficultyLevelId)
 VALUES (
     @BioTopicId,
     N'کدام اندامک مسئول تولید انرژی (ATP) در سلول است؟',
@@ -902,9 +917,9 @@ VALUES (
 DECLARE @BioDAId INT = SCOPE_IDENTITY();
 
 -- Question with 2 Images (Math)
-DECLARE @MathTopicId2 INT = (SELECT Id FROM TopicItems WHERE Title = N'هوش ریاضی');
+DECLARE @MathTopicId2 INT = (SELECT Id FROM Topics WHERE Title = N'هوش ریاضی');
 
-INSERT INTO Questions (TopicItemId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption, QuestionYear, DifficultyLevelId)
+INSERT INTO Questions (TopicId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption, QuestionYear, DifficultyLevelId)
 VALUES (
     @MathTopicId2,
     N'با توجه به دو شکل زیر، مقدار مجهول x کدام است؟',
@@ -937,13 +952,13 @@ VALUES
 GO
 
 -- Seed Education Contents for Organelles
-DECLARE @OrganellesTopicId INT = (SELECT Id FROM TopicItems WHERE Title = N'اندامک‌ها');
+DECLARE @OrganellesTopicId INT = (SELECT Id FROM Topics WHERE Title = N'اندامک‌ها');
 IF @OrganellesTopicId IS NULL
 BEGIN
-    SET @OrganellesTopicId = (SELECT TOP 1 Id FROM TopicItems WHERE Title LIKE N'%زیست%'); 
+    SET @OrganellesTopicId = (SELECT TOP 1 Id FROM Topics WHERE Title LIKE N'%زیست%'); 
 END
 
-INSERT INTO EducationContents (TopicItemId, Title, ContentText, MediaUrl, MediaType, TeacherName)
+INSERT INTO EducationContents (TopicId, Title, ContentText, MediaUrl, MediaType, TeacherName)
 VALUES 
 (
     @OrganellesTopicId, 

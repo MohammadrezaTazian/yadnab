@@ -3,7 +3,7 @@ namespace DigitalStore.Application.DTOs
     public class EducationContentDto
     {
         public int Id { get; set; }
-        public int TopicItemId { get; set; }
+        public int TopicId { get; set; }
         public required string Title { get; set; }
         public required string ContentText { get; set; }
         public string? MediaUrl { get; set; }
