@@ -3,7 +3,7 @@ import '../../../quiz/domain/entities/content_image.dart';
 
 class EducationContent extends Equatable {
   final int id;
-  final int topicItemId;
+  final int topicId;
   final String title;
   final String contentText;
   final String? mediaUrl;
@@ -15,7 +15,7 @@ class EducationContent extends Equatable {
 
   const EducationContent({
     required this.id,
-    required this.topicItemId,
+    required this.topicId,
     required this.title,
     required this.contentText,
     this.mediaUrl,
@@ -28,7 +28,7 @@ class EducationContent extends Equatable {
 
   EducationContent copyWith({
     int? id,
-    int? topicItemId,
+    int? topicId,
     String? title,
     String? contentText,
     String? mediaUrl,
@@ -40,7 +40,7 @@ class EducationContent extends Equatable {
   }) {
     return EducationContent(
       id: id ?? this.id,
-      topicItemId: topicItemId ?? this.topicItemId,
+      topicId: topicId ?? this.topicId,
       title: title ?? this.title,
       contentText: contentText ?? this.contentText,
       mediaUrl: mediaUrl ?? this.mediaUrl,
@@ -55,7 +55,7 @@ class EducationContent extends Equatable {
   @override
   List<Object?> get props => [
         id,
-        topicItemId,
+        topicId,
         title,
         contentText,
         mediaUrl,

@@ -11,9 +11,9 @@ class QuestionRepositoryImpl implements QuestionRepository {
   QuestionRepositoryImpl({required this.apiService});
 
   @override
-  Future<Either<Failure, List<Question>>> getQuestionsByTopic(int topicItemId) async {
+  Future<Either<Failure, List<Question>>> getQuestionsByTopic(int topicId) async {
     try {
-      final response = await apiService.getQuestionsByTopic(topicItemId);
+      final response = await apiService.getQuestionsByTopic(topicId);
       final List<dynamic> data = response;
       final questions = data.map((json) => QuestionModel.fromJson(json)).toList();
       return Right(questions);

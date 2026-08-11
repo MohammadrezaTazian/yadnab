@@ -160,7 +160,7 @@ class _TopicsPageContent extends StatelessWidget {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final topic = state.topics[index];
-                          return _buildTopicItem(
+                          return _buildTopicCard(
                             context,
                             topic,
                             index,
@@ -185,7 +185,7 @@ class _TopicsPageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildTopicItem(BuildContext context, Topic topic, int index, bool isDark) {
+  Widget _buildTopicCard(BuildContext context, Topic topic, int index, bool isDark) {
     final hasChildren = topic.children.isNotEmpty;
 
     final colors = [
@@ -235,7 +235,7 @@ class _TopicsPageContent extends StatelessWidget {
             children: topic.children
                 .asMap()
                 .entries
-                .map((entry) => _buildTopicItem(context, entry.value, entry.key, isDark))
+                .map((entry) => _buildTopicCard(context, entry.value, entry.key, isDark))
                 .toList(),
           ),
         ),
@@ -382,7 +382,7 @@ class _TopicsPageContent extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => EducationContentListPage(
-                          topicItemId: topic.id,
+                          topicId: topic.id,
                           topicTitle: topic.title,
                         ),
                       ),
@@ -421,7 +421,7 @@ class _TopicsPageContent extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => QuizListPage(
-                          topicItemId: topic.id,
+                          topicId: topic.id,
                           topicTitle: topic.title,
                         ),
                       ),

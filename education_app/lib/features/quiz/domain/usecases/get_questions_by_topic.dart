@@ -10,7 +10,7 @@ class GetQuestionsByTopic implements UseCase<List<Question>, int> {
   GetQuestionsByTopic(this.repository);
 
   @override
-  Future<Either<Failure, List<Question>>> call(int topicItemId) async {
-    return await repository.getQuestionsByTopic(topicItemId);
+  Future<Either<Failure, List<Question>>> call(int topicId) async {
+    return await repository.getQuestionsByTopic(topicId);
   }
 }

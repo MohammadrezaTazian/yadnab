@@ -167,21 +167,21 @@ npm run build
 |--------|----------|-------------|------|
 | `GET` | `/api/Products?category={category}` | Get products by category | ✅ |
 
-### Course Topics
+### Topics
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/api/CourseTopics/{category}` | Get topics by category | ✅ |
+| `GET` | `/api/Topics/{packageId}` | Get topics by package ID | ✅ |
 
 ### Education Contents
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/api/EducationContents/topic/{topicItemId}` | Get contents by topic | ✅ |
+| `GET` | `/api/EducationContents/topic/{topicId}` | Get contents by topic | ✅ |
 | `GET` | `/api/EducationContents/{id}` | Get content by ID | ✅ |
 
 ### Questions (Quiz)
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/api/Questions/topic/{topicItemId}` | Get questions by topic | ✅ |
+| `GET` | `/api/Questions/topic/{topicId}` | Get questions by topic | ✅ |
 | `GET` | `/api/Questions/{id}` | Get question by ID | ✅ |
 
 ### Comments

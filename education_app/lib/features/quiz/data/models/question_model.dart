@@ -5,7 +5,7 @@ import 'content_image_model.dart';
 class QuestionModel extends Question {
   const QuestionModel({
     required super.id,
-    required super.topicItemId,
+    required super.topicId,
     required super.questionText,
     required super.option1,
     required super.option2,
@@ -24,7 +24,7 @@ class QuestionModel extends Question {
   factory QuestionModel.fromJson(Map<String, dynamic> json) {
     return QuestionModel(
       id: json['id'] as int? ?? 0,
-      topicItemId: json['topicId'] as int? ?? json['topicItemId'] as int? ?? 0,
+      topicId: json['topicId'] as int? ?? 0,
       questionText: json['questionText'] as String? ?? '',
       option1: json['option1'] as String? ?? '',
       option2: json['option2'] as String? ?? '',
@@ -49,7 +49,7 @@ class QuestionModel extends Question {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'topicItemId': topicItemId,
+      'topicId': topicId,
       'questionText': questionText,
       'option1': option1,
       'option2': option2,

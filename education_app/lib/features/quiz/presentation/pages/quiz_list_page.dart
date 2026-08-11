@@ -8,12 +8,12 @@ import '../../../../injection_container.dart';
 import 'question_detail_page.dart';
 
 class QuizListPage extends StatefulWidget {
-  final int topicItemId;
+  final int topicId;
   final String topicTitle;
 
   const QuizListPage({
     super.key,
-    required this.topicItemId,
+    required this.topicId,
     required this.topicTitle,
   });
 
@@ -33,7 +33,7 @@ class _QuizListPageState extends State<QuizListPage> {
     final textTheme = Theme.of(context).textTheme;
 
     return BlocProvider(
-      create: (_) => sl<QuestionBloc>()..add(GetQuestionsEvent(widget.topicItemId)),
+      create: (_) => sl<QuestionBloc>()..add(GetQuestionsEvent(widget.topicId)),
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.topicTitle),
@@ -100,7 +100,7 @@ class _QuizListPageState extends State<QuizListPage> {
                           ),
                         );
                         if (context.mounted) {
-                          context.read<QuestionBloc>().add(GetQuestionsEvent(widget.topicItemId));
+                          context.read<QuestionBloc>().add(GetQuestionsEvent(widget.topicId));
                         }
                       },
                     ),

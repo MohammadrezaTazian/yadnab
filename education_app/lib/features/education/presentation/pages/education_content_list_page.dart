@@ -7,29 +7,29 @@ import '../bloc/education_content_state.dart';
 import 'education_content_detail_page.dart';
 
 class EducationContentListPage extends StatelessWidget {
-  final int topicItemId;
+  final int topicId;
   final String topicTitle;
 
   const EducationContentListPage({
     super.key,
-    required this.topicItemId,
+    required this.topicId,
     required this.topicTitle,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => sl<EducationContentBloc>()..add(GetEducationContentsByTopicEvent(topicItemId)),
-      child: _EducationContentListView(topicItemId: topicItemId, topicTitle: topicTitle),
+      create: (context) => sl<EducationContentBloc>()..add(GetEducationContentsByTopicEvent(topicId)),
+      child: _EducationContentListView(topicId: topicId, topicTitle: topicTitle),
     );
   }
 }
 
 class _EducationContentListView extends StatelessWidget {
-  final int topicItemId;
+  final int topicId;
   final String topicTitle;
 
-  const _EducationContentListView({required this.topicItemId, required this.topicTitle});
+  const _EducationContentListView({required this.topicId, required this.topicTitle});
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +88,7 @@ class _EducationContentListView extends StatelessWidget {
                       );
                       // Refetch education contents to get updated isLiked status
                       if (context.mounted) {
-                        bloc.add(GetEducationContentsByTopicEvent(topicItemId));
+                        bloc.add(GetEducationContentsByTopicEvent(topicId));
                       }
                     },
                   ),

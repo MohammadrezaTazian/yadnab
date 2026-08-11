@@ -4,7 +4,7 @@ import 'detailed_answer.dart';
 
 class Question extends Equatable {
   final int id;
-  final int topicItemId;
+  final int topicId;
   final String questionText;
   final String option1;
   final String option2;
@@ -21,7 +21,7 @@ class Question extends Equatable {
 
   const Question({
     required this.id,
-    required this.topicItemId,
+    required this.topicId,
     required this.questionText,
     required this.option1,
     required this.option2,
@@ -39,7 +39,7 @@ class Question extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, topicItemId, questionText, option1, option2, option3, option4, correctOption,
+    id, topicId, questionText, option1, option2, option3, option4, correctOption,
     questionImages, questionDesigner, questionYear, difficultyLevelId, difficultyLevelName, detailedAnswer, isLiked
   ];
 }

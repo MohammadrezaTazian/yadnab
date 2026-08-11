@@ -26,8 +26,8 @@ namespace DigitalStore.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
             
-            // JSON conversion for CourseTopic.Topics removed as it is now normalized
-            // Note: Course topics data will be seeded via SQL scripts
+            // JSON conversion for Topic.Children removed as it is now normalized
+            // Note: Topics data will be seeded via SQL scripts
             // See: Backend/DigitalStore.Database/MasterDatabaseSetup.sql
         }
     }

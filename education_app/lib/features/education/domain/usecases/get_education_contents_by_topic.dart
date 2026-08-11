@@ -10,7 +10,7 @@ class GetEducationContentsByTopic implements UseCase<List<EducationContent>, int
   GetEducationContentsByTopic(this.repository);
 
   @override
-  Future<Either<Failure, List<EducationContent>>> call(int topicItemId) async {
-    return await repository.getEducationContentsByTopic(topicItemId);
+  Future<Either<Failure, List<EducationContent>>> call(int topicId) async {
+    return await repository.getEducationContentsByTopic(topicId);
   }
 }

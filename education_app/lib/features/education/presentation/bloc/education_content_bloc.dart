@@ -21,7 +21,7 @@ class EducationContentBloc extends Bloc<EducationContentEvent, EducationContentS
     Emitter<EducationContentState> emit,
   ) async {
     emit(EducationContentLoading());
-    final result = await getEducationContentsByTopic(event.topicItemId);
+    final result = await getEducationContentsByTopic(event.topicId);
     result.fold(
       (failure) => emit(EducationContentError(failure.message)),
       (contents) => emit(EducationContentLoaded(contents)),

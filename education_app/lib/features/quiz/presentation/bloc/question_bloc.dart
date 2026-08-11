@@ -16,7 +16,7 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     Emitter<QuestionState> emit,
   ) async {
     emit(QuestionLoading());
-    final result = await getQuestionsByTopic(event.topicItemId);
+    final result = await getQuestionsByTopic(event.topicId);
     result.fold(
       (failure) => emit(QuestionError(_mapFailureToMessage(failure))),
       (questions) => emit(QuestionLoaded(questions)),

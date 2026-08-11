@@ -8,12 +8,12 @@ abstract class EducationContentEvent extends Equatable {
 }
 
 class GetEducationContentsByTopicEvent extends EducationContentEvent {
-  final int topicItemId;
+  final int topicId;
 
-  const GetEducationContentsByTopicEvent(this.topicItemId);
+  const GetEducationContentsByTopicEvent(this.topicId);
 
   @override
-  List<Object> get props => [topicItemId];
+  List<Object> get props => [topicId];
 }
 
 class ToggleLikeEvent extends EducationContentEvent {

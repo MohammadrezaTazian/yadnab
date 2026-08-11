@@ -121,7 +121,7 @@ class ApiService {
     if (response.statusCode == 200) {
       return response.data;
     } else {
-      throw Exception('Failed to load course topics');
+      throw Exception('Failed to load topics');
     }
   }
 

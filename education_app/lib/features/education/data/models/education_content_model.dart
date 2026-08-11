@@ -6,7 +6,7 @@ import '../../../quiz/data/models/content_image_model.dart';
 class EducationContentModel extends EducationContent {
   const EducationContentModel({
     required super.id,
-    required super.topicItemId,
+    required super.topicId,
     required super.title,
     required super.contentText,
     super.mediaUrl,
@@ -20,7 +20,7 @@ class EducationContentModel extends EducationContent {
   factory EducationContentModel.fromJson(Map<String, dynamic> json) {
     return EducationContentModel(
       id: json['id'] as int? ?? 0,
-      topicItemId: json['topicId'] as int? ?? json['topicItemId'] as int? ?? 0,
+      topicId: json['topicId'] as int? ?? 0,
       title: json['title'] as String? ?? '',
       contentText: json['contentText'] as String? ?? '',
       mediaUrl: json['mediaUrl'] as String?,
@@ -38,7 +38,7 @@ class EducationContentModel extends EducationContent {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'topicItemId': topicItemId,
+      'topicId': topicId,
       'title': title,
       'contentText': contentText,
       'mediaUrl': mediaUrl,

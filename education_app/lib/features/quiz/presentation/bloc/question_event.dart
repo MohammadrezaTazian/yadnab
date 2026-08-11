@@ -8,10 +8,10 @@ abstract class QuestionEvent extends Equatable {
 }
 
 class GetQuestionsEvent extends QuestionEvent {
-  final int topicItemId;
+  final int topicId;
 
-  const GetQuestionsEvent(this.topicItemId);
+  const GetQuestionsEvent(this.topicId);
 
   @override
-  List<Object> get props => [topicItemId];
+  List<Object> get props => [topicId];
 }

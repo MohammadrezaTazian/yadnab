@@ -11,9 +11,9 @@ class EducationContentRepositoryImpl implements EducationContentRepository {
   EducationContentRepositoryImpl(this.apiService);
 
   @override
-  Future<Either<Failure, List<EducationContent>>> getEducationContentsByTopic(int topicItemId) async {
+  Future<Either<Failure, List<EducationContent>>> getEducationContentsByTopic(int topicId) async {
     try {
-      final response = await apiService.getEducationContentsByTopic(topicItemId);
+      final response = await apiService.getEducationContentsByTopic(topicId);
       // Assuming apiService returns List<dynamic> or List<EducationContentModel>
       // The ApiService update will be handled separately, but let's assume it returns Models directly or maps
       // If ApiService returns raw JSON data:
