@@ -30,8 +30,8 @@ namespace DigitalStore.Application.Services
                 Children = new List<TopicDto>()
             }).ToList();
 
-            // 2. Build Hierarchy
-            var lookup = allTopicDtos.ToDictionary(x => x.Id);
+            // 2. Build Hierarchy safely without crashing on duplicate leaf topic IDs
+            var lookup = allTopicDtos.GroupBy(x => x.Id).ToDictionary(g => g.Key, g => g.First());
             var rootNodes = new List<TopicDto>();
 
             foreach (var item in allTopicDtos)
