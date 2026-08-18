@@ -8,5 +8,6 @@ namespace DigitalStore.Application.DTOs
         public string? AltText { get; set; }
         public int EntityTypeId { get; set; }
         public int EntityId { get; set; }
+        public int ImageTypeId { get; set; } = 6;
     }
 }

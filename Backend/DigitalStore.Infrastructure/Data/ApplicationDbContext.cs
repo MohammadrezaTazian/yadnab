@@ -21,6 +21,8 @@ namespace DigitalStore.Infrastructure.Data
         public DbSet<DetailedAnswer> DetailedAnswers { get; set; }
         public DbSet<EducationContent> EducationContents { get; set; }
         public DbSet<ContentImage> ContentImages { get; set; }
+        public DbSet<EntityType> EntityTypes { get; set; }
+        public DbSet<ImageType> ImageTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

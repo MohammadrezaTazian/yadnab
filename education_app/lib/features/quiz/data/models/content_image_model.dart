@@ -6,14 +6,16 @@ class ContentImageModel extends ContentImage {
     required super.imageUrl,
     required super.displayOrder,
     super.altText,
+    super.imageTypeId = 6,
   });
 
   factory ContentImageModel.fromJson(Map<String, dynamic> json) {
     return ContentImageModel(
       id: json['id'] as int,
       imageUrl: json['imageUrl'] as String,
-      displayOrder: json['displayOrder'] as int,
+      displayOrder: json['displayOrder'] as int? ?? 0,
       altText: json['altText'] as String?,
+      imageTypeId: json['imageTypeId'] as int? ?? 6,
     );
   }
 
@@ -23,6 +25,7 @@ class ContentImageModel extends ContentImage {
       'imageUrl': imageUrl,
       'displayOrder': displayOrder,
       'altText': altText,
+      'imageTypeId': imageTypeId,
     };
   }
 }

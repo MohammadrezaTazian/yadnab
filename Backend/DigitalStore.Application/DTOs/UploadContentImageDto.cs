@@ -8,5 +8,7 @@ namespace DigitalStore.Application.DTOs
         public int EntityId { get; set; }
         public required IFormFile ImageFile { get; set; }
         public string? AltText { get; set; }
+        public int ImageTypeId { get; set; } = 6;
+        public int DisplayOrder { get; set; } = 0;
     }
 }

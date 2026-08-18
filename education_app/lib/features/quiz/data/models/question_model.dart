@@ -12,6 +12,7 @@ class QuestionModel extends Question {
     required super.option3,
     required super.option4,
     required super.correctOption,
+    super.questionFullImage,
     required List<ContentImageModel> questionImages,
     super.questionDesigner,
     required super.questionYear,
@@ -31,6 +32,7 @@ class QuestionModel extends Question {
       option3: json['option3'] as String? ?? '',
       option4: json['option4'] as String? ?? '',
       correctOption: json['correctOption'] as int? ?? 0,
+      questionFullImage: json['questionFullImage'] as String?,
       questionImages: (json['questionImages'] as List<dynamic>?)
               ?.map((e) => ContentImageModel.fromJson(e))
               .toList() ??
@@ -56,6 +58,7 @@ class QuestionModel extends Question {
       'option3': option3,
       'option4': option4,
       'correctOption': correctOption,
+      'questionFullImage': questionFullImage,
       'questionImages': questionImages
           .map((e) => (e as ContentImageModel).toJson())
           .toList(),

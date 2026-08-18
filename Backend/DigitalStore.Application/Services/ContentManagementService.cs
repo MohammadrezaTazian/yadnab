@@ -1,22 +1,23 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DigitalStore.Application.DTOs;
 using DigitalStore.Application.Interfaces;
 using DigitalStore.Domain.Interfaces;
-using Microsoft.AspNetCore.Http;
 
 namespace DigitalStore.Application.Services
 {
     public class ContentManagementService : IContentManagementService
     {
         private readonly IContentManagementRepository _repository;
+        private readonly IFileStorageService _fileStorageService;
 
-        public ContentManagementService(IContentManagementRepository repository)
+        public ContentManagementService(
+            IContentManagementRepository repository,
+            IFileStorageService fileStorageService)
         {
             _repository = repository;
+            _fileStorageService = fileStorageService;
         }
 
         public async Task<List<EntitySearchResultDto>> SearchEntitiesAsync(int entityTypeId, string? searchText)
@@ -31,13 +32,13 @@ namespace DigitalStore.Application.Services
             }).ToList();
         }
 
-        public async Task<ContentImageDto?> UploadImageAsync(UploadContentImageDto uploadDto, string webRootPath)
+        public async Task<ContentImageDto?> UploadImageAsync(UploadContentImageDto uploadDto, string? webRootPath = null)
         {
             if (uploadDto.ImageFile == null || uploadDto.ImageFile.Length == 0)
                 return null;
 
-            // 1. Determine relative path folder based on type
-            string folderName = uploadDto.EntityTypeId switch
+            // 1. Determine subfolder based on EntityTypeId
+            string subFolder = uploadDto.EntityTypeId switch
             {
                 1 => "questions",
                 2 => "answers",
@@ -45,31 +46,17 @@ namespace DigitalStore.Application.Services
                 _ => "others"
             };
 
-            string uploadsFolder = Path.Combine(webRootPath, "images", folderName);
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
+            // 2. Save file securely using FileStorageService
+            string relativeUrl = await _fileStorageService.SaveFileAsync(uploadDto.ImageFile, subFolder);
 
-            // 2. Generate unique filename
-            string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(uploadDto.ImageFile.FileName);
-            string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            // 3. Save file
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                await uploadDto.ImageFile.CopyToAsync(fileStream);
-            }
-
-            // 4. Generate relative URL for DB
-            // e.g. /images/questions/abc.png
-            string relativeUrl = $"/images/{folderName}/{uniqueFileName}";
-
-            // 5. Call Repository to save to DB
+            // 3. Call Repository to save to DB with ImageTypeId
             var contentImage = await _repository.AddContentImageAsync(
                 uploadDto.EntityTypeId,
                 uploadDto.EntityId,
                 relativeUrl,
                 uploadDto.AltText,
-                0 // Default display order
+                uploadDto.DisplayOrder,
+                uploadDto.ImageTypeId
             );
 
             if (contentImage == null) return null;
@@ -81,7 +68,8 @@ namespace DigitalStore.Application.Services
                 AltText = contentImage.AltText,
                 DisplayOrder = contentImage.DisplayOrder,
                 EntityTypeId = contentImage.EntityTypeId,
-                EntityId = contentImage.EntityId
+                EntityId = contentImage.EntityId,
+                ImageTypeId = contentImage.ImageTypeId
             };
         }
     }

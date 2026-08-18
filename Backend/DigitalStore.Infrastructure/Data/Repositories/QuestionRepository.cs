@@ -100,7 +100,8 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                                     DisplayOrder = reader.GetInt32(reader.GetOrdinal("DisplayOrder")),
                                     AltText = reader.IsDBNull(reader.GetOrdinal("AltText")) ? null : reader.GetString(reader.GetOrdinal("AltText")),
                                     EntityTypeId = reader.GetInt32(reader.GetOrdinal("EntityTypeId")),
-                                    EntityId = reader.GetInt32(reader.GetOrdinal("EntityId"))
+                                    EntityId = reader.GetInt32(reader.GetOrdinal("EntityId")),
+                                    ImageTypeId = reader.GetInt32(reader.GetOrdinal("ImageTypeId"))
                                 };
 
                                 if (image.EntityTypeId == 1 && questionsMap.TryGetValue(image.EntityId, out var q))
@@ -202,7 +203,8 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                                     DisplayOrder = reader.GetInt32(reader.GetOrdinal("DisplayOrder")),
                                     AltText = reader.IsDBNull(reader.GetOrdinal("AltText")) ? null : reader.GetString(reader.GetOrdinal("AltText")),
                                     EntityTypeId = reader.GetInt32(reader.GetOrdinal("EntityTypeId")),
-                                    EntityId = reader.GetInt32(reader.GetOrdinal("EntityId"))
+                                    EntityId = reader.GetInt32(reader.GetOrdinal("EntityId")),
+                                    ImageTypeId = reader.GetInt32(reader.GetOrdinal("ImageTypeId"))
                                 };
 
                                 if (image.EntityTypeId == 1 && image.EntityId == question.Id)

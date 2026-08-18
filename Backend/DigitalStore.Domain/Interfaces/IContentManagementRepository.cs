@@ -7,6 +7,6 @@ namespace DigitalStore.Domain.Interfaces
     public interface IContentManagementRepository
     {
         Task<List<EntitySearchResult>> SearchEntitiesAsync(int entityTypeId, string? searchText);
-        Task<ContentImage?> AddContentImageAsync(int entityTypeId, int entityId, string imageUrl, string? altText, int displayOrder);
+        Task<ContentImage?> AddContentImageAsync(int entityTypeId, int entityId, string imageUrl, string? altText, int displayOrder, int imageTypeId = 6);
     }
 }

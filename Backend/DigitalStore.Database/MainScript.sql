@@ -1,4 +1,4 @@
-﻿USE master;
+USE master;
 GO
 
 IF EXISTS (SELECT * FROM sys.databases WHERE name = 'YadnabDB')
@@ -88,6 +88,25 @@ INSERT INTO EntityTypes (Id, TypeName) VALUES
 (2, 'DetailedAnswer'),
 (3, 'EducationContent');
 SET IDENTITY_INSERT EntityTypes OFF;
+GO
+
+-- ImageTypes Table (Lookup for ContentImages ImageType)
+CREATE TABLE ImageTypes (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    TypeName NVARCHAR(50) NOT NULL UNIQUE
+);
+GO
+
+-- Seed ImageTypes (Lookup)
+SET IDENTITY_INSERT ImageTypes ON;
+INSERT INTO ImageTypes (Id, TypeName) VALUES 
+(1, 'FullPage'),
+(2, 'Figure'),
+(3, 'Chart'),
+(4, 'Table'),
+(5, 'Formula'),
+(6, 'Other');
+SET IDENTITY_INSERT ImageTypes OFF;
 GO
 
 -- Courses Table
@@ -186,10 +205,13 @@ CREATE TABLE ContentImages (
     AltText NVARCHAR(200),
     EntityTypeId INT NOT NULL,
     EntityId INT NOT NULL,
+    ImageTypeId INT NOT NULL DEFAULT 6,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
-    CONSTRAINT FK_ContentImages_EntityTypes FOREIGN KEY (EntityTypeId) REFERENCES EntityTypes(Id)
+    CONSTRAINT FK_ContentImages_EntityTypes FOREIGN KEY (EntityTypeId) REFERENCES EntityTypes(Id),
+    CONSTRAINT FK_ContentImages_ImageTypes FOREIGN KEY (ImageTypeId) REFERENCES ImageTypes(Id)
 );
 CREATE INDEX IX_ContentImages_Entity ON ContentImages(EntityTypeId, EntityId);
+CREATE UNIQUE INDEX IX_ContentImages_FullPage ON ContentImages(EntityTypeId, EntityId, ImageTypeId) WHERE ImageTypeId = 1;
 GO
 
 -- UserLikes Table
@@ -575,7 +597,8 @@ BEGIN
         ci.DisplayOrder,
         ci.AltText,
         ci.EntityTypeId,
-        ci.EntityId
+        ci.EntityId,
+        ci.ImageTypeId
     FROM ContentImages ci
     WHERE ci.EntityTypeId = @EntityTypeId AND ci.EntityId = @EntityId
     ORDER BY ci.DisplayOrder;
@@ -633,13 +656,14 @@ CREATE OR ALTER PROCEDURE sp_AddContentImage
     @EntityId INT,
     @ImageUrl NVARCHAR(500),
     @AltText NVARCHAR(200) = NULL,
-    @DisplayOrder INT = 0
+    @DisplayOrder INT = 0,
+    @ImageTypeId INT = 6
 AS
 BEGIN
     SET NOCOUNT ON;
     
-    INSERT INTO ContentImages (EntityTypeId, EntityId, ImageUrl, AltText, DisplayOrder)
-    VALUES (@EntityTypeId, @EntityId, @ImageUrl, @AltText, @DisplayOrder);
+    INSERT INTO ContentImages (EntityTypeId, EntityId, ImageUrl, AltText, DisplayOrder, ImageTypeId)
+    VALUES (@EntityTypeId, @EntityId, @ImageUrl, @AltText, @DisplayOrder, @ImageTypeId);
     
     SELECT * FROM ContentImages WHERE Id = SCOPE_IDENTITY();
 END
@@ -1030,12 +1054,17 @@ VALUES (
 );
 
 -- Seed Content Images for Questions & Answers
-INSERT INTO ContentImages (ImageUrl, DisplayOrder, AltText, EntityTypeId, EntityId)
+DECLARE @VerbalQ1Id INT = (SELECT Id FROM Questions WHERE QuestionText LIKE N'نسبت "شب"%');
+DECLARE @VerbalDA1Id INT = (SELECT Id FROM DetailedAnswers WHERE QuestionId = @VerbalQ1Id);
+
+INSERT INTO ContentImages (ImageUrl, DisplayOrder, AltText, EntityTypeId, EntityId, ImageTypeId)
 VALUES 
-('/images/questions/mitochondria.svg', 0, N'میتوکندری', 1, @BioQId2),
-('/images/questions/math_p1.svg', 0, N'شکل ۱', 1, @MathQId),
-('/images/questions/math_p2.svg', 1, N'شکل ۲', 1, @MathQId),
-('/images/questions/mitochondria_diagram.svg', 0, N'دیاگرام', 2, @BioDAId);
+('/images/questionsImageFile/001.png', 0, N'تصویر کامل سوال هوش کلامی', 1, @VerbalQ1Id, 1),
+('/images/answersImageFile/001.png', 0, N'تصویر کامل پاسخ تشریحی هوش کلامی', 2, @VerbalDA1Id, 1),
+('/images/questions/mitochondria.svg', 0, N'میتوکندری', 1, @BioQId2, 6),
+('/images/questions/math_p1.svg', 0, N'شکل ۱', 1, @MathQId, 6),
+('/images/questions/math_p2.svg', 1, N'شکل ۲', 1, @MathQId, 6),
+('/images/questions/mitochondria_diagram.svg', 0, N'دیاگرام', 2, @BioDAId, 6);
 GO
 
 -- Seed Education Contents for Organelles

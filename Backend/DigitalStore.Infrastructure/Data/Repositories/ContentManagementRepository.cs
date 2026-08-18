@@ -75,13 +75,14 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             return results;
         }
 
-        public async Task<ContentImage?> AddContentImageAsync(int entityTypeId, int entityId, string imageUrl, string? altText, int displayOrder)
+        public async Task<ContentImage?> AddContentImageAsync(int entityTypeId, int entityId, string imageUrl, string? altText, int displayOrder, int imageTypeId = 6)
         {
             var typeParam = new SqlParameter("@EntityTypeId", entityTypeId);
             var idParam = new SqlParameter("@EntityId", entityId);
             var urlParam = new SqlParameter("@ImageUrl", imageUrl);
             var altParam = new SqlParameter("@AltText", (object?)altText ?? DBNull.Value);
             var orderParam = new SqlParameter("@DisplayOrder", displayOrder);
+            var imageTypeParam = new SqlParameter("@ImageTypeId", imageTypeId);
 
             ContentImage? newImage = null;
             var connection = _context.Database.GetDbConnection();
@@ -92,12 +93,13 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             {
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "EXEC sp_AddContentImage @EntityTypeId, @EntityId, @ImageUrl, @AltText, @DisplayOrder";
+                    command.CommandText = "EXEC sp_AddContentImage @EntityTypeId, @EntityId, @ImageUrl, @AltText, @DisplayOrder, @ImageTypeId";
                     command.Parameters.Add(typeParam);
                     command.Parameters.Add(idParam);
                     command.Parameters.Add(urlParam);
                     command.Parameters.Add(altParam);
                     command.Parameters.Add(orderParam);
+                    command.Parameters.Add(imageTypeParam);
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {
@@ -111,6 +113,7 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                                 AltText = reader.IsDBNull(reader.GetOrdinal("AltText")) ? null : reader.GetString(reader.GetOrdinal("AltText")),
                                 EntityTypeId = reader.GetInt32(reader.GetOrdinal("EntityTypeId")),
                                 EntityId = reader.GetInt32(reader.GetOrdinal("EntityId")),
+                                ImageTypeId = reader.GetInt32(reader.GetOrdinal("ImageTypeId")),
                                 CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
                             };
                         }

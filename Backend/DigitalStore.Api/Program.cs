@@ -4,6 +4,7 @@ using DigitalStore.Domain.Interfaces;
 using DigitalStore.Infrastructure.Data;
 using DigitalStore.Infrastructure.Data.Repositories;
 using DigitalStore.Infrastructure.Security;
+using DigitalStore.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -84,6 +85,7 @@ builder.Services.AddScoped<ILikeRepository, LikeRepository>();
 builder.Services.AddScoped<ILikeService, LikeService>();
 builder.Services.AddScoped<IContentManagementRepository, ContentManagementRepository>();
 builder.Services.AddScoped<IContentManagementService, ContentManagementService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

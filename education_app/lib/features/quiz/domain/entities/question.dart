@@ -11,6 +11,7 @@ class Question extends Equatable {
   final String option3;
   final String option4;
   final int correctOption;
+  final String? questionFullImage;
   final List<ContentImage> questionImages;
   final String? questionDesigner;
   final int questionYear;
@@ -28,6 +29,7 @@ class Question extends Equatable {
     required this.option3,
     required this.option4,
     required this.correctOption,
+    this.questionFullImage,
     required this.questionImages,
     this.questionDesigner,
     required this.questionYear,
@@ -37,9 +39,28 @@ class Question extends Equatable {
     this.isLiked = false,
   });
 
+  /// Returns the full-page image URL if available
+  String? get fullPageImage {
+    if (questionFullImage != null && questionFullImage!.isNotEmpty) {
+      return questionFullImage;
+    }
+    for (final img in questionImages) {
+      if (img.imageTypeId == 1) {
+        return img.imageUrl;
+      }
+    }
+    return null;
+  }
+
+  /// Returns embedded images excluding full page image
+  List<ContentImage> get contentImages {
+    return questionImages.where((img) => img.imageTypeId != 1).toList();
+  }
+
   @override
   List<Object?> get props => [
     id, topicId, questionText, option1, option2, option3, option4, correctOption,
-    questionImages, questionDesigner, questionYear, difficultyLevelId, difficultyLevelName, detailedAnswer, isLiked
+    questionFullImage, questionImages, questionDesigner, questionYear, difficultyLevelId,
+    difficultyLevelName, detailedAnswer, isLiked
   ];
 }
