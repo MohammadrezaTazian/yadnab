@@ -14,6 +14,7 @@ namespace DigitalStore.Domain.Entities
         public int CorrectOption { get; set; } // 1, 2, 3, or 4
         public List<ContentImage> QuestionImages { get; set; } = new List<ContentImage>();
 
+        public string? SourceCode { get; set; } // Helper key for data import/convert pipeline
         public string? QuestionDesigner { get; set; }
         public int QuestionYear { get; set; }
         public int DifficultyLevelId { get; set; }

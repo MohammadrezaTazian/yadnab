@@ -165,22 +165,26 @@ CREATE TABLE Questions (
     QuestionDesigner NVARCHAR(100),
     QuestionYear INT,
     DifficultyLevelId INT NOT NULL,
+    SourceCode NVARCHAR(150) NULL, -- Helper key for data import/convert pipeline (e.g. Fizik2_ZipLine_SibeTorsh_Q001)
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     CONSTRAINT FK_Questions_Topics FOREIGN KEY (TopicId) REFERENCES Topics(Id) ON DELETE CASCADE,
     CONSTRAINT FK_Questions_DifficultyLevels FOREIGN KEY (DifficultyLevelId) REFERENCES DifficultyLevels(Id)
 );
+CREATE INDEX IX_Questions_SourceCode ON Questions(SourceCode);
 GO
 
--- DetailedAnswers Table
+-- DetailedAnswers Table (One-to-Many with Questions: supports multiple solutions per question)
 CREATE TABLE DetailedAnswers (
     Id INT IDENTITY(1,1) PRIMARY KEY,
-    QuestionId INT NOT NULL UNIQUE, -- One-to-One with Questions
+    QuestionId INT NOT NULL, -- Removed UNIQUE to allow multiple solutions per question
     AnswerText NVARCHAR(MAX),
     AnswerAuthor NVARCHAR(100),
     AnswerYear INT,
+    SourceCode NVARCHAR(150) NULL, -- Helper key for data import/convert pipeline (e.g. Fizik2_ZipLine_SibeTorsh_A001_01)
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     CONSTRAINT FK_DetailedAnswers_Questions FOREIGN KEY (QuestionId) REFERENCES Questions(Id) ON DELETE CASCADE
 );
+CREATE INDEX IX_DetailedAnswers_SourceCode ON DetailedAnswers(SourceCode);
 GO
 
 -- EducationContents Table

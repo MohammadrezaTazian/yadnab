@@ -11,6 +11,7 @@ namespace DigitalStore.Domain.Entities
 
         public string? AnswerAuthor { get; set; }
         public int AnswerYear { get; set; }
+        public string? SourceCode { get; set; } // Helper key for data import/convert pipeline
         
         public Question Question { get; set; } = null!;
         
