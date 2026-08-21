@@ -27,3 +27,7 @@ obj/
 # Publish
 publish/
 **/publish/
+
+# Uploaded images
+Backend/DigitalStore.Api/wwwroot/images/answersImageFile/
+Backend/DigitalStore.Api/wwwroot/images/questionsImageFile/
