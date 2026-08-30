@@ -15,3 +15,16 @@ class LoadTopics extends TopicEvent {
   @override
   List<Object?> get props => [packageId];
 }
+
+class SearchTopics extends TopicEvent {
+  final String query;
+
+  const SearchTopics(this.query);
+
+  @override
+  List<Object?> get props => [query];
+}
+
+class ClearSearch extends TopicEvent {}
+
+class ToggleSearchVisibility extends TopicEvent {}

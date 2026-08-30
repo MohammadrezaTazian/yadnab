@@ -15,3 +15,17 @@ class GetQuestionsEvent extends QuestionEvent {
   @override
   List<Object> get props => [topicId];
 }
+
+class SearchQuestionsEvent extends QuestionEvent {
+  final String query;
+
+  const SearchQuestionsEvent(this.query);
+
+  @override
+  List<Object> get props => [query];
+}
+
+class ClearQuestionsSearchEvent extends QuestionEvent {}
+
+class ToggleQuestionsSearchVisibilityEvent extends QuestionEvent {}
+

@@ -104,4 +104,49 @@ class AppColors {
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
+
+  // ============================================
+  // SEARCH SPECIFIC
+  // ============================================
+  static const Color searchBarBorderLight = Color(0xFFBFDBFE); // Blue 200
+  static const Color searchBarBorderDark = Color(0xFF3A4168);  // Slate Border
+  static const Color searchHighlightLight = Color(0xFFFEF08A); // Yellow 200 (Background)
+  static const Color searchHighlightDark = Color(0x4DFBBF24);  // Amber with 30% alpha
+  static const Color searchHighlightTextLight = Color(0xFF9A3412); // Amber 800
+  static const Color searchHighlightTextDark = Color(0xFFFDE68A);  // Amber 200
+  static const Color searchIconLight = Color(0xFF93C5FD);     // Blue 300
+  static const Color searchIconDark = Color(0xFF6A6F8D);      // Slate Muted
+  static const Color searchShadowLight = Color(0x1A2563EB);   // Subtle Blue shadow
+  static const Color searchShadowDark = Color(0x4D000000);    // Dark shadow
+
+  // ============================================
+  // TOPIC PAGE SPECIFIC
+  // ============================================
+
+  // پس‌زمینه (Background gradients)
+  static const Color backgroundDeepDark          = Color(0xFF16213E); // سومین لایه gradient پس‌زمینه dark
+  static const Color backgroundGradientStartLight = Color(0xFFEFF6FF); // معادل Colors.blue.shade50
+
+  // هدر AppBar - حالت روشن (Light mode AppBar header)
+  static const Color appBarGradientStartLight    = Color(0xFF1D4ED8); // معادل Colors.blue.shade700
+  static const Color appBarGradientEndLight      = Color(0xFF3B82F6); // معادل Colors.blue.shade500
+
+  // آیکون روی هدر (Icon overlay on header)
+  static const Color iconHeaderOverlay           = Color(0xB3FFFFFF); // معادل Colors.white70
+
+  // حالت خطا (Error state)
+  static const Color errorIcon                   = Color(0xFFFC8181); // معادل Colors.red.shade300
+
+  // BottomSheet انتخاب محتوا (Content Selection BottomSheet)
+  static const Color sheetSubtitleDark           = Color(0xFFBDBDBD); // معادل Colors.grey[400]
+  static const Color sheetSubtitleLight          = Color(0xFF757575); // معادل Colors.grey[600]
+
+  // آیکون آموزش (Education icon)
+  static const Color educationIconBackground     = Color(0x1A3B82F6); // blue با ۱۰٪ alpha
+  // (رنگ اصلی آیکون آموزش = AppColors.info)
+
+  // آیکون آزمون (Quiz icon)
+  static const Color quizIconBackground          = Color(0x1A22C55E); // green با ۱۰٪ alpha
+  // (رنگ اصلی آیکون آزمون = AppColors.success)
 }
+

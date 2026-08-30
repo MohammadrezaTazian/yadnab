@@ -25,3 +25,17 @@ class ToggleLikeEvent extends EducationContentEvent {
   List<Object> get props => [contentId];
 }
 
+class SearchEducationContentEvent extends EducationContentEvent {
+  final String query;
+
+  const SearchEducationContentEvent(this.query);
+
+  @override
+  List<Object> get props => [query];
+}
+
+class ClearEducationContentSearchEvent extends EducationContentEvent {}
+
+class ToggleEducationContentSearchVisibilityEvent extends EducationContentEvent {}
+
+

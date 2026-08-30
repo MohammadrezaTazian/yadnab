@@ -18,6 +18,7 @@ import 'package:education_app/features/topics/data/repositories/topic_repository
 import 'package:education_app/features/topics/domain/repositories/topic_repository.dart';
 import 'package:education_app/features/topics/domain/usecases/get_topics.dart';
 import 'package:education_app/features/topics/presentation/bloc/topic_bloc.dart';
+import 'package:education_app/features/home/presentation/bloc/home_bloc.dart';
 import 'package:education_app/features/quiz/data/repositories/question_repository_impl.dart';
 import 'package:education_app/features/quiz/domain/repositories/question_repository.dart';
 import 'package:education_app/features/quiz/domain/usecases/get_questions_by_topic.dart';
@@ -179,4 +180,10 @@ Future<void> setupDependencyInjection() async {
   getIt.registerFactory(
     () => UploadBloc(repository: getIt()),
   );
+
+  // Home Feature
+  getIt.registerFactory(
+    () => HomeBloc(apiService: getIt()),
+  );
 }
+

@@ -1,50 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:education_app/l10n/app_localizations.dart';
-import 'package:education_app/core/services/api_service.dart';
 import 'package:education_app/features/home/data/models/package_model.dart';
 import 'package:education_app/injection_container.dart';
 import 'package:education_app/features/topics/presentation/pages/topics_page.dart';
 import 'package:education_app/shared/widgets/app_drawer.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
+import 'package:education_app/shared/widgets/app_search.dart';
+import '../bloc/home_bloc.dart';
+import '../bloc/home_event.dart';
+import '../bloc/home_state.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<HomeBloc>()..add(LoadPackagesEvent()),
+      child: const _HomePageContent(),
+    );
+  }
 }
 
-class _HomePageState extends State<HomePage> {
-  final ApiService _apiService = sl<ApiService>();
-  List<PackageModel> _packages = [];
-  bool _isLoading = true;
-  String? _error;
+class _HomePageContent extends StatefulWidget {
+  const _HomePageContent();
+
+  @override
+  State<_HomePageContent> createState() => _HomePageContentState();
+}
+
+class _HomePageContentState extends State<_HomePageContent>
+    with SingleTickerProviderStateMixin {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  late AnimationController _animationController;
+  late Animation<double> _searchBarAnimation;
 
   @override
   void initState() {
     super.initState();
-    _loadPackages();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _searchBarAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
   }
 
-  Future<void> _loadPackages() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      final packages = await _apiService.getPackages();
-
-      setState(() {
-        _packages = packages;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -53,62 +64,108 @@ class _HomePageState extends State<HomePage> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Scaffold(
-      drawer: const AppDrawer(),
-      body: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-        ),
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              expandedHeight: 200.0,
-              floating: false,
-              pinned: true,
-              flexibleSpace: FlexibleSpaceBar(
-                title: Text(
-                  AppLocalizations.of(context)!.educationAssistant,
-                  style: TextStyle(
-                    color: AppColors.onPrimary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                background: Container(
-                  decoration: BoxDecoration(
-                    gradient: isDark
-                        ? AppColors.headerGradientDark
-                        : AppColors.headerGradientLight,
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.school_rounded,
-                          size: 60,
-                          color: AppColors.onPrimary.withValues(alpha: 0.9),
+    return BlocConsumer<HomeBloc, HomeState>(
+      listenWhen: (previous, current) {
+        if (previous is HomeLoaded && current is HomeLoaded) {
+          return previous.isSearching != current.isSearching;
+        }
+        return current is HomeLoaded && current.isSearching;
+      },
+      listener: (context, state) {
+        if (state is HomeLoaded) {
+          if (state.isSearching) {
+            _animationController.forward();
+            Future.delayed(const Duration(milliseconds: 200), () {
+              _searchFocusNode.requestFocus();
+            });
+          } else {
+            _animationController.reverse();
+            _searchController.clear();
+            _searchFocusNode.unfocus();
+          }
+        }
+      },
+      builder: (context, state) {
+        final isSearching = state is HomeLoaded && state.isSearching;
+        final searchQuery = state is HomeLoaded ? state.searchQuery : '';
+
+        return Scaffold(
+          drawer: const AppDrawer(),
+          body: Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+            ),
+            child: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  expandedHeight: 200.0,
+                  floating: false,
+                  pinned: true,
+                  actions: [
+                    SearchAppBarAction(
+                      isSearching: isSearching,
+                      color: isDark ? AppColors.textPrimaryDark : AppColors.onPrimary,
+                      onPressed: () {
+                        context.read<HomeBloc>().add(ToggleHomeSearchVisibilityEvent());
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    title: Text(
+                      AppLocalizations.of(context)!.educationAssistant,
+                      style: TextStyle(
+                        color: AppColors.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: isDark
+                            ? AppColors.headerGradientDark
+                            : AppColors.headerGradientLight,
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.school_rounded,
+                              size: 60,
+                              color: AppColors.onPrimary.withValues(alpha: 0.9),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              AppLocalizations.of(context)!.welcomeBack,
+                              style: TextStyle(
+                                color: AppColors.onPrimary.withValues(alpha: 0.7),
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          AppLocalizations.of(context)!.welcomeBack,
-                          style: TextStyle(
-                            color: AppColors.onPrimary.withValues(alpha: 0.7),
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                // ---- Search Bar ----
+                SliverAppSearchBar(
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  animation: _searchBarAnimation,
+                  hasQuery: searchQuery.isNotEmpty,
+                  hintText: 'جستجوی دوره‌ها و پکیج‌ها...',
+                  onChanged: (query) {
+                    context.read<HomeBloc>().add(SearchPackagesEvent(query));
+                  },
+                  onClear: () {
+                    context.read<HomeBloc>().add(ClearPackagesSearchEvent());
+                  },
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
@@ -117,7 +174,7 @@ class _HomePageState extends State<HomePage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        if (_isLoading)
+                        if (state is HomeLoading)
                           SizedBox(
                             width: 20,
                             height: 20,
@@ -128,9 +185,13 @@ class _HomePageState extends State<HomePage> {
                           ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    if (_error != null)
-                      Card(
+                  ),
+                ),
+                if (state is HomeError)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Card(
                         color: AppColors.error.withValues(alpha: 0.1),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -140,7 +201,7 @@ class _HomePageState extends State<HomePage> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Error: $_error',
+                                  'Error: ${state.message}',
                                   style: textTheme.bodyMedium?.copyWith(
                                     color: AppColors.error,
                                   ),
@@ -148,14 +209,25 @@ class _HomePageState extends State<HomePage> {
                               ),
                               IconButton(
                                 icon: Icon(Icons.refresh_rounded, color: colorScheme.primary),
-                                onPressed: _loadPackages,
+                                onPressed: () {
+                                  context.read<HomeBloc>().add(LoadPackagesEvent());
+                                },
                               ),
                             ],
                           ),
                         ),
                       ),
-                    if (!_isLoading && _packages.isEmpty && _error == null)
-                      Center(
+                    ),
+                  )
+                else if (state is HomeLoaded)
+                  if (state.filteredPackages.isEmpty && searchQuery.isNotEmpty)
+                    SliverSearchEmptyState(
+                      query: searchQuery,
+                      subtitle: '«$searchQuery» در دوره‌ها پیدا نشد',
+                    )
+                  else if (state.packages.isEmpty)
+                    SliverToBoxAdapter(
+                      child: Center(
                         child: Padding(
                           padding: const EdgeInsets.all(32.0),
                           child: Column(
@@ -174,21 +246,37 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-                    ..._packages.map((package) => _buildPackageCard(
-                          context,
-                          package,
-                          _getIconForCategory(package.category),
-                          _getColorForCategory(package.category, colorScheme),
-                          colorScheme,
-                          textTheme,
-                        )),
-                  ],
-                ),
-              ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final package = state.filteredPackages[index];
+                            return _buildPackageCard(
+                              context,
+                              package,
+                              _getIconForCategory(package.category),
+                              _getColorForCategory(package.category, colorScheme),
+                              colorScheme,
+                              textTheme,
+                              searchQuery,
+                            );
+                          },
+                          childCount: state.filteredPackages.length,
+                        ),
+                      ),
+                    )
+                else
+                  const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -232,6 +320,7 @@ class _HomePageState extends State<HomePage> {
     Color color,
     ColorScheme colorScheme,
     TextTheme textTheme,
+    String searchQuery,
   ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -268,17 +357,21 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      package.title,
+                    HighlightedText(
+                      text: package.title,
+                      query: searchQuery,
                       style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (package.description.isNotEmpty)
-                      Text(
-                        package.description,
+                    if (package.description.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      HighlightedText(
+                        text: package.description,
+                        query: searchQuery,
                         style: textTheme.bodySmall,
                       ),
+                    ],
                   ],
                 ),
               ),
@@ -295,4 +388,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
 
