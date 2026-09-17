@@ -57,8 +57,8 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                                 var image = new ContentImage
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                    ImageUrl = reader.GetString(reader.GetOrdinal("ImageUrl")),
-                                    DisplayOrder = reader.GetInt32(reader.GetOrdinal("DisplayOrder")),
+                                    ImageUrl = reader.IsDBNull(reader.GetOrdinal("ImageUrl")) ? "" : reader.GetString(reader.GetOrdinal("ImageUrl")),
+                                    DisplayOrder = reader.IsDBNull(reader.GetOrdinal("DisplayOrder")) ? 0 : reader.GetInt32(reader.GetOrdinal("DisplayOrder")),
                                     AltText = reader.IsDBNull(reader.GetOrdinal("AltText")) ? null : reader.GetString(reader.GetOrdinal("AltText")),
                                     EntityTypeId = reader.GetInt32(reader.GetOrdinal("EntityTypeId")),
                                     EntityId = reader.GetInt32(reader.GetOrdinal("EntityId"))
@@ -121,8 +121,8 @@ namespace DigitalStore.Infrastructure.Data.Repositories
                                 var image = new ContentImage
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                    ImageUrl = reader.GetString(reader.GetOrdinal("ImageUrl")),
-                                    DisplayOrder = reader.GetInt32(reader.GetOrdinal("DisplayOrder")),
+                                    ImageUrl = reader.IsDBNull(reader.GetOrdinal("ImageUrl")) ? "" : reader.GetString(reader.GetOrdinal("ImageUrl")),
+                                    DisplayOrder = reader.IsDBNull(reader.GetOrdinal("DisplayOrder")) ? 0 : reader.GetInt32(reader.GetOrdinal("DisplayOrder")),
                                     AltText = reader.IsDBNull(reader.GetOrdinal("AltText")) ? null : reader.GetString(reader.GetOrdinal("AltText")),
                                     EntityTypeId = reader.GetInt32(reader.GetOrdinal("EntityTypeId")),
                                     EntityId = reader.GetInt32(reader.GetOrdinal("EntityId"))
@@ -147,12 +147,12 @@ namespace DigitalStore.Infrastructure.Data.Repositories
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                 TopicId = reader.GetInt32(reader.GetOrdinal("TopicId")),
-                Title = reader.GetString(reader.GetOrdinal("Title")),
+                Title = reader.IsDBNull(reader.GetOrdinal("Title")) ? "" : reader.GetString(reader.GetOrdinal("Title")),
                 ContentText = reader.IsDBNull(reader.GetOrdinal("ContentText")) ? "" : reader.GetString(reader.GetOrdinal("ContentText")),
                 MediaUrl = reader.IsDBNull(reader.GetOrdinal("MediaUrl")) ? null : reader.GetString(reader.GetOrdinal("MediaUrl")),
-                MediaType = reader.GetString(reader.GetOrdinal("MediaType")),
+                MediaType = reader.IsDBNull(reader.GetOrdinal("MediaType")) ? "Text" : reader.GetString(reader.GetOrdinal("MediaType")),
                 TeacherName = reader.IsDBNull(reader.GetOrdinal("TeacherName")) ? null : reader.GetString(reader.GetOrdinal("TeacherName")),
-                CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt")) ? System.DateTime.UtcNow : reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
                 IsLiked = !reader.IsDBNull(reader.GetOrdinal("IsLiked")) && reader.GetBoolean(reader.GetOrdinal("IsLiked"))
             };
         }

@@ -17,26 +17,41 @@ class LatexText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Regex to split by '$'
-    // This assumes LaTeX math segments are enclosed in single '$' like "$x+y$"
-    // Examples: "This is $x$." -> ["This is ", "x", "."]
-    final RegExp regex = RegExp(r'\$([^\$]+)\$');
+    // 1. Unescape newlines (\r\n, \n, \r)
+    final normalizedText = text
+        .replaceAll(r'\r\n', '\n')
+        .replaceAll(r'\n', '\n')
+        .replaceAll(r'\r', '\n');
+
+    // 2. Regex to match $$...$$ (display math) OR $...$ (inline math)
+    final RegExp regex = RegExp(r'\$\$([\s\S]+?)\$\$|\$([^\$]+?)\$');
     final List<InlineSpan> spans = [];
 
-    text.splitMapJoin(
+    normalizedText.splitMapJoin(
       regex,
       onMatch: (Match match) {
-        // This is the math part (content inside $...$)
-        final mathContent = match.group(1) ?? '';
+        final isDisplay = match.group(1) != null;
+        final mathContent = (isDisplay ? match.group(1) : match.group(2))?.trim() ?? '';
+
         spans.add(
           WidgetSpan(
             alignment: PlaceholderAlignment.middle,
             child: Directionality(
               textDirection: TextDirection.ltr,
-              child: Math.tex(
-                mathContent,
-                textStyle: style?.copyWith(fontFamily: 'SansSerif'), // Use a standard font for math
-                mathStyle: MathStyle.text,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 2.0,
+                  vertical: isDisplay ? 4.0 : 0.0,
+                ),
+                child: Math.tex(
+                  mathContent,
+                  textStyle: style?.copyWith(fontFamily: 'SansSerif'),
+                  mathStyle: isDisplay ? MathStyle.display : MathStyle.text,
+                  onErrorFallback: (err) => Text(
+                    match.group(0) ?? mathContent,
+                    style: style,
+                  ),
+                ),
               ),
             ),
           ),
@@ -44,12 +59,11 @@ class LatexText extends StatelessWidget {
         return match.group(0)!;
       },
       onNonMatch: (String nonMatch) {
-        // This is the normal text part
         if (nonMatch.isNotEmpty) {
           spans.add(
             TextSpan(
               text: nonMatch,
-              style: style, // Uses the App's default font (Vazir)
+              style: style,
             ),
           );
         }
@@ -57,10 +71,14 @@ class LatexText extends StatelessWidget {
       },
     );
 
-    return RichText(
-      text: TextSpan(children: spans),
+    final defaultStyle = DefaultTextStyle.of(context).style;
+    final effectiveStyle = defaultStyle.merge(style);
+
+    return Text.rich(
+      TextSpan(children: spans, style: effectiveStyle),
       textAlign: textAlign,
       textDirection: textDirection,
     );
   }
 }
+

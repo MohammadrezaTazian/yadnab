@@ -9,7 +9,7 @@ import 'package:education_app/shared/widgets/dio_network_svg_image.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:education_app/core/utils/url_helper.dart';
-
+import '../widgets/education_content_viewer.dart';
 class EducationContentDetailPage extends StatefulWidget {
   final EducationContent content;
 
@@ -171,11 +171,8 @@ class _EducationContentDetailPageState extends State<EducationContentDetailPage>
                         const SizedBox(height: 16),
 
                         // Content Text
-                        Text(
-                          currentContent.contentText,
-                          style: textTheme.bodyLarge?.copyWith(
-                            height: 1.8,
-                          ),
+                        EducationContentViewer(
+                          content: currentContent.contentText,
                         ),
                       ],
                     ),
