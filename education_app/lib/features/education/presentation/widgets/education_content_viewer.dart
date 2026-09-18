@@ -37,16 +37,29 @@ class EducationContentViewer extends StatelessWidget {
     'حل:',
   };
 
+  static String _unescapeOutsideMath(String input) {
+    // Match $$$...$$$, $$...$$, or $...$
+    final mathRegex = RegExp(r'\${2,3}[\s\S]+?\${2,3}|\$[^\$]+?\$');
+    return input.splitMapJoin(
+      mathRegex,
+      onMatch: (m) => m.group(0)!, // Keep all LaTeX math 100% intact!
+      onNonMatch: (nonMath) {
+        return nonMath
+            .replaceAll(r'\r\n', '\n')
+            .replaceAll(r'\\n', '\n')
+            .replaceAll(r'\n', '\n')
+            .replaceAll('\r', '');
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (content.trim().isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final normalized = content
-        .replaceAll(r'\r\n', '\n')
-        .replaceAll(r'\n', '\n')
-        .replaceAll(r'\r', '\n');
+    final normalized = _unescapeOutsideMath(content);
 
     final blocks = _parseBlocks(context, normalized);
 
@@ -61,8 +74,8 @@ class EducationContentViewer extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    // Regex to extract $$...$$ display math blocks
-    final RegExp displayMathRegex = RegExp(r'\$\$([\s\S]+?)\$\$');
+    // Regex to extract $$...$$ or $$$...$$$ display math blocks
+    final RegExp displayMathRegex = RegExp(r'\${2,3}([\s\S]+?)\${2,3}');
     final matches = displayMathRegex.allMatches(text);
 
     int lastIndex = 0;
@@ -75,7 +88,12 @@ class EducationContentViewer extends StatelessWidget {
       }
 
       // 2. The display math block itself
-      final mathContent = match.group(1)?.trim() ?? '';
+      var mathContent = match.group(1)?.trim() ?? '';
+      mathContent = mathContent
+          .replaceAll(RegExp(r'^\$+|\$+$'), '')
+          .replaceAll(r'\\n', '\n')
+          .trim();
+
       if (mathContent.isNotEmpty) {
         widgets.add(_buildMathCard(context, mathContent, colorScheme));
       }
@@ -105,9 +123,11 @@ class EducationContentViewer extends StatelessWidget {
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
 
-      if (line.isEmpty) {
-        // Subtle paragraph spacing
-        widgets.add(const SizedBox(height: 10));
+      if (line.isEmpty || line == r'$' || line == r'\$' || line == r'$$' || line == r'$$$') {
+        // Subtle paragraph spacing for empty lines only
+        if (line.isEmpty) {
+          widgets.add(const SizedBox(height: 10));
+        }
         continue;
       }
 
@@ -154,7 +174,10 @@ class EducationContentViewer extends StatelessWidget {
   bool _isHeading(String line) {
     if (line.startsWith('#')) return true;
     if (_knownHeadings.contains(line)) return true;
-    if (line.endsWith(':') && line.length < 35) return true;
+    if (line.endsWith(':')) {
+      final stripped = line.replaceAll(RegExp(r'\$[^\$]*\$'), 'X');
+      if (stripped.length < 45) return true;
+    }
     return false;
   }
 
@@ -180,7 +203,7 @@ class EducationContentViewer extends StatelessWidget {
                     : Colors.green.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Text(
+              child: LatexText(
                 title,
                 style: textTheme.titleSmall?.copyWith(
                   color: isQuestion ? Colors.amber[800] : Colors.green[800],
@@ -208,7 +231,7 @@ class EducationContentViewer extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
+            child: LatexText(
               title,
               style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
@@ -305,8 +328,14 @@ class EducationContentViewer extends StatelessWidget {
     String mathContent,
     ColorScheme colorScheme,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // If the formula contains Persian or Arabic characters, use our smart Persian card renderer
+    final hasPersianArabic = !isMathContent(mathContent);
 
+    if (hasPersianArabic) {
+      return _buildPersianMathCard(context, mathContent, colorScheme);
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10.0),
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -341,6 +370,401 @@ class EducationContentViewer extends StatelessWidget {
                   fontSize: 14,
                 ),
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersianMathCard(
+    BuildContext context,
+    String mathContent,
+    ColorScheme colorScheme,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textTheme = Theme.of(context).textTheme;
+
+    // 1. Check if this is a flow sequence with arrows (e.g. \implies, \rightarrow, \xrightarrow{})
+    final arrowRegex = RegExp(r'(\\implies|\\Longrightarrow|\\Rightarrow|\\rightarrow|\\to|\\xrightarrow\{[^}]*\})');
+    if (arrowRegex.hasMatch(mathContent)) {
+      return _buildFlowSequenceCard(context, mathContent, colorScheme, textTheme, isDark);
+    }
+
+    // 2. Check if this is a Quran verse or quote
+    final isQuote = mathContent.contains('«') ||
+        mathContent.contains('سوره') ||
+        mathContent.contains('آیه') ||
+        mathContent.contains('حدیث');
+    if (isQuote) {
+      return _buildQuoteCard(context, mathContent, colorScheme, textTheme, isDark);
+    }
+
+    // 3. Mixed math + Persian (e.g. x >= 5 \quad \text{یا} \quad x <= -5)
+    return _buildMixedMathCard(context, mathContent, colorScheme, textTheme, isDark);
+  }
+
+  Widget _buildFlowSequenceCard(
+    BuildContext context,
+    String mathContent,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    bool isDark,
+  ) {
+    final arrowRegex = RegExp(r'(\\implies|\\Longrightarrow|\\Rightarrow|\\rightarrow|\\to|\\xrightarrow\{[^}]*\})');
+    final matches = arrowRegex.allMatches(mathContent).toList();
+
+    final List<Widget> flowItems = [];
+    int lastEnd = 0;
+
+    for (int i = 0; i < matches.length; i++) {
+      final match = matches[i];
+      // Text node before arrow
+      final rawNode = mathContent.substring(lastEnd, match.start).trim();
+      final nodeText = cleanLatexForPersian(rawNode);
+      if (nodeText.isNotEmpty) {
+        flowItems.add(_buildFlowNode(nodeText, colorScheme, textTheme, isDark));
+      }
+
+      // The arrow itself
+      final arrowStr = match.group(0)!;
+      String? arrowLabel;
+      final xArrowMatch = RegExp(r'\\xrightarrow\{([^}]*)\}').firstMatch(arrowStr);
+      if (xArrowMatch != null) {
+        arrowLabel = cleanLatexForPersian(xArrowMatch.group(1) ?? '');
+      }
+
+      flowItems.add(_buildFlowArrow(arrowLabel, colorScheme, textTheme));
+      lastEnd = match.end;
+    }
+
+    // Last node after the last arrow
+    if (lastEnd < mathContent.length) {
+      final rawNode = mathContent.substring(lastEnd).trim();
+      final nodeText = cleanLatexForPersian(rawNode);
+      if (nodeText.isNotEmpty) {
+        flowItems.add(_buildFlowNode(nodeText, colorScheme, textTheme, isDark));
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+      decoration: BoxDecoration(
+        color: isDark
+            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: colorScheme.primary.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 10,
+            children: flowItems,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFlowNode(
+    String text,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    bool isDark,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark
+            ? colorScheme.primary.withValues(alpha: 0.15)
+            : colorScheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: colorScheme.primary.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: colorScheme.onSurface,
+          height: 1.4,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFlowArrow(
+    String? label,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    if (label != null && label.isNotEmpty) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              label,
+              style: textTheme.labelSmall?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 10.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Icon(
+            Icons.arrow_back_rounded,
+            size: 20,
+            color: colorScheme.primary,
+          ),
+        ],
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Icon(
+        Icons.arrow_back_rounded,
+        size: 20,
+        color: colorScheme.primary.withValues(alpha: 0.8),
+      ),
+    );
+  }
+
+  Widget _buildQuoteCard(
+    BuildContext context,
+    String mathContent,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    bool isDark,
+  ) {
+    final cleanText = cleanLatexForPersian(mathContent);
+
+    // Try to extract citation if in parentheses: (سوره ...)
+    String mainText = cleanText;
+    String citation = '';
+
+    final citationMatch = RegExp(r'\((سوره[^\)]+)\)').firstMatch(cleanText);
+    if (citationMatch != null) {
+      citation = citationMatch.group(0)!;
+      mainText = cleanText.replaceFirst(citation, '').trim();
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 14.0),
+      decoration: BoxDecoration(
+        color: isDark
+            ? colorScheme.primary.withValues(alpha: 0.08)
+            : colorScheme.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: colorScheme.primary.withValues(alpha: 0.25),
+          width: 1.2,
+        ),
+      ),
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Column(
+          children: [
+            Text(
+              mainText,
+              textAlign: TextAlign.center,
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 16.0,
+                height: 2.1,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            if (citation.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.6)
+                      : colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  citation,
+                  style: textTheme.labelMedium?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMixedMathCard(
+    BuildContext context,
+    String mathContent,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+    bool isDark,
+  ) {
+    // Split by \text{...}
+    final textRegex = RegExp(r'\\text\{([^}]*)\}');
+    final matches = textRegex.allMatches(mathContent).toList();
+
+    if (matches.isEmpty) {
+      // Pure Persian text without \text{}
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        decoration: BoxDecoration(
+          color: isDark
+              ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
+              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: colorScheme.primary.withValues(alpha: 0.12),
+            width: 1,
+          ),
+        ),
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Text(
+            cleanLatexForPersian(mathContent),
+            textAlign: TextAlign.center,
+            style: textTheme.bodyLarge?.copyWith(
+              height: 1.9,
+              fontSize: 15.0,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final List<Widget> segments = [];
+    int lastEnd = 0;
+
+    for (int i = 0; i < matches.length; i++) {
+      final match = matches[i];
+      // Math before \text{}
+      if (match.start > lastEnd) {
+        final rawMath = mathContent.substring(lastEnd, match.start).trim();
+        final cleanMath = rawMath
+            .replaceAll(r'\qquad', ' ')
+            .replaceAll(r'\quad', ' ')
+            .replaceAll(r'\,', ' ')
+            .replaceAll(r'\;', ' ')
+            .trim();
+        if (cleanMath.isNotEmpty) {
+          segments.add(
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: Math.tex(
+                cleanMath,
+                textStyle: TextStyle(
+                  fontSize: 16,
+                  color: colorScheme.onSurface,
+                  fontFamily: 'SansSerif',
+                ),
+                mathStyle: MathStyle.display,
+                onErrorFallback: (err) => Text(cleanMath),
+              ),
+            ),
+          );
+        }
+      }
+
+      // The Persian text inside \text{}
+      final persianText = match.group(1)?.trim() ?? '';
+      if (persianText.isNotEmpty) {
+        segments.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6.0),
+            child: Text(
+              persianText,
+              style: textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+        );
+      }
+
+      lastEnd = match.end;
+    }
+
+    // Math after last \text{}
+    if (lastEnd < mathContent.length) {
+      final rawMath = mathContent.substring(lastEnd).trim();
+      final cleanMath = rawMath
+          .replaceAll(r'\qquad', ' ')
+          .replaceAll(r'\quad', ' ')
+          .replaceAll(r'\,', ' ')
+          .replaceAll(r'\;', ' ')
+          .trim();
+      if (cleanMath.isNotEmpty) {
+        segments.add(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: Math.tex(
+              cleanMath,
+              textStyle: TextStyle(
+                fontSize: 16,
+                color: colorScheme.onSurface,
+                fontFamily: 'SansSerif',
+              ),
+              mathStyle: MathStyle.display,
+              onErrorFallback: (err) => Text(cleanMath),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        color: isDark
+            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.primary.withValues(alpha: 0.12),
+          width: 1,
+        ),
+      ),
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Center(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: segments,
             ),
           ),
         ),

@@ -9,6 +9,7 @@ import 'package:education_app/shared/widgets/dio_network_svg_image.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:education_app/core/utils/url_helper.dart';
+import 'package:education_app/shared/widgets/latex_text.dart';
 import '../widgets/education_content_viewer.dart';
 class EducationContentDetailPage extends StatefulWidget {
   final EducationContent content;
@@ -46,7 +47,12 @@ class _EducationContentDetailPageState extends State<EducationContentDetailPage>
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(currentContent.title),
+            title: LatexText(
+              currentContent.title,
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
