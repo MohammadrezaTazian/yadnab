@@ -5,4 +5,5 @@ abstract class AuthRepository {
   Future<User> verifyOtp(String phoneNumber, String otp);
   Future<User> refreshToken(String refreshToken);
   Future<void> logout();
+  Future<bool> checkAuthStatus();
 }

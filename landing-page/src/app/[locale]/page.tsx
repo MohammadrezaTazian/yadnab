@@ -66,6 +66,13 @@ export default function LandingPage() {
         }
     }, []);
 
+    // استفاده از replace به جای href تا history مرورگر پاک بماند
+    // این کار باعث می‌شود دکمه Back اندروید به Landing Page برنگردد
+    const navigateToApp = (e: React.MouseEvent) => {
+        e.preventDefault();
+        window.location.replace(appUrl);
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
             {/* Navigation */}
@@ -103,6 +110,7 @@ export default function LandingPage() {
 
                             <a
                                 href={appUrl}
+                                onClick={navigateToApp}
                                 className="px-5 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-medium hover:opacity-90 transition"
                             >
                                 {t("nav.register")}
@@ -132,7 +140,7 @@ export default function LandingPage() {
                                 <Link href="/fa" className={`px-3 py-1 rounded-full text-sm ${locale === "fa" ? "bg-purple-500 text-white" : "text-gray-300"}`}>فا</Link>
                                 <Link href="/en" className={`px-3 py-1 rounded-full text-sm ${locale === "en" ? "bg-purple-500 text-white" : "text-gray-300"}`}>EN</Link>
                             </div>
-                            <a href={appUrl} className="px-5 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-center font-medium">
+                            <a href={appUrl} onClick={navigateToApp} className="px-5 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-center font-medium">
                                 {t("nav.register")}
                             </a>
                         </div>
@@ -161,6 +169,7 @@ export default function LandingPage() {
                     <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
                         <a
                             href={appUrl}
+                            onClick={navigateToApp}
                             className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-lg font-bold hover:scale-105 transition-transform shadow-lg shadow-purple-500/25"
                         >
                             {t("hero.cta")}
@@ -295,6 +304,7 @@ export default function LandingPage() {
                         <p className="text-gray-300 text-lg mb-8">{t("cta.description")}</p>
                         <a
                             href={appUrl}
+                            onClick={navigateToApp}
                             className="inline-block px-10 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-lg font-bold hover:scale-105 transition-transform shadow-lg shadow-purple-500/25"
                         >
                             {t("cta.button")}

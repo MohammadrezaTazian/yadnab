@@ -73,12 +73,14 @@ Future<void> setupDependencyInjection() async {
   getIt.registerLazySingleton(() => SendOtpUseCase(getIt()));
   getIt.registerLazySingleton(() => VerifyOtpUseCase(getIt()));
   getIt.registerLazySingleton(() => LogoutUseCase(getIt()));
+  getIt.registerLazySingleton(() => CheckAuthStatusUseCase(getIt()));
   
   getIt.registerFactory(
     () => AuthBloc(
       sendOtpUseCase: getIt(),
       verifyOtpUseCase: getIt(),
       logoutUseCase: getIt(),
+      checkAuthStatusUseCase: getIt(),
     ),
   );
 

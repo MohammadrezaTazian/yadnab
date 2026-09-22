@@ -38,6 +38,16 @@ class _LoginPageState extends State<LoginPage>
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
     _animationController.forward();
+
+    // گارد محافظتی: در صورتی که کاربر از قبل احراز هویت شده باشد، مستقیماً به خانه ریدایرکت شود
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final authState = context.read<AuthBloc>().state;
+      if (authState is AuthAuthenticated) {
+        context.read<SettingsBloc>().add(LoadSettingsEvent());
+        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+      }
+    });
   }
 
   @override
@@ -102,6 +112,11 @@ class _LoginPageState extends State<LoginPage>
             }
           },
           builder: (context, state) {
+            if (state is AuthAuthenticated) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
             return Center(
               child: FadeTransition(
                 opacity: _fadeAnimation,

@@ -27,3 +27,5 @@ class VerifyOtpEvent extends AuthEvent {
 }
 
 class LogoutEvent extends AuthEvent {}
+
+class CheckAuthStatusEvent extends AuthEvent {}
