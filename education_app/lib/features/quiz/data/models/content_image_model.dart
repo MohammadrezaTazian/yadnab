@@ -11,11 +11,11 @@ class ContentImageModel extends ContentImage {
 
   factory ContentImageModel.fromJson(Map<String, dynamic> json) {
     return ContentImageModel(
-      id: json['id'] as int,
-      imageUrl: json['imageUrl'] as String,
-      displayOrder: json['displayOrder'] as int? ?? 0,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      imageUrl: json['imageUrl'] as String? ?? '',
+      displayOrder: (json['displayOrder'] as num?)?.toInt() ?? 0,
       altText: json['altText'] as String?,
-      imageTypeId: json['imageTypeId'] as int? ?? 6,
+      imageTypeId: (json['imageTypeId'] as num?)?.toInt() ?? 6,
     );
   }
 

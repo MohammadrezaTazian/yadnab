@@ -7,23 +7,32 @@ import '../../presentation/bloc/question_state.dart';
 import '../../../../injection_container.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/widgets/app_search.dart';
-import 'question_detail_page.dart';
+import 'package:go_router/go_router.dart';
 
 class QuizListPage extends StatelessWidget {
   final int topicId;
   final String topicTitle;
+  final int? packageId;
+  final String? packageTitle;
 
   const QuizListPage({
     super.key,
     required this.topicId,
     required this.topicTitle,
+    this.packageId,
+    this.packageTitle,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<QuestionBloc>()..add(GetQuestionsEvent(topicId)),
-      child: _QuizListPageContent(topicId: topicId, topicTitle: topicTitle),
+      child: _QuizListPageContent(
+        topicId: topicId,
+        topicTitle: topicTitle,
+        packageId: packageId,
+        packageTitle: packageTitle,
+      ),
     );
   }
 }
@@ -31,8 +40,15 @@ class QuizListPage extends StatelessWidget {
 class _QuizListPageContent extends StatefulWidget {
   final int topicId;
   final String topicTitle;
+  final int? packageId;
+  final String? packageTitle;
 
-  const _QuizListPageContent({required this.topicId, required this.topicTitle});
+  const _QuizListPageContent({
+    required this.topicId,
+    required this.topicTitle,
+    this.packageId,
+    this.packageTitle,
+  });
 
   @override
   State<_QuizListPageContent> createState() => _QuizListPageContentState();
@@ -98,9 +114,28 @@ class _QuizListPageContentState extends State<_QuizListPageContent>
         final searchQuery = state is QuestionLoaded ? state.searchQuery : '';
 
         return Scaffold(
-          appBar: AppBar(
+            appBar: AppBar(
             title: Text(widget.topicTitle),
             centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else if (widget.packageId != null && widget.packageId! > 0) {
+                  final uri = Uri(
+                    path: '/topics',
+                    queryParameters: {
+                      'packageId': '${widget.packageId}',
+                      if (widget.packageTitle != null) 'title': widget.packageTitle!,
+                    },
+                  ).toString();
+                  context.go(uri);
+                } else {
+                  context.go('/home');
+                }
+              },
+            ),
             actions: [
               SearchAppBarAction(
                 isSearching: isSearching,
@@ -193,14 +228,12 @@ class _QuizListPageContentState extends State<_QuizListPageContent>
                                 color: colorScheme.outline,
                               ),
                               onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => QuestionDetailPage(
-                                      question: question,
-                                      index: index + 1,
-                                    ),
-                                  ),
+                                await context.push(
+                                  '/question-detail',
+                                  extra: {
+                                    'question': question,
+                                    'index': index + 1,
+                                  },
                                 );
                                 if (context.mounted) {
                                   context.read<QuestionBloc>().add(GetQuestionsEvent(widget.topicId));

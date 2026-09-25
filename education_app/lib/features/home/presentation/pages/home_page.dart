@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/features/home/data/models/package_model.dart';
 import 'package:education_app/injection_container.dart';
-import 'package:education_app/features/topics/presentation/pages/topics_page.dart';
 import 'package:education_app/shared/widgets/app_drawer.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
 import 'package:education_app/shared/widgets/app_search.dart';
+import 'package:go_router/go_router.dart';
 import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';
 import '../bloc/home_state.dart';
@@ -326,13 +326,19 @@ class _HomePageContentState extends State<_HomePageContent>
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => TopicsPage(
-                packageId: package.id,
-                title: package.title,
-              ),
-            ),
+          final uri = Uri(
+            path: '/topics',
+            queryParameters: {
+              'packageId': '${package.id}',
+              'title': package.title,
+            },
+          ).toString();
+          context.go(
+            uri,
+            extra: {
+              'packageId': package.id,
+              'title': package.title,
+            },
           );
         },
         borderRadius: BorderRadius.circular(16),

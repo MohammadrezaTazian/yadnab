@@ -6,7 +6,7 @@ import 'package:education_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:education_app/features/settings/presentation/bloc/settings_bloc.dart';
 import 'package:education_app/features/settings/presentation/bloc/settings_event.dart';
-import 'package:education_app/core/routes/app_routes.dart';
+import 'package:go_router/go_router.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
 
@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage>
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
         context.read<SettingsBloc>().add(LoadSettingsEvent());
-        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+        context.go('/home');
       }
     });
   }
@@ -74,7 +74,7 @@ class _LoginPageState extends State<LoginPage>
             Icons.settings_rounded,
             color: AppColors.onPrimary,
           ),
-          onPressed: () => Navigator.pushNamed(context, AppRoutes.settings),
+          onPressed: () => context.push('/settings'),
         ),
       ),
       body: Container(
@@ -98,7 +98,7 @@ class _LoginPageState extends State<LoginPage>
               );
             } else if (state is AuthAuthenticated) {
               context.read<SettingsBloc>().add(LoadSettingsEvent());
-              Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+              context.go('/home');
             } else if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

@@ -19,8 +19,8 @@ class EducationContentModel extends EducationContent {
 
   factory EducationContentModel.fromJson(Map<String, dynamic> json) {
     return EducationContentModel(
-      id: json['id'] as int? ?? 0,
-      topicId: json['topicId'] as int? ?? 0,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      topicId: (json['topicId'] as num?)?.toInt() ?? 0,
       title: json['title'] as String? ?? '',
       contentText: json['contentText'] as String? ?? '',
       mediaUrl: json['mediaUrl'] as String?,
@@ -29,7 +29,9 @@ class EducationContentModel extends EducationContent {
       createdAt: json['createdAt'] as String? ?? '',
       isLiked: json['isLiked'] as bool? ?? false,
       images: (json['images'] as List<dynamic>?)
-              ?.map((e) => ContentImageModel.fromJson(e))
+              ?.map((e) => e is ContentImageModel
+                  ? e
+                  : ContentImageModel.fromJson(Map<String, dynamic>.from(e as Map)))
               .toList() ??
           [],
     );
@@ -45,7 +47,18 @@ class EducationContentModel extends EducationContent {
       'mediaType': mediaType,
       'teacherName': teacherName,
       'createdAt': createdAt,
-      'images': images.map((e) => (e as ContentImageModel).toJson()).toList(),
+      'images': images
+          .map((e) => e is ContentImageModel
+              ? e.toJson()
+              : ContentImageModel(
+                  id: e.id,
+                  imageUrl: e.imageUrl,
+                  displayOrder: e.displayOrder,
+                  altText: e.altText,
+                  imageTypeId: e.imageTypeId,
+                ).toJson())
+          .toList(),
+      'isLiked': isLiked,
     };
   }
 }

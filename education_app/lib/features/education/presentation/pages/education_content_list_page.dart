@@ -6,23 +6,32 @@ import '../../../../shared/widgets/app_search.dart';
 import '../bloc/education_content_bloc.dart';
 import '../bloc/education_content_event.dart';
 import '../bloc/education_content_state.dart';
-import 'education_content_detail_page.dart';
+import 'package:go_router/go_router.dart';
 
 class EducationContentListPage extends StatelessWidget {
   final int topicId;
   final String topicTitle;
+  final int? packageId;
+  final String? packageTitle;
 
   const EducationContentListPage({
     super.key,
     required this.topicId,
     required this.topicTitle,
+    this.packageId,
+    this.packageTitle,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => sl<EducationContentBloc>()..add(GetEducationContentsByTopicEvent(topicId)),
-      child: _EducationContentListView(topicId: topicId, topicTitle: topicTitle),
+      child: _EducationContentListView(
+        topicId: topicId,
+        topicTitle: topicTitle,
+        packageId: packageId,
+        packageTitle: packageTitle,
+      ),
     );
   }
 }
@@ -30,8 +39,15 @@ class EducationContentListPage extends StatelessWidget {
 class _EducationContentListView extends StatefulWidget {
   final int topicId;
   final String topicTitle;
+  final int? packageId;
+  final String? packageTitle;
 
-  const _EducationContentListView({required this.topicId, required this.topicTitle});
+  const _EducationContentListView({
+    required this.topicId,
+    required this.topicTitle,
+    this.packageId,
+    this.packageTitle,
+  });
 
   @override
   State<_EducationContentListView> createState() => _EducationContentListViewState();
@@ -96,11 +112,30 @@ class _EducationContentListViewState extends State<_EducationContentListView>
         final searchQuery = state is EducationContentLoaded ? state.searchQuery : '';
 
         return Scaffold(
-          appBar: AppBar(
+            appBar: AppBar(
             title: Text(widget.topicTitle),
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else if (widget.packageId != null && widget.packageId! > 0) {
+                  final uri = Uri(
+                    path: '/topics',
+                    queryParameters: {
+                      'packageId': '${widget.packageId}',
+                      if (widget.packageTitle != null) 'title': widget.packageTitle!,
+                    },
+                  ).toString();
+                  context.go(uri);
+                } else {
+                  context.go('/home');
+                }
+              },
+            ),
             titleTextStyle: TextStyle(
               color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
               fontSize: 20,
@@ -181,14 +216,12 @@ class _EducationContentListViewState extends State<_EducationContentListView>
                               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                               onTap: () async {
                                 final bloc = context.read<EducationContentBloc>();
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => BlocProvider.value(
-                                      value: bloc,
-                                      child: EducationContentDetailPage(content: content),
-                                    ),
-                                  ),
+                                await context.push(
+                                  '/education-content-detail',
+                                  extra: {
+                                    'content': content,
+                                    'bloc': bloc,
+                                  },
                                 );
                                 // Refetch education contents to get updated isLiked status
                                 if (context.mounted) {

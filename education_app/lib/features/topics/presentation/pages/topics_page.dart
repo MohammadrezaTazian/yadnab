@@ -5,10 +5,9 @@ import 'package:education_app/features/topics/presentation/bloc/topic_event.dart
 import 'package:education_app/features/topics/presentation/bloc/topic_state.dart';
 import 'package:education_app/features/topics/domain/entities/topic.dart';
 import 'package:education_app/injection_container.dart';
-import 'package:education_app/features/quiz/presentation/pages/quiz_list_page.dart';
-import 'package:education_app/features/education/presentation/pages/education_content_list_page.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
 import 'package:education_app/shared/widgets/app_search.dart';
+import 'package:go_router/go_router.dart';
 
 class TopicsPage extends StatelessWidget {
   final int packageId;
@@ -127,7 +126,13 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                       Icons.arrow_back,
                       color: isDark ? AppColors.textPrimaryDark : AppColors.onPrimary,
                     ),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/home');
+                      }
+                    },
                   ),
                   actions: [
                     SearchAppBarAction(
@@ -280,11 +285,11 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
   }
 
   void _showContentSelectionSheet(
-      BuildContext context, Topic topic, bool isDark) {
-    showModalBottomSheet(
+      BuildContext context, Topic topic, bool isDark) async {
+    final result = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Material(
+      builder: (sheetContext) => Material(
         color: Colors.transparent,
         child: Container(
           decoration: BoxDecoration(
@@ -328,18 +333,7 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                       color: isDark ? AppColors.sheetSubtitleDark : AppColors.sheetSubtitleLight,
                     ),
                   ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EducationContentListPage(
-                          topicId: topic.id,
-                          topicTitle: topic.title,
-                        ),
-                      ),
-                    );
-                  },
+                  onTap: () => Navigator.pop(sheetContext, 'education'),
                 ),
               ),
               const SizedBox(height: 12),
@@ -367,18 +361,7 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                       color: isDark ? AppColors.sheetSubtitleDark : AppColors.sheetSubtitleLight,
                     ),
                   ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => QuizListPage(
-                          topicId: topic.id,
-                          topicTitle: topic.title,
-                        ),
-                      ),
-                    );
-                  },
+                  onTap: () => Navigator.pop(sheetContext, 'quiz'),
                 ),
               ),
               const SizedBox(height: 16),
@@ -387,6 +370,48 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
         ),
       ),
     );
+
+    if (!context.mounted || result == null) return;
+
+    if (result == 'education') {
+      final uri = Uri(
+        path: '/education-content',
+        queryParameters: {
+          'topicId': '${topic.id}',
+          'topicTitle': topic.title,
+          'packageId': '${widget.packageId}',
+          'packageTitle': widget.title,
+        },
+      ).toString();
+      context.go(
+        uri,
+        extra: {
+          'topicId': topic.id,
+          'topicTitle': topic.title,
+          'packageId': widget.packageId,
+          'packageTitle': widget.title,
+        },
+      );
+    } else if (result == 'quiz') {
+      final uri = Uri(
+        path: '/quiz-list',
+        queryParameters: {
+          'topicId': '${topic.id}',
+          'topicTitle': topic.title,
+          'packageId': '${widget.packageId}',
+          'packageTitle': widget.title,
+        },
+      ).toString();
+      context.go(
+        uri,
+        extra: {
+          'topicId': topic.id,
+          'topicTitle': topic.title,
+          'packageId': widget.packageId,
+          'packageTitle': widget.title,
+        },
+      );
+    }
   }
 }
 

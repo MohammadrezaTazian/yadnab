@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/shared/widgets/main_navigation.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
+import 'package:go_router/go_router.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -72,11 +73,7 @@ class AppDrawer extends StatelessWidget {
                   title: t?.home ?? 'خانه',
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => MainNavigationPage()),
-                      (route) => false,
-                    );
+                    context.go('/home');
                   },
                 ),
                 _buildNavItem(
@@ -105,7 +102,7 @@ class AppDrawer extends StatelessWidget {
                   title: 'آپلود تصویر',
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.pushNamed(context, '/upload');
+                    context.push('/upload');
                   },
                 ),
                 const Divider(height: 32),

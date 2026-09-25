@@ -9,6 +9,7 @@ import 'package:education_app/shared/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:education_app/shared/widgets/dio_network_svg_image.dart';
 import 'package:education_app/core/utils/url_helper.dart';
+import 'package:go_router/go_router.dart';
 
 class QuestionDetailPage extends StatefulWidget {
   final Question question;
@@ -164,26 +165,12 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
   }
 
   void _showFullScreenImage(String imageUrl, String title) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            title: Text(title, style: const TextStyle(color: Colors.white)),
-          ),
-          body: Center(
-            child: InteractiveViewer(
-              panEnabled: true,
-              scaleEnabled: true,
-              minScale: 0.5,
-              maxScale: 5.0,
-              child: _buildNetworkOrAssetImage(imageUrl, double.infinity, BoxFit.contain),
-            ),
-          ),
-        ),
-      ),
+    context.push(
+      '/image-viewer',
+      extra: {
+        'imageUrl': imageUrl,
+        'title': title,
+      },
     );
   }
 
@@ -194,8 +181,8 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     final hasFullImage = widget.question.fullPageImage != null;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('سوال ${widget.index}'),
+        appBar: AppBar(
+          title: Text('سوال ${widget.index}'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(

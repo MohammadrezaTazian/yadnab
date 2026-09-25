@@ -9,7 +9,7 @@ import 'package:education_app/features/profile/domain/entities/educational_level
 import 'package:education_app/features/auth/domain/entities/user.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_event.dart';
-import 'package:education_app/core/routes/app_routes.dart';
+import 'package:go_router/go_router.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/shared/widgets/app_drawer.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
@@ -96,7 +96,7 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: const Icon(Icons.logout_rounded),
             onPressed: () {
               context.read<AuthBloc>().add(LogoutEvent());
-              Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+              context.go('/login');
             },
           ),
         ],

@@ -15,16 +15,18 @@ class DetailedAnswerModel extends DetailedAnswer {
 
   factory DetailedAnswerModel.fromJson(Map<String, dynamic> json) {
     return DetailedAnswerModel(
-      id: json['id'] as int? ?? 0,
-      questionId: json['questionId'] as int? ?? 0,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      questionId: (json['questionId'] as num?)?.toInt() ?? 0,
       answerText: json['answerText'] as String? ?? '',
       fullAnswerImage: json['fullAnswerImage'] as String?,
       answerImages: (json['answerImages'] as List<dynamic>?)
-              ?.map((e) => ContentImageModel.fromJson(e))
+              ?.map((e) => e is ContentImageModel
+                  ? e
+                  : ContentImageModel.fromJson(Map<String, dynamic>.from(e as Map)))
               .toList() ??
           [],
       answerAuthor: json['answerAuthor'] as String?,
-      answerYear: json['answerYear'] as int? ?? 0,
+      answerYear: (json['answerYear'] as num?)?.toInt() ?? 0,
       isLiked: json['isLiked'] as bool? ?? false,
     );
   }
