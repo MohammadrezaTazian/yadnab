@@ -1,43 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:education_app/features/home/presentation/pages/home_page.dart';
 import 'package:education_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:education_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 
-class MainNavigationPage extends StatefulWidget {
+class MainNavigationPage extends StatelessWidget {
   const MainNavigationPage({super.key});
 
-  @override
-  State<MainNavigationPage> createState() => MainNavigationPageState();
-}
+  int _getCurrentIndex(BuildContext context) {
+    final location = GoRouterState.of(context).uri.path;
 
-class MainNavigationPageState extends State<MainNavigationPage> {
-  int currentIndex = 0;
-
-  void navigateToIndex(int index) {
-    setState(() {
-      currentIndex = index;
-    });
+    switch (location) {
+      case '/profile':
+        return 1;
+      case '/settings':
+        return 2;
+      case '/home':
+      default:
+        return 0;
+    }
   }
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const ProfilePage(),
-    const SettingsPage(),
-  ];
+  Widget _getCurrentPage(int index) {
+    switch (index) {
+      case 1:
+        return const ProfilePage();
+      case 2:
+        return const SettingsPage();
+      case 0:
+      default:
+        return const HomePage();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+    final currentIndex = _getCurrentIndex(context);
+
     return Scaffold(
-      body: _pages[currentIndex],
+      body: _getCurrentPage(currentIndex),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (index) {
-          setState(() {
-            currentIndex = index;
-          });
+          switch (index) {
+            case 0:
+              context.go('/home');
+              break;
+            case 1:
+              context.go('/profile');
+              break;
+            case 2:
+              context.go('/settings');
+              break;
+          }
         },
         backgroundColor: isDark ? const Color(0xFF1A1F3A) : null,
         selectedItemColor: isDark ? const Color(0xFF6C63FF) : null,
@@ -60,3 +77,4 @@ class MainNavigationPageState extends State<MainNavigationPage> {
     );
   }
 }
+

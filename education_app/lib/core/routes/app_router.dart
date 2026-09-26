@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:education_app/features/auth/presentation/pages/login_page.dart';
-import 'package:education_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:education_app/features/upload/presentation/pages/image_upload_page.dart';
 import 'package:education_app/shared/widgets/main_navigation.dart';
 import 'package:education_app/features/topics/presentation/pages/topics_page.dart';
@@ -132,11 +131,14 @@ class AppRouter {
           path: '/home',
           builder: (context, state) => const MainNavigationPage(),
         ),
-
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const MainNavigationPage(),
+        ),
         // =================== Settings ===================
         GoRoute(
           path: '/settings',
-          builder: (context, state) => const SettingsPage(),
+          builder: (context, state) => const MainNavigationPage(),
         ),
 
         // =================== Upload ===================

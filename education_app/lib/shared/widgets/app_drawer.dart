@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:education_app/l10n/app_localizations.dart';
-import 'package:education_app/shared/widgets/main_navigation.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
 import 'package:go_router/go_router.dart';
 
@@ -82,8 +81,7 @@ class AppDrawer extends StatelessWidget {
                   title: t?.profile ?? 'پروفایل',
                   onTap: () {
                     Navigator.pop(context);
-                    final mainNav = context.findAncestorStateOfType<MainNavigationPageState>();
-                    mainNav?.navigateToIndex(1);
+                    context.go('/profile');
                   },
                 ),
                 _buildNavItem(
@@ -92,18 +90,16 @@ class AppDrawer extends StatelessWidget {
                   title: t?.settings ?? 'تنظیمات',
                   onTap: () {
                     Navigator.pop(context);
-                    final mainNav = context.findAncestorStateOfType<MainNavigationPageState>();
-                    mainNav?.navigateToIndex(2);
+                    context.go('/settings');
                   },
                 ),
                 _buildNavItem(
                   context,
                   icon: Icons.add_photo_alternate_rounded,
                   title: 'آپلود تصویر',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.push('/upload');
-                  },
+                onTap: () {
+    context.go('/upload');
+  },
                 ),
                 const Divider(height: 32),
                 _buildNavItem(
@@ -144,22 +140,13 @@ class AppDrawer extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: ListTile(
-        leading: Icon(
-          icon,
-          color: colorScheme.primary,
-        ),
-        title: Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        leading: Icon(icon, color: colorScheme.primary),
+        title: Text(title, style: Theme.of(context).textTheme.titleMedium),
         onTap: onTap,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         hoverColor: colorScheme.primary.withValues(alpha: 0.08),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
     );
   }
 }
-
