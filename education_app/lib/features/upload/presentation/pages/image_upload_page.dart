@@ -7,6 +7,7 @@ import 'package:education_app/injection_container.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImageUploadPage extends StatelessWidget {
@@ -42,10 +43,12 @@ class _ImageUploadViewState extends State<_ImageUploadView> {
   }
 
   void _onSearch() {
-    context.read<UploadBloc>().add(SearchEntitiesEvent(
-          _selectedEntityTypeId,
-          searchText: _searchController.text,
-        ));
+    context.read<UploadBloc>().add(
+      SearchEntitiesEvent(
+        _selectedEntityTypeId,
+        searchText: _searchController.text,
+      ),
+    );
   }
 
   Future<void> _pickImage() async {
@@ -62,6 +65,18 @@ class _ImageUploadViewState extends State<_ImageUploadView> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            final from = GoRouterState.of(context).extra as String?;
+
+            if (from != null && from.isNotEmpty) {
+              context.go(from);
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
         title: Text('آپلود تصویر'),
         centerTitle: true,
         backgroundColor: colorScheme.primary,
@@ -78,7 +93,8 @@ class _ImageUploadViewState extends State<_ImageUploadView> {
             );
             _altTextController.clear();
             _searchController.clear();
-          } else if (state.status == UploadStatus.error || state.status == UploadStatus.searchError) {
+          } else if (state.status == UploadStatus.error ||
+              state.status == UploadStatus.searchError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage ?? 'خطای ناشناخته'),
@@ -102,8 +118,14 @@ class _ImageUploadViewState extends State<_ImageUploadView> {
                   ),
                   items: const [
                     DropdownMenuItem(value: 1, child: Text('سوال (Question)')),
-                    DropdownMenuItem(value: 2, child: Text('پاسخ تشریحی (Detailed Answer)')),
-                    DropdownMenuItem(value: 3, child: Text('محتوای آموزشی (Education Content)')),
+                    DropdownMenuItem(
+                      value: 2,
+                      child: Text('پاسخ تشریحی (Detailed Answer)'),
+                    ),
+                    DropdownMenuItem(
+                      value: 3,
+                      child: Text('محتوای آموزشی (Education Content)'),
+                    ),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -200,7 +222,9 @@ class _ImageUploadViewState extends State<_ImageUploadView> {
                               ? const Icon(Icons.image, color: Colors.green)
                               : null,
                           onTap: () {
-                            context.read<UploadBloc>().add(SelectEntityEvent(item.id, item.title));
+                            context.read<UploadBloc>().add(
+                              SelectEntityEvent(item.id, item.title),
+                            );
                           },
                         );
                       },
@@ -223,8 +247,14 @@ class _ImageUploadViewState extends State<_ImageUploadView> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: kIsWeb
-                          ? Image.network(state.selectedImage!.path, fit: BoxFit.cover)
-                          : Image.file(File(state.selectedImage!.path), fit: BoxFit.cover),
+                          ? Image.network(
+                              state.selectedImage!.path,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.file(
+                              File(state.selectedImage!.path),
+                              fit: BoxFit.cover,
+                            ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -240,14 +270,23 @@ class _ImageUploadViewState extends State<_ImageUploadView> {
                     child: Container(
                       height: 150,
                       decoration: BoxDecoration(
-                        border: Border.all(color: colorScheme.outline, style: BorderStyle.solid),
+                        border: Border.all(
+                          color: colorScheme.outline,
+                          style: BorderStyle.solid,
+                        ),
                         borderRadius: BorderRadius.circular(8),
-                        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                        color: colorScheme.surfaceContainerHighest.withValues(
+                          alpha: 0.3,
+                        ),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add_photo_alternate_outlined, size: 48, color: colorScheme.primary),
+                          Icon(
+                            Icons.add_photo_alternate_outlined,
+                            size: 48,
+                            color: colorScheme.primary,
+                          ),
                           const SizedBox(height: 8),
                           Text('انتخاب تصویر', style: textTheme.titleMedium),
                         ],
@@ -268,20 +307,28 @@ class _ImageUploadViewState extends State<_ImageUploadView> {
 
                 // Upload Button
                 FilledButton.icon(
-                  onPressed: state.status == UploadStatus.uploading || state.selectedEntityId == null || state.selectedImage == null
+                  onPressed:
+                      state.status == UploadStatus.uploading ||
+                          state.selectedEntityId == null ||
+                          state.selectedImage == null
                       ? null
                       : () {
-                          context.read<UploadBloc>().add(UploadImageEvent(
-                                entityTypeId: _selectedEntityTypeId,
-                                entityId: state.selectedEntityId!,
-                                altText: _altTextController.text,
-                              ));
+                          context.read<UploadBloc>().add(
+                            UploadImageEvent(
+                              entityTypeId: _selectedEntityTypeId,
+                              entityId: state.selectedEntityId!,
+                              altText: _altTextController.text,
+                            ),
+                          );
                         },
                   icon: state.status == UploadStatus.uploading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Icon(Icons.cloud_upload),
                   label: const Text('آپلود تصویر'),

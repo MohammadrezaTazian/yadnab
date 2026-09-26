@@ -97,9 +97,10 @@ class AppDrawer extends StatelessWidget {
                   context,
                   icon: Icons.add_photo_alternate_rounded,
                   title: 'آپلود تصویر',
-                onTap: () {
-    context.go('/upload');
-  },
+                  onTap: () {
+                    final currentPath = GoRouterState.of(context).uri.path;
+                    context.go('/upload', extra: currentPath);
+                  },
                 ),
                 const Divider(height: 32),
                 _buildNavItem(
