@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:education_app/core/constants/api_constants.dart';
@@ -57,7 +58,7 @@ class ApiService {
   Future<void> updateTheme(String theme) async {
     final response = await dio.post(
       '${ApiConstants.baseUrl}${ApiConstants.theme}',
-      data: theme,
+      data: jsonEncode(theme),
       options: _getOptions(),
     );
 

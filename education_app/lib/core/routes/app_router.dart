@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_bloc.dart';
@@ -21,24 +21,102 @@ import 'package:education_app/features/education/domain/entities/education_conte
 import 'package:education_app/features/education/data/models/education_content_model.dart';
 import 'package:education_app/features/quiz/domain/entities/question.dart';
 import 'package:education_app/features/quiz/data/models/question_model.dart';
+import 'dart:async';
+
+class AuthRouterRefresh extends ChangeNotifier {
+  late final StreamSubscription<AuthState> _subscription;
+
+  AuthRouterRefresh(AuthBloc authBloc) {
+    _subscription = authBloc.stream.listen((_) {
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
 
 class AppRouter {
-  static final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'root',
+  );
+
   static GoRouter? _router;
+  static AuthRouterRefresh? _authRouterRefresh;
 
-  static GoRouter get router => _router ??= _createRouter();
+  static GoRouter createRouter(BuildContext context) {
+    if (_router != null) {
+      return _router!;
+    }
 
-  static GoRouter createRouter(BuildContext? context) => router;
+    final authBloc = context.read<AuthBloc>();
+    _authRouterRefresh = AuthRouterRefresh(authBloc);
 
-  static GoRouter _createRouter() {
+    _router = _createRouter(authBloc);
+
+    return _router!;
+  }
+
+  static GoRouter get router {
+    if (_router == null) {
+      throw StateError(
+        'AppRouter has not been initialized. '
+        'Call AppRouter.createRouter(context) first.',
+      );
+    }
+
+    return _router!;
+  }
+
+  static GoRouter _createRouter(AuthBloc authBloc) {
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
       debugLogDiagnostics: false,
       initialLocation: '/splash',
+      refreshListenable: _authRouterRefresh,
+
       redirect: (context, state) {
-        // Auth is managed inside AuthGateScreen
+        final authState = authBloc.state;
+        final location = state.matchedLocation;
+
+        final isSplash = location == '/splash';
+        final isLogin = location == '/login';
+
+        // فقط وضعیت اولیه برنامه باید روی Splash بماند.
+        // AuthLoading ممکن است هنگام SendOtp یا VerifyOtp نیز رخ دهد
+        // و نباید باعث Navigation به Splash شود.
+        if (authState is AuthInitial) {
+          return isSplash ? null : '/splash';
+        }
+
+        if (authState is AuthLoading) {
+          return null;
+        }
+
+        // کاربر احراز هویت شده نباید بتواند وارد Login یا Splash شود.
+        if (authState is AuthAuthenticated) {
+          if (isSplash || isLogin) {
+            return '/home';
+          }
+
+          return null;
+        }
+
+        // کاربر احراز هویت نشده فقط اجازه ورود به Login را دارد.
+        if (authState is AuthUnauthenticated || authState is AuthError) {
+          if (isLogin) {
+            return null;
+          }
+
+          return '/login';
+        }
+
         return null;
       },
+
       routes: [
         // =================== Splash / Auth Gate ===================
         GoRoute(
@@ -47,10 +125,7 @@ class AppRouter {
         ),
 
         // =================== Auth ===================
-        GoRoute(
-          path: '/login',
-          builder: (context, state) => const LoginPage(),
-        ),
+        GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
 
         // =================== Main App (Home with bottom nav) ===================
         GoRoute(
@@ -74,14 +149,23 @@ class AppRouter {
         GoRoute(
           path: '/topics',
           builder: (context, state) {
-            final extra = state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null;
+            final extra = state.extra is Map<String, dynamic>
+                ? state.extra as Map<String, dynamic>
+                : null;
+
             final packageIdStr = state.uri.queryParameters['packageId'];
-            final packageId = extra?['packageId'] as int? ?? (packageIdStr != null ? int.tryParse(packageIdStr) : null) ?? 0;
-            final title = extra?['title'] as String? ?? state.uri.queryParameters['title'] ?? 'سرفصل‌ها';
-            return TopicsPage(
-              packageId: packageId,
-              title: title,
-            );
+
+            final packageId =
+                extra?['packageId'] as int? ??
+                (packageIdStr != null ? int.tryParse(packageIdStr) : null) ??
+                0;
+
+            final title =
+                extra?['title'] as String? ??
+                state.uri.queryParameters['title'] ??
+                'سر فصل‌ها';
+
+            return TopicsPage(packageId: packageId, title: title);
           },
         ),
 
@@ -89,13 +173,32 @@ class AppRouter {
         GoRoute(
           path: '/education-content',
           builder: (context, state) {
-            final extra = state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null;
+            final extra = state.extra is Map<String, dynamic>
+                ? state.extra as Map<String, dynamic>
+                : null;
+
             final topicIdStr = state.uri.queryParameters['topicId'];
-            final topicId = extra?['topicId'] as int? ?? (topicIdStr != null ? int.tryParse(topicIdStr) : null) ?? 0;
-            final topicTitle = extra?['topicTitle'] as String? ?? state.uri.queryParameters['topicTitle'] ?? 'محتوای آموزشی';
+
+            final topicId =
+                extra?['topicId'] as int? ??
+                (topicIdStr != null ? int.tryParse(topicIdStr) : null) ??
+                0;
+
+            final topicTitle =
+                extra?['topicTitle'] as String? ??
+                state.uri.queryParameters['topicTitle'] ??
+                'محتوای آموزشی';
+
             final packageIdStr = state.uri.queryParameters['packageId'];
-            final packageId = extra?['packageId'] as int? ?? (packageIdStr != null ? int.tryParse(packageIdStr) : null);
-            final packageTitle = extra?['packageTitle'] as String? ?? state.uri.queryParameters['packageTitle'];
+
+            final packageId =
+                extra?['packageId'] as int? ??
+                (packageIdStr != null ? int.tryParse(packageIdStr) : null);
+
+            final packageTitle =
+                extra?['packageTitle'] as String? ??
+                state.uri.queryParameters['packageTitle'];
+
             return EducationContentListPage(
               topicId: topicId,
               topicTitle: topicTitle,
@@ -109,25 +212,35 @@ class AppRouter {
         GoRoute(
           path: '/education-content-detail',
           builder: (context, state) {
-            final extra = state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null;
+            final extra = state.extra is Map<String, dynamic>
+                ? state.extra as Map<String, dynamic>
+                : null;
+
             final rawContent = extra?['content'];
+
             EducationContent? content;
+
             if (rawContent is EducationContent) {
               content = rawContent;
             } else if (rawContent is Map) {
               try {
-                content = EducationContentModel.fromJson(Map<String, dynamic>.from(rawContent));
+                content = EducationContentModel.fromJson(
+                  Map<String, dynamic>.from(rawContent),
+                );
               } catch (e) {
                 debugPrint('Error parsing EducationContent from extra: $e');
               }
             }
+
             final bloc = extra?['bloc'] as EducationContentBloc?;
 
             if (content == null) {
               return Scaffold(
                 appBar: AppBar(title: const Text('محتوای آموزشی')),
                 body: const Center(
-                  child: Text('اطلاعات محتوا در دسترس نیست. لطفاً از لیست مطالب وارد شوید.'),
+                  child: Text(
+                    'اطلاعات محتوا در دسترس نیست. لطفاً از لیست مطالب وارد شوید.',
+                  ),
                 ),
               );
             }
@@ -150,13 +263,32 @@ class AppRouter {
         GoRoute(
           path: '/quiz-list',
           builder: (context, state) {
-            final extra = state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null;
+            final extra = state.extra is Map<String, dynamic>
+                ? state.extra as Map<String, dynamic>
+                : null;
+
             final topicIdStr = state.uri.queryParameters['topicId'];
-            final topicId = extra?['topicId'] as int? ?? (topicIdStr != null ? int.tryParse(topicIdStr) : null) ?? 0;
-            final topicTitle = extra?['topicTitle'] as String? ?? state.uri.queryParameters['topicTitle'] ?? 'لیست آزمون';
+
+            final topicId =
+                extra?['topicId'] as int? ??
+                (topicIdStr != null ? int.tryParse(topicIdStr) : null) ??
+                0;
+
+            final topicTitle =
+                extra?['topicTitle'] as String? ??
+                state.uri.queryParameters['topicTitle'] ??
+                'لیست آزمون';
+
             final packageIdStr = state.uri.queryParameters['packageId'];
-            final packageId = extra?['packageId'] as int? ?? (packageIdStr != null ? int.tryParse(packageIdStr) : null);
-            final packageTitle = extra?['packageTitle'] as String? ?? state.uri.queryParameters['packageTitle'];
+
+            final packageId =
+                extra?['packageId'] as int? ??
+                (packageIdStr != null ? int.tryParse(packageIdStr) : null);
+
+            final packageTitle =
+                extra?['packageTitle'] as String? ??
+                state.uri.queryParameters['packageTitle'];
+
             return QuizListPage(
               topicId: topicId,
               topicTitle: topicTitle,
@@ -170,19 +302,28 @@ class AppRouter {
         GoRoute(
           path: '/question-detail',
           builder: (context, state) {
-            final extra = state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null;
+            final extra = state.extra is Map<String, dynamic>
+                ? state.extra as Map<String, dynamic>
+                : null;
+
             final rawQuestion = extra?['question'];
+
             Question? question;
+
             if (rawQuestion is Question) {
               question = rawQuestion;
             } else if (rawQuestion is Map) {
               try {
-                question = QuestionModel.fromJson(Map<String, dynamic>.from(rawQuestion));
+                question = QuestionModel.fromJson(
+                  Map<String, dynamic>.from(rawQuestion),
+                );
               } catch (e) {
                 debugPrint('Error parsing Question from extra: $e');
               }
             }
+
             final rawIndex = extra?['index'];
+
             final index = (rawIndex is num)
                 ? rawIndex.toInt()
                 : (rawIndex != null ? int.tryParse('$rawIndex') ?? 1 : 1);
@@ -191,15 +332,14 @@ class AppRouter {
               return Scaffold(
                 appBar: AppBar(title: const Text('سوال')),
                 body: const Center(
-                  child: Text('اطلاعات سوال در دسترس نیست. لطفاً از لیست سوالات وارد شوید.'),
+                  child: Text(
+                    'اطلاعات سوال در دسترس نیست. لطفاً از لیست سوالات وارد شوید.',
+                  ),
                 ),
               );
             }
 
-            return QuestionDetailPage(
-              question: question,
-              index: index,
-            );
+            return QuestionDetailPage(question: question, index: index);
           },
         ),
 
@@ -207,58 +347,39 @@ class AppRouter {
         GoRoute(
           path: '/image-viewer',
           builder: (context, state) {
-            final extra = state.extra is Map<String, dynamic> ? state.extra as Map<String, dynamic> : null;
-            final imageUrl = extra?['imageUrl'] as String? ?? state.uri.queryParameters['imageUrl'] ?? '';
-            final title = extra?['title'] as String? ?? state.uri.queryParameters['title'] ?? 'تصویر';
+            final extra = state.extra is Map<String, dynamic>
+                ? state.extra as Map<String, dynamic>
+                : null;
+
+            final imageUrl =
+                extra?['imageUrl'] as String? ??
+                state.uri.queryParameters['imageUrl'] ??
+                '';
+
+            final title =
+                extra?['title'] as String? ??
+                state.uri.queryParameters['title'] ??
+                'تصویر';
+
             return _ImageViewerPage(imageUrl: imageUrl, title: title);
           },
         ),
       ],
+
       errorBuilder: (context, state) => const MainNavigationPage(),
     );
   }
 }
 
-/// صفحه دروازه احراز هویت در استارتاپ
-class AuthGateScreen extends StatefulWidget {
+class AuthGateScreen extends StatelessWidget {
   const AuthGateScreen({super.key});
 
   @override
-  State<AuthGateScreen> createState() => _AuthGateScreenState();
-}
-
-class _AuthGateScreenState extends State<AuthGateScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final authState = context.read<AuthBloc>().state;
-      _navigateByState(authState);
-    });
-  }
-
-  void _navigateByState(AuthState authState) {
-    if (!mounted) return;
-    if (authState is AuthAuthenticated) {
-      context.go('/home');
-    } else if (authState is AuthUnauthenticated || authState is AuthError) {
-      context.go('/login');
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) => _navigateByState(state),
-      child: const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
 
-/// Image Viewer صفحه داخلی
 class _ImageViewerPage extends StatelessWidget {
   final String imageUrl;
   final String title;
@@ -290,7 +411,11 @@ class _ImageViewerPage extends StatelessWidget {
     if (path.isEmpty) {
       return const Icon(Icons.broken_image, color: Colors.white, size: 60);
     }
-    final resolved = path.startsWith('assets/') ? path : UrlHelper.resolve(path);
+
+    final resolved = path.startsWith('assets/')
+        ? path
+        : UrlHelper.resolve(path);
+
     final isSvg = resolved.toLowerCase().endsWith('.svg');
     final isNetwork = resolved.toLowerCase().startsWith('http');
 
@@ -301,24 +426,29 @@ class _ImageViewerPage extends StatelessWidget {
           height: MediaQuery.of(context).size.height * 0.75,
         );
       }
+
       return Image.network(
         resolved,
         fit: BoxFit.contain,
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
-          return const Center(child: CircularProgressIndicator(color: Colors.white));
+
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
         },
         errorBuilder: (context, error, stack) =>
             const Icon(Icons.broken_image, color: Colors.white, size: 60),
       );
-    } else {
-      if (isSvg) {
-        return SvgPicture.asset(
-          path,
-          height: MediaQuery.of(context).size.height * 0.75,
-        );
-      }
-      return Image.asset(path, fit: BoxFit.contain);
     }
+
+    if (isSvg) {
+      return SvgPicture.asset(
+        path,
+        height: MediaQuery.of(context).size.height * 0.75,
+      );
+    }
+
+    return Image.asset(path, fit: BoxFit.contain);
   }
 }

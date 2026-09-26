@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:education_app/injection_container.dart';
@@ -12,8 +12,6 @@ import 'package:education_app/shared/theme/app_theme.dart';
 import 'package:education_app/core/routes/app_router.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/core/config/config_service.dart';
-
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,7 +44,9 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: AppTheme.getLightTheme(settingsState.fontSize),
             darkTheme: AppTheme.getDarkTheme(settingsState.fontSize),
-            themeMode: settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            themeMode: settingsState.isDarkMode
+                ? ThemeMode.dark
+                : ThemeMode.light,
             locale: Locale(settingsState.languageCode),
             supportedLocales: AppLocalizations.supportedLocales,
             localizationsDelegates: const [
@@ -55,12 +55,10 @@ class MyApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            routerConfig: AppRouter.router,
+            routerConfig: AppRouter.createRouter(context),
           );
         },
       ),
     );
   }
 }
-
-// AuthCheckWrapper دیگر لازم نیست — GoRouter از طریق AppRouter.createRouter این وظیفه را درون AuthGateScreen مدیریت می‌کند.
