@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +13,10 @@ import 'package:go_router/go_router.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/shared/widgets/app_drawer.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
+import 'package:education_app/shared/storage/shared_preferences_service.dart';
+import 'package:education_app/core/constants/storage_constants.dart';
+import 'package:education_app/injection_container.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -34,7 +38,16 @@ class _ProfilePageState extends State<ProfilePage> {
     _firstNameController = TextEditingController();
     _lastNameController = TextEditingController();
     _emailController = TextEditingController();
-    context.read<ProfileBloc>().add(LoadProfileEvent());
+    Future.microtask(() async {
+      final prefs = getIt<SharedPreferencesService>();
+
+      final tokenBefore = prefs.getString(StorageConstants.accessToken);
+      final refreshToken = prefs.getString(StorageConstants.refreshToken);
+
+      if (mounted) {
+        context.read<ProfileBloc>().add(LoadProfileEvent());
+      }
+    });
   }
 
   @override
@@ -431,3 +444,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
+
+
+
+
+
+
+
+

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:education_app/features/settings/presentation/pages/settings_page.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_bloc.dart';
@@ -83,6 +84,7 @@ class AppRouter {
 
         final isSplash = location == '/splash';
         final isLogin = location == '/login';
+        final isSettings = location == '/settings';
 
         // فقط وضعیت اولیه برنامه باید روی Splash بماند.
         // AuthLoading ممکن است هنگام SendOtp یا VerifyOtp نیز رخ دهد
@@ -106,7 +108,7 @@ class AppRouter {
 
         // کاربر احراز هویت نشده فقط اجازه ورود به Login را دارد.
         if (authState is AuthUnauthenticated || authState is AuthError) {
-          if (isLogin) {
+          if (isLogin || isSettings) {
             return null;
           }
 
@@ -138,7 +140,13 @@ class AppRouter {
         // =================== Settings ===================
         GoRoute(
           path: '/settings',
-          builder: (context, state) => const MainNavigationPage(),
+          builder: (context, state) {
+            final isAuthenticated = authBloc.state is AuthAuthenticated;
+
+            return isAuthenticated
+                ? const MainNavigationPage()
+                : const SettingsPage();
+          },
         ),
 
         // =================== Upload ===================

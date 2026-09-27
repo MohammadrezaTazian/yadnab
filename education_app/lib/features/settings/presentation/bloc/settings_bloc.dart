@@ -11,35 +11,52 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final SharedPreferencesService prefsService;
   final ApiService apiService;
 
-  SettingsBloc({required this.prefsService, required this.apiService})
-    : super(const SettingsState()) {
-    on<LoadSettingsEvent>(_onLoadSettings);
+  bool _isAuthenticated = false;
+
+  SettingsBloc({
+    required this.prefsService,
+    required this.apiService,
+  }) : super(const SettingsState()) {
+    on<LoadGuestSettingsEvent>(_onLoadGuestSettings);
+    on<LoadUserSettingsEvent>(_onLoadUserSettings);
     on<ChangeThemeEvent>(_onChangeTheme);
     on<ChangeLanguageEvent>(_onChangeLanguage);
     on<ChangeFontSizeEvent>(_onChangeFontSize);
   }
 
-  Future<void> _onLoadSettings(
-    LoadSettingsEvent event,
+  Future<void> _onLoadGuestSettings(
+    LoadGuestSettingsEvent event,
     Emitter<SettingsState> emit,
   ) async {
-    try {
-      // Try to load from backend first
-      final settings = await apiService.getSettings();
+    _isAuthenticated = false;
 
-      // Save to local storage
-      await prefsService.setBool(
-        StorageConstants.theme,
-        settings.theme == 'Dark',
-      );
-      await prefsService.setString(
-        StorageConstants.language,
-        settings.language,
-      );
-      await prefsService.setInt(
-        StorageConstants.fontSize,
-        settings.fontSize.toInt(),
-      );
+    final isDark =
+        prefsService.getBool(StorageConstants.guestTheme) ?? false;
+
+    final language =
+        prefsService.getString(StorageConstants.guestLanguage) ?? 'fa';
+
+    final fontSize =
+        prefsService.getInt(StorageConstants.guestFontSize)?.toDouble() ??
+            14.0;
+
+    emit(
+      state.copyWith(
+        isDarkMode: isDark,
+        languageCode: language,
+        fontSize: fontSize,
+      ),
+    );
+  }
+
+  Future<void> _onLoadUserSettings(
+    LoadUserSettingsEvent event,
+    Emitter<SettingsState> emit,
+  ) async {
+    _isAuthenticated = true;
+
+    try {
+      final settings = await apiService.getSettings();
 
       emit(
         state.copyWith(
@@ -48,20 +65,13 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           fontSize: settings.fontSize,
         ),
       );
-    } catch (e) {
-      // Fallback to local storage if backend fails
-      final isDark = prefsService.getBool(StorageConstants.theme) ?? false;
-      final lang = prefsService.getString(StorageConstants.language) ?? 'fa';
-      final fontSize =
-          prefsService.getInt(StorageConstants.fontSize)?.toDouble() ?? 14.0;
+    } catch (e, stackTrace) {
+      debugPrint('❌ Load User Settings Error: $e');
+      debugPrint('❌ StackTrace: $stackTrace');
 
-      emit(
-        state.copyWith(
-          isDarkMode: isDark,
-          languageCode: lang,
-          fontSize: fontSize,
-        ),
-      );
+      // مهم:
+      // در حالت کاربر لاگین‌شده به تنظیمات Guest یا کاربر قبلی
+      // fallback نمی‌کنیم.
     }
   }
 
@@ -69,14 +79,31 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     ChangeThemeEvent event,
     Emitter<SettingsState> emit,
   ) async {
+    if (!_isAuthenticated) {
+      await prefsService.setBool(
+        StorageConstants.guestTheme,
+        event.isDark,
+      );
+
+      emit(
+        state.copyWith(
+          isDarkMode: event.isDark,
+        ),
+      );
+
+      return;
+    }
+
     try {
-      // Save to backend
-      await apiService.updateTheme(event.isDark ? 'Dark' : 'Light');
+      await apiService.updateTheme(
+        event.isDark ? 'Dark' : 'Light',
+      );
 
-      // Save to local storage
-      await prefsService.setBool(StorageConstants.theme, event.isDark);
-
-      emit(state.copyWith(isDarkMode: event.isDark));
+      emit(
+        state.copyWith(
+          isDarkMode: event.isDark,
+        ),
+      );
     } catch (e, stackTrace) {
       debugPrint('❌ ChangeTheme API Error: $e');
 
@@ -86,10 +113,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         debugPrint('❌ Request Data: ${e.requestOptions.data}');
         debugPrint('❌ Request Headers: ${e.requestOptions.headers}');
       }
-      debugPrint('❌ StackTrace: $stackTrace');
 
-      await prefsService.setBool(StorageConstants.theme, event.isDark);
-      emit(state.copyWith(isDarkMode: event.isDark));
+      debugPrint('❌ StackTrace: $stackTrace');
     }
   }
 
@@ -97,24 +122,32 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     ChangeLanguageEvent event,
     Emitter<SettingsState> emit,
   ) async {
+    if (!_isAuthenticated) {
+      await prefsService.setString(
+        StorageConstants.guestLanguage,
+        event.languageCode,
+      );
+
+      emit(
+        state.copyWith(
+          languageCode: event.languageCode,
+        ),
+      );
+
+      return;
+    }
+
     try {
-      // Save to backend
       await apiService.updateLanguage(event.languageCode);
 
-      // Save to local storage
-      await prefsService.setString(
-        StorageConstants.language,
-        event.languageCode,
+      emit(
+        state.copyWith(
+          languageCode: event.languageCode,
+        ),
       );
-
-      emit(state.copyWith(languageCode: event.languageCode));
-    } catch (e) {
-      // If backend fails, still save locally
-      await prefsService.setString(
-        StorageConstants.language,
-        event.languageCode,
-      );
-      emit(state.copyWith(languageCode: event.languageCode));
+    } catch (e, stackTrace) {
+      debugPrint('❌ ChangeLanguage API Error: $e');
+      debugPrint('❌ StackTrace: $stackTrace');
     }
   }
 
@@ -122,24 +155,32 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     ChangeFontSizeEvent event,
     Emitter<SettingsState> emit,
   ) async {
+    if (!_isAuthenticated) {
+      await prefsService.setInt(
+        StorageConstants.guestFontSize,
+        event.fontSize.toInt(),
+      );
+
+      emit(
+        state.copyWith(
+          fontSize: event.fontSize,
+        ),
+      );
+
+      return;
+    }
+
     try {
-      // Save to backend
       await apiService.updateFontSize(event.fontSize);
 
-      // Save to local storage
-      await prefsService.setInt(
-        StorageConstants.fontSize,
-        event.fontSize.toInt(),
+      emit(
+        state.copyWith(
+          fontSize: event.fontSize,
+        ),
       );
-
-      emit(state.copyWith(fontSize: event.fontSize));
-    } catch (e) {
-      // If backend fails, still save locally
-      await prefsService.setInt(
-        StorageConstants.fontSize,
-        event.fontSize.toInt(),
-      );
-      emit(state.copyWith(fontSize: event.fontSize));
+    } catch (e, stackTrace) {
+      debugPrint('❌ ChangeFontSize API Error: $e');
+      debugPrint('❌ StackTrace: $stackTrace');
     }
   }
 }

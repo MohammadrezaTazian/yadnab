@@ -91,6 +91,8 @@ builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings.GetValue<string>("SecretKey") ?? throw new InvalidOperationException("JWT SecretKey is not configured");
 var issuer = jwtSettings.GetValue<string>("Issuer");
+var expiryInMinutes = jwtSettings.GetValue<int>("ExpiryInMinutes");
+Console.WriteLine($"JWT ExpiryInMinutes = {expiryInMinutes}");
 var audience = jwtSettings.GetValue<string>("Audience");
 
 builder.Services.AddAuthentication(options =>
@@ -154,3 +156,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

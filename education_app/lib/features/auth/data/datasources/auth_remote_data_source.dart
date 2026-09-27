@@ -1,3 +1,4 @@
+﻿import 'dart:convert';
 import 'package:education_app/core/constants/api_constants.dart';
 import 'package:education_app/features/auth/data/models/user_model.dart';
 import 'package:education_app/shared/network/dio_client.dart';
@@ -29,8 +30,9 @@ class AuthRemoteDataSource {
   Future<UserModel> refreshToken(String refreshToken) async {
     final response = await dioClient.post(
       ApiConstants.refreshToken,
-      data: refreshToken,
+      data: jsonEncode(refreshToken),
     );
     return UserModel.fromJson(response.data);
   }
 }
+

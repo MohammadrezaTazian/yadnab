@@ -1,3 +1,4 @@
+﻿import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:education_app/core/constants/api_constants.dart';
 import 'package:education_app/core/constants/storage_constants.dart';
@@ -5,12 +6,16 @@ import 'package:education_app/shared/storage/shared_preferences_service.dart';
 import 'package:education_app/injection_container.dart';
 
 class AuthInterceptor extends Interceptor {
-  // جلوگیری از Refresh Token loop — اگر همزمان چند 401 بیاید فقط یک بار refresh می‌شود
+  void Function()? onSessionExpired;
+
   bool _isRefreshing = false;
   final List<_RetryRequest> _pendingRequests = [];
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) {
     final prefs = getIt<SharedPreferencesService>();
     final token = prefs.getString(StorageConstants.accessToken);
 
@@ -22,23 +27,37 @@ class AuthInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) async {
+  void onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    print('### AUTH: onError STATUS = ${err.response?.statusCode}');
+    print('### AUTH: onError PATH = ${err.requestOptions.path}');
+
     if (err.response?.statusCode != 401) {
+      print('### AUTH: NOT 401 -> passing error');
       handler.next(err);
       return;
     }
 
-    // جلوگیری از retry loop — اگر خود درخواست refresh-token هم 401 داد
-    final isRefreshRequest =
-        err.requestOptions.path.contains(ApiConstants.refreshToken);
+    print('### AUTH: 401 RECEIVED');
+
+    final isRefreshRequest = err.requestOptions.path.contains(
+      ApiConstants.refreshToken,
+    );
+
     if (isRefreshRequest) {
+      print('### AUTH: REFRESH REQUEST ITSELF FAILED -> LOGOUT');
       await _doLogout();
       handler.next(err);
       return;
     }
 
-    // اگر در حال refresh هستیم، درخواست را در صف نگه می‌داریم
+    print('### AUTH: NOT REFRESH REQUEST');
+
     if (_isRefreshing) {
+      print('### AUTH: REFRESH ALREADY IN PROGRESS -> QUEUE REQUEST');
+
       final pendingRequest = _RetryRequest(err, handler);
       _pendingRequests.add(pendingRequest);
       return;
@@ -47,16 +66,35 @@ class AuthInterceptor extends Interceptor {
     _isRefreshing = true;
 
     try {
-      final prefs = getIt<SharedPreferencesService>();
-      final storedRefreshToken = prefs.getString(StorageConstants.refreshToken);
+      print('### AUTH: STARTING REFRESH');
 
-      if (storedRefreshToken == null) {
+      final prefs = getIt<SharedPreferencesService>();
+
+      final storedRefreshToken = prefs.getString(
+        StorageConstants.refreshToken,
+      );
+
+      print(
+        '### AUTH: REFRESH TOKEN NULL = ${storedRefreshToken == null}',
+      );
+      print(
+        '### AUTH: REFRESH TOKEN LENGTH = ${storedRefreshToken?.length ?? 0}',
+      );
+      print(
+        '### AUTH: REFRESH ENDPOINT = [${ApiConstants.refreshToken}]',
+      );
+
+      if (storedRefreshToken == null ||
+          storedRefreshToken.isEmpty) {
+        print('### AUTH: NO REFRESH TOKEN -> LOGOUT');
+
         await _doLogout();
         handler.next(err);
         return;
       }
 
-      // ایجاد یک Dio جدید برای refresh (بدون interceptor تا از loop جلوگیری شود)
+      print('### AUTH: CALLING REFRESH ENDPOINT');
+
       final refreshDio = Dio(
         BaseOptions(
           baseUrl: ApiConstants.baseUrl,
@@ -69,43 +107,102 @@ class AuthInterceptor extends Interceptor {
 
       final refreshResponse = await refreshDio.post(
         ApiConstants.refreshToken,
-        data: storedRefreshToken,
+        data: jsonEncode(storedRefreshToken),
       );
 
-      final newAccessToken = refreshResponse.data['accessToken'] as String?;
-      final newRefreshToken = refreshResponse.data['refreshToken'] as String?;
+      print(
+        '### AUTH: REFRESH RESPONSE STATUS = ${refreshResponse.statusCode}',
+      );
+      print(
+        '### AUTH: REFRESH RESPONSE DATA = ${refreshResponse.data}',
+      );
 
-      if (newAccessToken == null) {
+      final newAccessToken =
+          refreshResponse.data['accessToken'] as String?;
+
+      final newRefreshToken =
+          refreshResponse.data['refreshToken'] as String?;
+
+      print(
+        '### AUTH: NEW ACCESS TOKEN NULL = ${newAccessToken == null}',
+      );
+      print(
+        '### AUTH: NEW REFRESH TOKEN NULL = ${newRefreshToken == null}',
+      );
+
+      if (newAccessToken == null ||
+          newAccessToken.isEmpty) {
+        print('### AUTH: INVALID REFRESH RESPONSE -> LOGOUT');
+
         await _doLogout();
         handler.next(err);
         return;
       }
 
-      // ذخیره توکن‌های جدید
-      await prefs.setString(StorageConstants.accessToken, newAccessToken);
-      if (newRefreshToken != null) {
-        await prefs.setString(StorageConstants.refreshToken, newRefreshToken);
+      print('### AUTH: SAVING NEW TOKENS');
+
+      await prefs.setString(
+        StorageConstants.accessToken,
+        newAccessToken,
+      );
+
+      if (newRefreshToken != null &&
+          newRefreshToken.isNotEmpty) {
+        await prefs.setString(
+          StorageConstants.refreshToken,
+          newRefreshToken,
+        );
       }
 
-      // retry درخواست اصلی با توکن جدید
-      final retryResponse = await _retryRequest(err.requestOptions, newAccessToken);
+      print('### AUTH: TOKENS SAVED');
+
+      print('### AUTH: RETRYING ORIGINAL REQUEST');
+
+      final retryResponse = await _retryRequest(
+        err.requestOptions,
+        newAccessToken,
+      );
+
+      print(
+        '### AUTH: RETRY RESPONSE STATUS = ${retryResponse.statusCode}',
+      );
+
       handler.resolve(retryResponse);
 
-      // retry درخواست‌های در صف
       for (final pending in _pendingRequests) {
         try {
+          print('### AUTH: RETRYING PENDING REQUEST');
+
           final response = await _retryRequest(
             pending.error.requestOptions,
             newAccessToken,
           );
+
           pending.handler.resolve(response);
         } catch (e) {
+          print(
+            '### AUTH: PENDING REQUEST RETRY FAILED = $e',
+          );
+
           pending.handler.next(pending.error);
         }
       }
-    } catch (_) {
-      // Refresh ناموفق بود — logout کن
+    } catch (e, stackTrace) {
+      print('### AUTH: REFRESH FAILED = $e');
+
+      if (e is DioException) {
+        print(
+          '### AUTH: REFRESH ERROR STATUS = ${e.response?.statusCode}',
+        );
+        print(
+          '### AUTH: REFRESH ERROR DATA = ${e.response?.data}',
+        );
+      }
+
+      print('### AUTH: STACK TRACE = $stackTrace');
+
       await _doLogout();
+
       handler.next(err);
 
       for (final pending in _pendingRequests) {
@@ -114,13 +211,21 @@ class AuthInterceptor extends Interceptor {
     } finally {
       _isRefreshing = false;
       _pendingRequests.clear();
+
+      print('### AUTH: REFRESH PROCESS FINISHED');
     }
   }
 
-  Future<Response> _retryRequest(RequestOptions options, String token) async {
+  Future<Response> _retryRequest(
+    RequestOptions options,
+    String token,
+  ) async {
     final retryDio = Dio(
-      BaseOptions(baseUrl: options.baseUrl),
+      BaseOptions(
+        baseUrl: options.baseUrl,
+      ),
     );
+
     return retryDio.request(
       options.path,
       data: options.data,
@@ -136,13 +241,16 @@ class AuthInterceptor extends Interceptor {
   }
 
   Future<void> _doLogout() async {
+    print('### AUTH: LOGOUT / CLEAR TOKENS');
+
     final prefs = getIt<SharedPreferencesService>();
+
     await prefs.remove(StorageConstants.accessToken);
     await prefs.remove(StorageConstants.refreshToken);
     await prefs.remove(StorageConstants.userId);
     await prefs.remove(StorageConstants.phoneNumber);
-    // AuthBloc از طریق BlocListener در root widget به AuthUnauthenticated emit می‌کند
-    // تنها کافی است token پاک شود؛ UI از طریق stream اطلاع می‌یابد
+
+    onSessionExpired?.call();
   }
 }
 
@@ -152,3 +260,6 @@ class _RetryRequest {
 
   _RetryRequest(this.error, this.handler);
 }
+
+
+

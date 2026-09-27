@@ -5,6 +5,7 @@ import 'package:education_app/shared/network/interceptors/logging_interceptor.da
 
 class DioClient {
   late final Dio _dio;
+  late final AuthInterceptor _authInterceptor;
 
   DioClient() {
     _dio = Dio(
@@ -19,10 +20,13 @@ class DioClient {
       ),
     );
 
-    _dio.interceptors.addAll([
-      AuthInterceptor(),
-      LoggingInterceptor(),
-    ]);
+    _authInterceptor = AuthInterceptor();
+
+    _dio.interceptors.addAll([_authInterceptor, LoggingInterceptor()]);
+  }
+
+  set onSessionExpired(void Function()? callback) {
+    _authInterceptor.onSessionExpired = callback;
   }
 
   Dio get dio => _dio;
@@ -32,7 +36,11 @@ class DioClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    return await _dio.get(path, queryParameters: queryParameters, options: options);
+    return await _dio.get(
+      path,
+      queryParameters: queryParameters,
+      options: options,
+    );
   }
 
   Future<Response> post(
@@ -41,7 +49,12 @@ class DioClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    return await _dio.post(path, data: data, queryParameters: queryParameters, options: options);
+    return await _dio.post(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
   }
 
   Future<Response> put(
@@ -50,7 +63,12 @@ class DioClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    return await _dio.put(path, data: data, queryParameters: queryParameters, options: options);
+    return await _dio.put(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
   }
 
   Future<Response> delete(
@@ -59,6 +77,11 @@ class DioClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    return await _dio.delete(path, data: data, queryParameters: queryParameters, options: options);
+    return await _dio.delete(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
   }
 }

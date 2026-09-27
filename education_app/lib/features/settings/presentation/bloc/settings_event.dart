@@ -7,7 +7,9 @@ abstract class SettingsEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadSettingsEvent extends SettingsEvent {}
+class LoadGuestSettingsEvent extends SettingsEvent {}
+
+class LoadUserSettingsEvent extends SettingsEvent {}
 
 class ChangeThemeEvent extends SettingsEvent {
   final bool isDark;

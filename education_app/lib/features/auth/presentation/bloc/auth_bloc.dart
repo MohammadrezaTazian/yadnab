@@ -6,11 +6,7 @@ import 'package:education_app/features/auth/presentation/bloc/auth_state.dart';
 
 // User موقت برای startup check (وقتی token معتبر است ولی user object نداریم)
 class _StartupUser extends User {
-  const _StartupUser()
-      : super(
-          id: 0,
-          phoneNumber: '',
-        );
+  const _StartupUser() : super(id: 0, phoneNumber: '');
 }
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -28,6 +24,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SendOtpEvent>(_onSendOtp);
     on<VerifyOtpEvent>(_onVerifyOtp);
     on<LogoutEvent>(_onLogout);
+    on<AuthSessionExpiredEvent>(_onAuthSessionExpired);
     on<CheckAuthStatusEvent>(_onCheckAuthStatus);
   }
 
@@ -41,7 +38,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onVerifyOtp(VerifyOtpEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onVerifyOtp(
+    VerifyOtpEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       final user = await verifyOtpUseCase(event.phoneNumber, event.otp);
@@ -58,6 +58,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(AuthError(e.toString()));
     }
+  }
+
+  Future<void> _onAuthSessionExpired(
+    AuthSessionExpiredEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthUnauthenticated());
   }
 
   Future<void> _onCheckAuthStatus(
