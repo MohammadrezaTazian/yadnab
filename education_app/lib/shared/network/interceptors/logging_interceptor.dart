@@ -1,11 +1,12 @@
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 class LoggingInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    print('>>> REQUEST [${options.method}] => ${options.path}');
-    print('>>> Authorization: ${options.headers['Authorization']}');
+    debugPrint('>>> REQUEST [${options.method}] => ${options.path}');
+    debugPrint('>>> Authorization: ${options.headers['Authorization']}');
 
     developer.log(
       'REQUEST[${options.method}] => PATH: ${options.path}',
@@ -16,7 +17,7 @@ class LoggingInterceptor extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    print(
+    debugPrint(
       '<<< RESPONSE [${response.statusCode}] => ${response.requestOptions.path}',
     );
 
@@ -29,11 +30,11 @@ class LoggingInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    print(
+    debugPrint(
       '<<< ERROR [${err.response?.statusCode}] => ${err.requestOptions.path}',
     );
 
-    print(
+    debugPrint(
       '<<< ERROR MESSAGE: ${err.message}',
     );
 

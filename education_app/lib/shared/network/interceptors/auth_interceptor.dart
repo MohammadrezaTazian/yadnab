@@ -4,6 +4,7 @@ import 'package:education_app/core/constants/api_constants.dart';
 import 'package:education_app/core/constants/storage_constants.dart';
 import 'package:education_app/shared/storage/shared_preferences_service.dart';
 import 'package:education_app/injection_container.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthInterceptor extends Interceptor {
   void Function()? onSessionExpired;
@@ -31,32 +32,32 @@ class AuthInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    print('### AUTH: onError STATUS = ${err.response?.statusCode}');
-    print('### AUTH: onError PATH = ${err.requestOptions.path}');
+    debugPrint('### AUTH: onError STATUS = ${err.response?.statusCode}');
+    debugPrint('### AUTH: onError PATH = ${err.requestOptions.path}');
 
     if (err.response?.statusCode != 401) {
-      print('### AUTH: NOT 401 -> passing error');
+      debugPrint('### AUTH: NOT 401 -> passing error');
       handler.next(err);
       return;
     }
 
-    print('### AUTH: 401 RECEIVED');
+    debugPrint('### AUTH: 401 RECEIVED');
 
     final isRefreshRequest = err.requestOptions.path.contains(
       ApiConstants.refreshToken,
     );
 
     if (isRefreshRequest) {
-      print('### AUTH: REFRESH REQUEST ITSELF FAILED -> LOGOUT');
+      debugPrint('### AUTH: REFRESH REQUEST ITSELF FAILED -> LOGOUT');
       await _doLogout();
       handler.next(err);
       return;
     }
 
-    print('### AUTH: NOT REFRESH REQUEST');
+    debugPrint('### AUTH: NOT REFRESH REQUEST');
 
     if (_isRefreshing) {
-      print('### AUTH: REFRESH ALREADY IN PROGRESS -> QUEUE REQUEST');
+      debugPrint('### AUTH: REFRESH ALREADY IN PROGRESS -> QUEUE REQUEST');
 
       final pendingRequest = _RetryRequest(err, handler);
       _pendingRequests.add(pendingRequest);
@@ -66,7 +67,7 @@ class AuthInterceptor extends Interceptor {
     _isRefreshing = true;
 
     try {
-      print('### AUTH: STARTING REFRESH');
+      debugPrint('### AUTH: STARTING REFRESH');
 
       final prefs = getIt<SharedPreferencesService>();
 
@@ -74,26 +75,26 @@ class AuthInterceptor extends Interceptor {
         StorageConstants.refreshToken,
       );
 
-      print(
+      debugPrint(
         '### AUTH: REFRESH TOKEN NULL = ${storedRefreshToken == null}',
       );
-      print(
+      debugPrint(
         '### AUTH: REFRESH TOKEN LENGTH = ${storedRefreshToken?.length ?? 0}',
       );
-      print(
+      debugPrint(
         '### AUTH: REFRESH ENDPOINT = [${ApiConstants.refreshToken}]',
       );
 
       if (storedRefreshToken == null ||
           storedRefreshToken.isEmpty) {
-        print('### AUTH: NO REFRESH TOKEN -> LOGOUT');
+        debugPrint('### AUTH: NO REFRESH TOKEN -> LOGOUT');
 
         await _doLogout();
         handler.next(err);
         return;
       }
 
-      print('### AUTH: CALLING REFRESH ENDPOINT');
+      debugPrint('### AUTH: CALLING REFRESH ENDPOINT');
 
       final refreshDio = Dio(
         BaseOptions(
@@ -110,10 +111,10 @@ class AuthInterceptor extends Interceptor {
         data: jsonEncode(storedRefreshToken),
       );
 
-      print(
+      debugPrint(
         '### AUTH: REFRESH RESPONSE STATUS = ${refreshResponse.statusCode}',
       );
-      print(
+      debugPrint(
         '### AUTH: REFRESH RESPONSE DATA = ${refreshResponse.data}',
       );
 
@@ -123,23 +124,23 @@ class AuthInterceptor extends Interceptor {
       final newRefreshToken =
           refreshResponse.data['refreshToken'] as String?;
 
-      print(
+      debugPrint(
         '### AUTH: NEW ACCESS TOKEN NULL = ${newAccessToken == null}',
       );
-      print(
+      debugPrint(
         '### AUTH: NEW REFRESH TOKEN NULL = ${newRefreshToken == null}',
       );
 
       if (newAccessToken == null ||
           newAccessToken.isEmpty) {
-        print('### AUTH: INVALID REFRESH RESPONSE -> LOGOUT');
+        debugPrint('### AUTH: INVALID REFRESH RESPONSE -> LOGOUT');
 
         await _doLogout();
         handler.next(err);
         return;
       }
 
-      print('### AUTH: SAVING NEW TOKENS');
+      debugPrint('### AUTH: SAVING NEW TOKENS');
 
       await prefs.setString(
         StorageConstants.accessToken,
@@ -154,16 +155,16 @@ class AuthInterceptor extends Interceptor {
         );
       }
 
-      print('### AUTH: TOKENS SAVED');
+      debugPrint('### AUTH: TOKENS SAVED');
 
-      print('### AUTH: RETRYING ORIGINAL REQUEST');
+      debugPrint('### AUTH: RETRYING ORIGINAL REQUEST');
 
       final retryResponse = await _retryRequest(
         err.requestOptions,
         newAccessToken,
       );
 
-      print(
+      debugPrint(
         '### AUTH: RETRY RESPONSE STATUS = ${retryResponse.statusCode}',
       );
 
@@ -171,7 +172,7 @@ class AuthInterceptor extends Interceptor {
 
       for (final pending in _pendingRequests) {
         try {
-          print('### AUTH: RETRYING PENDING REQUEST');
+          debugPrint('### AUTH: RETRYING PENDING REQUEST');
 
           final response = await _retryRequest(
             pending.error.requestOptions,
@@ -180,7 +181,7 @@ class AuthInterceptor extends Interceptor {
 
           pending.handler.resolve(response);
         } catch (e) {
-          print(
+          debugPrint(
             '### AUTH: PENDING REQUEST RETRY FAILED = $e',
           );
 
@@ -188,18 +189,18 @@ class AuthInterceptor extends Interceptor {
         }
       }
     } catch (e, stackTrace) {
-      print('### AUTH: REFRESH FAILED = $e');
+      debugPrint('### AUTH: REFRESH FAILED = $e');
 
       if (e is DioException) {
-        print(
+        debugPrint(
           '### AUTH: REFRESH ERROR STATUS = ${e.response?.statusCode}',
         );
-        print(
+        debugPrint(
           '### AUTH: REFRESH ERROR DATA = ${e.response?.data}',
         );
       }
 
-      print('### AUTH: STACK TRACE = $stackTrace');
+      debugPrint('### AUTH: STACK TRACE = $stackTrace');
 
       await _doLogout();
 
@@ -212,7 +213,7 @@ class AuthInterceptor extends Interceptor {
       _isRefreshing = false;
       _pendingRequests.clear();
 
-      print('### AUTH: REFRESH PROCESS FINISHED');
+      debugPrint('### AUTH: REFRESH PROCESS FINISHED');
     }
   }
 
@@ -241,7 +242,7 @@ class AuthInterceptor extends Interceptor {
   }
 
   Future<void> _doLogout() async {
-    print('### AUTH: LOGOUT / CLEAR TOKENS');
+    debugPrint('### AUTH: LOGOUT / CLEAR TOKENS');
 
     final prefs = getIt<SharedPreferencesService>();
 

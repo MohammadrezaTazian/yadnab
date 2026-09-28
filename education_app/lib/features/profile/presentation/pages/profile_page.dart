@@ -17,7 +17,6 @@ import 'package:education_app/shared/storage/shared_preferences_service.dart';
 import 'package:education_app/core/constants/storage_constants.dart';
 import 'package:education_app/injection_container.dart';
 
-
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -43,6 +42,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
       final tokenBefore = prefs.getString(StorageConstants.accessToken);
       final refreshToken = prefs.getString(StorageConstants.refreshToken);
+      debugPrint('Token before: $tokenBefore');
+      debugPrint('Refresh token: $refreshToken');
 
       if (mounted) {
         context.read<ProfileBloc>().add(LoadProfileEvent());
@@ -115,9 +116,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-        ),
+        decoration: BoxDecoration(color: colorScheme.surface),
         child: BlocConsumer<ProfileBloc, ProfileState>(
           listener: (context, state) {
             if (state is ProfileLoaded) {
@@ -146,7 +145,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   ? state.user
                   : (state as ProfileUpdated).user;
 
-              if (_firstNameController.text.isEmpty && (user.firstName ?? '').isNotEmpty) {
+              if (_firstNameController.text.isEmpty &&
+                  (user.firstName ?? '').isNotEmpty) {
                 _updateControllers(user);
               }
 
@@ -179,17 +179,23 @@ class _ProfilePageState extends State<ProfilePage> {
                                       shape: BoxShape.circle,
                                     ),
                                     child: ClipOval(
-                                      child: user.profilePicture != null && user.profilePicture!.isNotEmpty
+                                      child:
+                                          user.profilePicture != null &&
+                                              user.profilePicture!.isNotEmpty
                                           ? Image.memory(
-                                              const Base64Decoder().convert(user.profilePicture!),
+                                              const Base64Decoder().convert(
+                                                user.profilePicture!,
+                                              ),
                                               fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return Icon(
-                                                  Icons.person_rounded,
-                                                  size: 60,
-                                                  color: colorScheme.primary,
-                                                );
-                                              },
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return Icon(
+                                                      Icons.person_rounded,
+                                                      size: 60,
+                                                      color:
+                                                          colorScheme.primary,
+                                                    );
+                                                  },
                                             )
                                           : Icon(
                                               Icons.person_rounded,
@@ -227,15 +233,22 @@ class _ProfilePageState extends State<ProfilePage> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            
+
                             // Phone Number Display
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
-                                color: colorScheme.primary.withValues(alpha: 0.1),
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(15),
                                 border: Border.all(
-                                  color: colorScheme.primary.withValues(alpha: 0.3),
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               child: Row(
@@ -258,14 +271,16 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            
+
                             // Form Fields
                             _buildProfileField(
                               context,
                               controller: _firstNameController,
                               icon: Icons.person_rounded,
                               label: AppLocalizations.of(context)!.firstName,
-                              hint: AppLocalizations.of(context)!.enterFirstName,
+                              hint: AppLocalizations.of(
+                                context,
+                              )!.enterFirstName,
                               iconColor: colorScheme.primary,
                             ),
                             const SizedBox(height: 16),
@@ -294,7 +309,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                   r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
                                 );
                                 if (!emailRegex.hasMatch(value)) {
-                                  return AppLocalizations.of(context)!.invalidEmail;
+                                  return AppLocalizations.of(
+                                    context,
+                                  )!.invalidEmail;
                                 }
                                 return null;
                               },
@@ -307,7 +324,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   : (state as ProfileUpdated).educationalLevels,
                             ),
                             const SizedBox(height: 32),
-                            
+
                             // Save Button
                             SizedBox(
                               width: double.infinity,
@@ -316,13 +333,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
                                     context.read<ProfileBloc>().add(
-                                          UpdateProfileEvent(
-                                            firstName: _firstNameController.text,
-                                            lastName: _lastNameController.text,
-                                            email: _emailController.text,
-                                            educationalLevelId: _selectedEducationalLevelId,
-                                          ),
-                                        );
+                                      UpdateProfileEvent(
+                                        firstName: _firstNameController.text,
+                                        lastName: _lastNameController.text,
+                                        email: _emailController.text,
+                                        educationalLevelId:
+                                            _selectedEducationalLevelId,
+                                      ),
+                                    );
                                   }
                                 },
                                 child: Text(
@@ -366,9 +384,7 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
       ),
       child: TextFormField(
         controller: controller,
@@ -379,7 +395,10 @@ class _ProfilePageState extends State<ProfilePage> {
           labelText: label,
           hintText: hint,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           prefixIcon: Container(
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(8),
@@ -394,12 +413,17 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildEducationalLevelDropdown(BuildContext context, List<EducationalLevel> levels) {
+  Widget _buildEducationalLevelDropdown(
+    BuildContext context,
+    List<EducationalLevel> levels,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     final levelIds = levels.map((l) => l.id).toList();
-    final validSelectedId = (_selectedEducationalLevelId != null && levelIds.contains(_selectedEducationalLevelId))
+    final validSelectedId =
+        (_selectedEducationalLevelId != null &&
+            levelIds.contains(_selectedEducationalLevelId))
         ? _selectedEducationalLevelId
         : null;
 
@@ -407,9 +431,7 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
       ),
       child: DropdownButtonFormField<int>(
         initialValue: validSelectedId,
@@ -418,7 +440,10 @@ class _ProfilePageState extends State<ProfilePage> {
         decoration: InputDecoration(
           labelText: AppLocalizations.of(context)!.selectGrade,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           prefixIcon: Container(
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(8),
@@ -426,7 +451,11 @@ class _ProfilePageState extends State<ProfilePage> {
               color: AppColors.success,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.school_rounded, color: AppColors.onPrimary, size: 20),
+            child: Icon(
+              Icons.school_rounded,
+              color: AppColors.onPrimary,
+              size: 20,
+            ),
           ),
         ),
         items: levels.map((EducationalLevel level) {
@@ -444,11 +473,3 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
-
-
-
-
-
-
-
-
