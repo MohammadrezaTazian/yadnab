@@ -154,6 +154,19 @@ class ApiService {
     }
   }
 
+  Future<dynamic> getEducationContentById(int id) async {
+    final response = await dio.get(
+      '${ApiConstants.baseUrl}/EducationContents/$id',
+      options: _getOptions(),
+    );
+
+    if (response.statusCode == 200) {
+      return response.data;
+    } else {
+      throw Exception('Failed to load education content');
+    }
+  }
+
   // Comments & Likes API
   Future<List<dynamic>> getComments(int targetId, int targetType) async {
     final response = await dio.get(

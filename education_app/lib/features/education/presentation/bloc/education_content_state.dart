@@ -43,6 +43,15 @@ class EducationContentLoaded extends EducationContentState {
   List<Object> get props => [contents, filteredContents, searchQuery, isSearching];
 }
 
+class EducationContentDetailLoaded extends EducationContentState {
+  final EducationContent content;
+
+  const EducationContentDetailLoaded(this.content);
+
+  @override
+  List<Object> get props => [content];
+}
+
 class EducationContentError extends EducationContentState {
   final String message;
 

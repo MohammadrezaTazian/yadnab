@@ -4,4 +4,5 @@ import '../entities/education_content.dart';
 
 abstract class EducationContentRepository {
   Future<Either<Failure, List<EducationContent>>> getEducationContentsByTopic(int topicId);
+  Future<Either<Failure, EducationContent>> getEducationContentById(int id);
 }

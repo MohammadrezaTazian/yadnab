@@ -92,9 +92,7 @@ class _HomePageContentState extends State<_HomePageContent>
         return Scaffold(
           drawer: const AppDrawer(),
           body: Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-            ),
+            decoration: BoxDecoration(color: colorScheme.surface),
             child: CustomScrollView(
               slivers: [
                 SliverAppBar(
@@ -104,9 +102,13 @@ class _HomePageContentState extends State<_HomePageContent>
                   actions: [
                     SearchAppBarAction(
                       isSearching: isSearching,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.onPrimary,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.onPrimary,
                       onPressed: () {
-                        context.read<HomeBloc>().add(ToggleHomeSearchVisibilityEvent());
+                        context.read<HomeBloc>().add(
+                          ToggleHomeSearchVisibilityEvent(),
+                        );
                       },
                     ),
                     const SizedBox(width: 4),
@@ -138,7 +140,9 @@ class _HomePageContentState extends State<_HomePageContent>
                             Text(
                               AppLocalizations.of(context)!.welcomeBack,
                               style: TextStyle(
-                                color: AppColors.onPrimary.withValues(alpha: 0.7),
+                                color: AppColors.onPrimary.withValues(
+                                  alpha: 0.7,
+                                ),
                                 fontSize: 16,
                               ),
                             ),
@@ -208,9 +212,14 @@ class _HomePageContentState extends State<_HomePageContent>
                                 ),
                               ),
                               IconButton(
-                                icon: Icon(Icons.refresh_rounded, color: colorScheme.primary),
+                                icon: Icon(
+                                  Icons.refresh_rounded,
+                                  color: colorScheme.primary,
+                                ),
                                 onPressed: () {
-                                  context.read<HomeBloc>().add(LoadPackagesEvent());
+                                  context.read<HomeBloc>().add(
+                                    LoadPackagesEvent(),
+                                  );
                                 },
                               ),
                             ],
@@ -251,21 +260,18 @@ class _HomePageContentState extends State<_HomePageContent>
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final package = state.filteredPackages[index];
-                            return _buildPackageCard(
-                              context,
-                              package,
-                              _getIconForCategory(package.category),
-                              _getColorForCategory(package.category, colorScheme),
-                              colorScheme,
-                              textTheme,
-                              searchQuery,
-                            );
-                          },
-                          childCount: state.filteredPackages.length,
-                        ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final package = state.filteredPackages[index];
+                          return _buildPackageCard(
+                            context,
+                            package,
+                            _getIconForCategory(package.category),
+                            _getColorForCategory(package.category, colorScheme),
+                            colorScheme,
+                            textTheme,
+                            searchQuery,
+                          );
+                        }, childCount: state.filteredPackages.length),
                       ),
                     )
                 else
@@ -333,13 +339,7 @@ class _HomePageContentState extends State<_HomePageContent>
               'title': package.title,
             },
           ).toString();
-          context.go(
-            uri,
-            extra: {
-              'packageId': package.id,
-              'title': package.title,
-            },
-          );
+          context.go(uri);
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
@@ -352,11 +352,7 @@ class _HomePageContentState extends State<_HomePageContent>
                   color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 30,
-                ),
+                child: Icon(icon, color: color, size: 30),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -394,5 +390,3 @@ class _HomePageContentState extends State<_HomePageContent>
     );
   }
 }
-
-

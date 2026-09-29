@@ -3,17 +3,21 @@ import '../../domain/entities/education_content.dart';
 import 'education_content_event.dart';
 import 'education_content_state.dart';
 import '../../domain/usecases/get_education_contents_by_topic.dart';
+import '../../domain/usecases/get_education_content_by_id.dart';
 import 'package:education_app/features/comment/domain/usecases/toggle_like.dart';
 
 class EducationContentBloc extends Bloc<EducationContentEvent, EducationContentState> {
   final GetEducationContentsByTopic getEducationContentsByTopic;
+  final GetEducationContentById getEducationContentById;
   final ToggleLike toggleLike;
 
   EducationContentBloc({
     required this.getEducationContentsByTopic,
+    required this.getEducationContentById,
     required this.toggleLike,
   }) : super(EducationContentInitial()) {
     on<GetEducationContentsByTopicEvent>(_onGetEducationContentsByTopic);
+    on<GetEducationContentByIdEvent>(_onGetEducationContentById);
     on<ToggleLikeEvent>(_onToggleLike);
     on<SearchEducationContentEvent>(_onSearchEducationContent);
     on<ClearEducationContentSearchEvent>(_onClearEducationContentSearch);
@@ -31,7 +35,19 @@ class EducationContentBloc extends Bloc<EducationContentEvent, EducationContentS
       (contents) => emit(EducationContentLoaded(contents, filteredContents: contents)),
     );
   }
+  Future<void> _onGetEducationContentById(
+    GetEducationContentByIdEvent event,
+    Emitter<EducationContentState> emit,
+  ) async {
+    emit(EducationContentLoading());
 
+    final result = await getEducationContentById(event.contentId);
+
+    result.fold(
+      (failure) => emit(EducationContentError(failure.message)),
+      (content) => emit(EducationContentDetailLoaded(content)),
+    );
+  }
   void _onSearchEducationContent(
     SearchEducationContentEvent event,
     Emitter<EducationContentState> emit,
@@ -89,18 +105,18 @@ class EducationContentBloc extends Bloc<EducationContentEvent, EducationContentS
     Emitter<EducationContentState> emit,
   ) async {
     final currentState = state;
+
     if (currentState is EducationContentLoaded) {
       final result = await toggleLike(ToggleLikeParams(
         targetId: event.contentId,
         targetType: 3, // EducationContent
       ));
-      
+
       result.fold(
         (failure) {
           // Silently fail or show error
         },
         (isLiked) {
-          // Update the specific content's like status
           final updatedContents = currentState.contents.map((content) {
             if (content.id == event.contentId) {
               return content.copyWith(isLiked: isLiked);
@@ -119,6 +135,23 @@ class EducationContentBloc extends Bloc<EducationContentEvent, EducationContentS
             contents: updatedContents,
             filteredContents: updatedFiltered,
           ));
+        },
+      );
+    } else if (currentState is EducationContentDetailLoaded) {
+      final result = await toggleLike(ToggleLikeParams(
+        targetId: event.contentId,
+        targetType: 3, // EducationContent
+      ));
+
+      result.fold(
+        (failure) {
+          // Silently fail or show error
+        },
+        (isLiked) {
+          final updatedContent =
+              currentState.content.copyWith(isLiked: isLiked);
+
+          emit(EducationContentDetailLoaded(updatedContent));
         },
       );
     }

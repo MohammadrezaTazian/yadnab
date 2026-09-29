@@ -1,4 +1,4 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+﻿import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/question.dart';
 import '../../domain/usecases/get_questions_by_topic.dart';
@@ -8,11 +8,16 @@ import 'question_state.dart';
 class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
   final GetQuestionsByTopic getQuestionsByTopic;
 
-  QuestionBloc({required this.getQuestionsByTopic}) : super(QuestionInitial()) {
+  QuestionBloc({
+    required this.getQuestionsByTopic,
+  }) : super(QuestionInitial()) {
     on<GetQuestionsEvent>(_onGetQuestions);
+    on<GetQuestionByIdEvent>(_onGetQuestionById);
     on<SearchQuestionsEvent>(_onSearchQuestions);
     on<ClearQuestionsSearchEvent>(_onClearQuestionsSearch);
-    on<ToggleQuestionsSearchVisibilityEvent>(_onToggleQuestionsSearchVisibility);
+    on<ToggleQuestionsSearchVisibilityEvent>(
+      _onToggleQuestionsSearchVisibility,
+    );
   }
 
   Future<void> _onGetQuestions(
@@ -20,10 +25,55 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     Emitter<QuestionState> emit,
   ) async {
     emit(QuestionLoading());
+
     final result = await getQuestionsByTopic(event.topicId);
+
     result.fold(
-      (failure) => emit(QuestionError(_mapFailureToMessage(failure))),
-      (questions) => emit(QuestionLoaded(questions, filteredQuestions: questions)),
+      (failure) => emit(
+        QuestionError(_mapFailureToMessage(failure)),
+      ),
+      (questions) => emit(
+        QuestionLoaded(
+          questions,
+          filteredQuestions: questions,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onGetQuestionById(
+    GetQuestionByIdEvent event,
+    Emitter<QuestionState> emit,
+  ) async {
+    emit(QuestionDetailLoading());
+
+    final result = await getQuestionsByTopic(event.topicId);
+
+    result.fold(
+      (failure) => emit(
+        QuestionDetailError(_mapFailureToMessage(failure)),
+      ),
+      (questions) {
+        Question? question;
+
+        for (final item in questions) {
+          if (item.id == event.questionId) {
+            question = item;
+            break;
+          }
+        }
+
+        if (question == null) {
+          emit(
+            const QuestionDetailError(
+              'Question not found',
+            ),
+          );
+          return;
+        }
+
+        emit(QuestionDetailLoaded(question));
+      },
     );
   }
 
@@ -34,11 +84,17 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     if (state is QuestionLoaded) {
       final currentState = state as QuestionLoaded;
       final query = event.query.trim().toLowerCase();
-      final filtered = _filterQuestions(currentState.questions, query);
-      emit(currentState.copyWith(
-        filteredQuestions: filtered,
-        searchQuery: query,
-      ));
+      final filtered = _filterQuestions(
+        currentState.questions,
+        query,
+      );
+
+      emit(
+        currentState.copyWith(
+          filteredQuestions: filtered,
+          searchQuery: query,
+        ),
+      );
     }
   }
 
@@ -48,10 +104,13 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
   ) {
     if (state is QuestionLoaded) {
       final currentState = state as QuestionLoaded;
-      emit(currentState.copyWith(
-        filteredQuestions: currentState.questions,
-        searchQuery: '',
-      ));
+
+      emit(
+        currentState.copyWith(
+          filteredQuestions: currentState.questions,
+          searchQuery: '',
+        ),
+      );
     }
   }
 
@@ -62,16 +121,27 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     if (state is QuestionLoaded) {
       final currentState = state as QuestionLoaded;
       final nextIsSearching = !currentState.isSearching;
-      emit(currentState.copyWith(
-        isSearching: nextIsSearching,
-        filteredQuestions: nextIsSearching ? currentState.filteredQuestions : currentState.questions,
-        searchQuery: nextIsSearching ? currentState.searchQuery : '',
-      ));
+
+      emit(
+        currentState.copyWith(
+          isSearching: nextIsSearching,
+          filteredQuestions: nextIsSearching
+              ? currentState.filteredQuestions
+              : currentState.questions,
+          searchQuery: nextIsSearching
+              ? currentState.searchQuery
+              : '',
+        ),
+      );
     }
   }
 
-  List<Question> _filterQuestions(List<Question> questions, String query) {
+  List<Question> _filterQuestions(
+    List<Question> questions,
+    String query,
+  ) {
     if (query.isEmpty) return questions;
+
     return questions.where((q) {
       return q.questionText.toLowerCase().contains(query);
     }).toList();
@@ -88,4 +158,3 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
     }
   }
 }
-

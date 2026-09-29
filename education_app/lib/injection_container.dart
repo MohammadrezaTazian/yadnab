@@ -26,6 +26,7 @@ import 'package:education_app/features/quiz/presentation/bloc/question_bloc.dart
 import 'package:education_app/features/education/data/repositories/education_content_repository_impl.dart';
 import 'package:education_app/features/education/domain/repositories/education_content_repository.dart';
 import 'package:education_app/features/education/domain/usecases/get_education_contents_by_topic.dart';
+import 'package:education_app/features/education/domain/usecases/get_education_content_by_id.dart';
 import 'package:education_app/features/education/presentation/bloc/education_content_bloc.dart';
 import 'package:education_app/features/comment/data/repositories/comment_repository_impl.dart';
 import 'package:education_app/features/comment/domain/repositories/comment_repository.dart';
@@ -142,10 +143,12 @@ Future<void> setupDependencyInjection() async {
     () => EducationContentRepositoryImpl(getIt()),
   );
   getIt.registerLazySingleton(() => GetEducationContentsByTopic(getIt()));
+getIt.registerLazySingleton(() => GetEducationContentById(getIt()));
   
   getIt.registerFactory(
     () => EducationContentBloc(
       getEducationContentsByTopic: getIt(),
+      getEducationContentById: getIt(),
       toggleLike: getIt(),
     ),
   );

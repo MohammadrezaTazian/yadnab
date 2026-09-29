@@ -1,4 +1,4 @@
-import 'package:education_app/shared/widgets/latex_text.dart';
+﻿import 'package:education_app/shared/widgets/latex_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../presentation/bloc/question_bloc.dart';
@@ -114,7 +114,7 @@ class _QuizListPageContentState extends State<_QuizListPageContent>
         final searchQuery = state is QuestionLoaded ? state.searchQuery : '';
 
         return Scaffold(
-            appBar: AppBar(
+          appBar: AppBar(
             title: Text(widget.topicTitle),
             centerTitle: true,
             leading: IconButton(
@@ -127,7 +127,8 @@ class _QuizListPageContentState extends State<_QuizListPageContent>
                     path: '/topics',
                     queryParameters: {
                       'packageId': '${widget.packageId}',
-                      if (widget.packageTitle != null) 'title': widget.packageTitle!,
+                      if (widget.packageTitle != null)
+                        'title': widget.packageTitle!,
                     },
                   ).toString();
                   context.go(uri);
@@ -139,9 +140,13 @@ class _QuizListPageContentState extends State<_QuizListPageContent>
             actions: [
               SearchAppBarAction(
                 isSearching: isSearching,
-                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
                 onPressed: () {
-                  context.read<QuestionBloc>().add(ToggleQuestionsSearchVisibilityEvent());
+                  context.read<QuestionBloc>().add(
+                    ToggleQuestionsSearchVisibilityEvent(),
+                  );
                 },
               ),
               const SizedBox(width: 4),
@@ -228,15 +233,29 @@ class _QuizListPageContentState extends State<_QuizListPageContent>
                                 color: colorScheme.outline,
                               ),
                               onTap: () async {
-                                await context.push(
-                                  '/question-detail',
+                                final uri = Uri(
+                                  path: '/question-detail',
+                                  queryParameters: {
+                                    'questionId': '${question.id}',
+                                    'topicId': '${widget.topicId}',
+                                  },
+                                ).toString();
+
+                                context.go(
+                                  uri,
                                   extra: {
                                     'question': question,
                                     'index': index + 1,
+                                    'topicId': widget.topicId,
+                                    'topicTitle': widget.topicTitle,
+                                    'packageId': widget.packageId,
+                                    'packageTitle': widget.packageTitle,
                                   },
                                 );
                                 if (context.mounted) {
-                                  context.read<QuestionBloc>().add(GetQuestionsEvent(widget.topicId));
+                                  context.read<QuestionBloc>().add(
+                                    GetQuestionsEvent(widget.topicId),
+                                  );
                                 }
                               },
                             ),
@@ -254,10 +273,7 @@ class _QuizListPageContentState extends State<_QuizListPageContent>
                               color: colorScheme.error,
                             ),
                             const SizedBox(height: 16),
-                            Text(
-                              state.message,
-                              style: textTheme.bodyLarge,
-                            ),
+                            Text(state.message, style: textTheme.bodyLarge),
                           ],
                         ),
                       );
@@ -273,5 +289,6 @@ class _QuizListPageContentState extends State<_QuizListPageContent>
     );
   }
 }
+
 
 

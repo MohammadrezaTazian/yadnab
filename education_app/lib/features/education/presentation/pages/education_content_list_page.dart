@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../injection_container.dart';
 import '../../../../shared/theme/app_colors.dart';
@@ -215,9 +215,16 @@ class _EducationContentListViewState extends State<_EducationContentListView>
                               ),
                               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                               onTap: () async {
-                                final bloc = context.read<EducationContentBloc>();
-                                await context.push(
-                                  '/education-content-detail',
+                                final bloc = context.read<EducationContentBloc>();                                final uri = Uri(
+                                  path: '/education-content-detail',
+                                  queryParameters: {
+                                    'contentId': '${content.id}',
+                                    'topicId': '${widget.topicId}',
+                                  },
+                                ).toString();
+
+                                context.go(
+                                  uri,
                                   extra: {
                                     'content': content,
                                     'bloc': bloc,
@@ -244,4 +251,7 @@ class _EducationContentListViewState extends State<_EducationContentListView>
     );
   }
 }
+
+
+
 

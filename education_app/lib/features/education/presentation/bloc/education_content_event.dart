@@ -16,6 +16,15 @@ class GetEducationContentsByTopicEvent extends EducationContentEvent {
   List<Object> get props => [topicId];
 }
 
+class GetEducationContentByIdEvent extends EducationContentEvent {
+  final int contentId;
+
+  const GetEducationContentByIdEvent(this.contentId);
+
+  @override
+  List<Object> get props => [contentId];
+}
+
 class ToggleLikeEvent extends EducationContentEvent {
   final int contentId;
 

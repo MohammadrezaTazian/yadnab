@@ -1,9 +1,9 @@
-import 'package:equatable/equatable.dart';
+﻿import 'package:equatable/equatable.dart';
 import '../../domain/entities/question.dart';
 
 abstract class QuestionState extends Equatable {
   const QuestionState();
-  
+
   @override
   List<Object> get props => [];
 }
@@ -40,7 +40,32 @@ class QuestionLoaded extends QuestionState {
   }
 
   @override
-  List<Object> get props => [questions, filteredQuestions, searchQuery, isSearching];
+  List<Object> get props => [
+        questions,
+        filteredQuestions,
+        searchQuery,
+        isSearching,
+      ];
+}
+
+class QuestionDetailLoading extends QuestionState {}
+
+class QuestionDetailLoaded extends QuestionState {
+  final Question question;
+
+  const QuestionDetailLoaded(this.question);
+
+  @override
+  List<Object> get props => [question];
+}
+
+class QuestionDetailError extends QuestionState {
+  final String message;
+
+  const QuestionDetailError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }
 
 class QuestionError extends QuestionState {

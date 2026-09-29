@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:education_app/features/topics/presentation/bloc/topic_bloc.dart';
 import 'package:education_app/features/topics/presentation/bloc/topic_event.dart';
@@ -13,11 +13,7 @@ class TopicsPage extends StatelessWidget {
   final int packageId;
   final String title;
 
-  const TopicsPage({
-    super.key,
-    required this.packageId,
-    required this.title,
-  });
+  const TopicsPage({super.key, required this.packageId, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -94,8 +90,9 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
       builder: (context, state) {
         final isSearching = state is TopicLoaded && state.isSearching;
         final searchQuery = state is TopicLoaded ? state.searchQuery : '';
-        final expandedTopicIds =
-            state is TopicLoaded ? state.expandedTopicIds : <int>{};
+        final expandedTopicIds = state is TopicLoaded
+            ? state.expandedTopicIds
+            : <int>{};
 
         return Scaffold(
           body: Container(
@@ -124,7 +121,9 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                   leading: IconButton(
                     icon: Icon(
                       Icons.arrow_back,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.onPrimary,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.onPrimary,
                     ),
                     onPressed: () {
                       if (context.canPop()) {
@@ -137,7 +136,9 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                   actions: [
                     SearchAppBarAction(
                       isSearching: isSearching,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.onPrimary,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.onPrimary,
                       onPressed: () {
                         context.read<TopicBloc>().add(ToggleSearchVisibility());
                       },
@@ -148,7 +149,9 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                     title: Text(
                       widget.title,
                       style: TextStyle(
-                        color: isDark ? AppColors.textPrimaryDark : AppColors.onPrimary,
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.onPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -158,10 +161,7 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: isDark
-                              ? [
-                                  AppColors.surfaceDark,
-                                  AppColors.cardDark,
-                                ]
+                              ? [AppColors.surfaceDark, AppColors.cardDark]
                               : [
                                   AppColors.appBarGradientStartLight,
                                   AppColors.appBarGradientEndLight,
@@ -194,9 +194,7 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                 ),
                 if (state is TopicLoading)
                   const SliverFillRemaining(
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    child: Center(child: CircularProgressIndicator()),
                   )
                 else if (state is TopicError)
                   SliverFillRemaining(
@@ -217,7 +215,9 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? AppColors.textSecondaryDark : AppColors.textPrimaryLight,
+                                color: isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textPrimaryLight,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -225,15 +225,17 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                               state.message,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: isDark ? AppColors.textTertiaryDark : AppColors.textSecondaryLight,
+                                color: isDark
+                                    ? AppColors.textTertiaryDark
+                                    : AppColors.textSecondaryLight,
                               ),
                             ),
                             const SizedBox(height: 16),
                             ElevatedButton.icon(
                               onPressed: () {
-                                context
-                                    .read<TopicBloc>()
-                                    .add(LoadTopics(widget.packageId));
+                                context.read<TopicBloc>().add(
+                                  LoadTopics(widget.packageId),
+                                );
                               },
                               icon: const Icon(Icons.refresh),
                               label: const Text('تلاش مجدد'),
@@ -253,28 +255,23 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                     SliverPadding(
                       padding: const EdgeInsets.all(16.0),
                       sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final topic = state.filteredTopics[index];
-                            return _TopicTreeItem(
-                              topic: topic,
-                              index: index,
-                              isDark: isDark,
-                              searchQuery: searchQuery,
-                              expandedTopicIds: expandedTopicIds,
-                              onLeafTap: (t) =>
-                                  _showContentSelectionSheet(context, t, isDark),
-                            );
-                          },
-                          childCount: state.filteredTopics.length,
-                        ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final topic = state.filteredTopics[index];
+                          return _TopicTreeItem(
+                            topic: topic,
+                            index: index,
+                            isDark: isDark,
+                            searchQuery: searchQuery,
+                            expandedTopicIds: expandedTopicIds,
+                            onLeafTap: (t) =>
+                                _showContentSelectionSheet(context, t, isDark),
+                          );
+                        }, childCount: state.filteredTopics.length),
                       ),
                     )
                 else
                   const SliverFillRemaining(
-                    child: Center(
-                      child: Text('داده‌ای یافت نشد'),
-                    ),
+                    child: Center(child: Text('داده‌ای یافت نشد')),
                   ),
               ],
             ),
@@ -285,7 +282,10 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
   }
 
   void _showContentSelectionSheet(
-      BuildContext context, Topic topic, bool isDark) async {
+    BuildContext context,
+    Topic topic,
+    bool isDark,
+  ) async {
     final result = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -305,7 +305,9 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.onPrimary : AppColors.textPrimaryLight,
+                  color: isDark
+                      ? AppColors.onPrimary
+                      : AppColors.textPrimaryLight,
                 ),
               ),
               const SizedBox(height: 24),
@@ -323,14 +325,18 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                   title: Text(
                     'آموزش',
                     style: TextStyle(
-                      color: isDark ? AppColors.onPrimary : AppColors.textPrimaryLight,
+                      color: isDark
+                          ? AppColors.onPrimary
+                          : AppColors.textPrimaryLight,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   subtitle: Text(
                     'مشاهده ویدیوها و درس‌نامه‌ها',
                     style: TextStyle(
-                      color: isDark ? AppColors.sheetSubtitleDark : AppColors.sheetSubtitleLight,
+                      color: isDark
+                          ? AppColors.sheetSubtitleDark
+                          : AppColors.sheetSubtitleLight,
                     ),
                   ),
                   onTap: () => Navigator.pop(sheetContext, 'education'),
@@ -351,14 +357,18 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                   title: Text(
                     'آزمون',
                     style: TextStyle(
-                      color: isDark ? AppColors.onPrimary : AppColors.textPrimaryLight,
+                      color: isDark
+                          ? AppColors.onPrimary
+                          : AppColors.textPrimaryLight,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   subtitle: Text(
                     'حل سوالات تستی و تمرین',
                     style: TextStyle(
-                      color: isDark ? AppColors.sheetSubtitleDark : AppColors.sheetSubtitleLight,
+                      color: isDark
+                          ? AppColors.sheetSubtitleDark
+                          : AppColors.sheetSubtitleLight,
                     ),
                   ),
                   onTap: () => Navigator.pop(sheetContext, 'quiz'),
@@ -402,15 +412,7 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
           'packageTitle': widget.title,
         },
       ).toString();
-      context.go(
-        uri,
-        extra: {
-          'topicId': topic.id,
-          'topicTitle': topic.title,
-          'packageId': widget.packageId,
-          'packageTitle': widget.title,
-        },
-      );
+      context.go(uri);
     }
   }
 }
@@ -556,10 +558,7 @@ class _TopicTreeItemState extends State<_TopicTreeItem> {
       builder: (context, value, child) {
         return Transform.translate(
           offset: Offset(0, 20 * (1 - value)),
-          child: Opacity(
-            opacity: value,
-            child: child,
-          ),
+          child: Opacity(opacity: value, child: child),
         );
       },
       child: Card(
@@ -569,10 +568,7 @@ class _TopicTreeItemState extends State<_TopicTreeItem> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: widget.isDark
-              ? BorderSide(
-                  color: color.withValues(alpha: 0.3),
-                  width: 1,
-                )
+              ? BorderSide(color: color.withValues(alpha: 0.3), width: 1)
               : BorderSide.none,
         ),
         child: InkWell(
@@ -590,7 +586,8 @@ class _TopicTreeItemState extends State<_TopicTreeItem> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
-                    child: widget.topic.imageUrl != null &&
+                    child:
+                        widget.topic.imageUrl != null &&
                             widget.topic.imageUrl!.isNotEmpty
                         ? Image.asset(
                             widget.topic.imageUrl!,
@@ -622,7 +619,9 @@ class _TopicTreeItemState extends State<_TopicTreeItem> {
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: widget.isDark ? AppColors.textTertiaryDark : AppColors.textSecondaryLight,
+                  color: widget.isDark
+                      ? AppColors.textTertiaryDark
+                      : AppColors.textSecondaryLight,
                   size: 16,
                 ),
               ],
@@ -633,3 +632,5 @@ class _TopicTreeItemState extends State<_TopicTreeItem> {
     );
   }
 }
+
+

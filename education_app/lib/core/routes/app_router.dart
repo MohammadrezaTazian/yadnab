@@ -1,4 +1,7 @@
-﻿import 'package:education_app/features/settings/presentation/pages/settings_page.dart';
+﻿import 'package:education_app/features/quiz/presentation/bloc/question_bloc.dart';
+import 'package:education_app/features/quiz/presentation/bloc/question_event.dart';
+import 'package:education_app/features/quiz/presentation/bloc/question_state.dart';
+import 'package:education_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -74,13 +77,17 @@ class AppRouter {
   static GoRouter _createRouter(AuthBloc authBloc) {
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
-      debugLogDiagnostics: false,
+      debugLogDiagnostics: true,
       initialLocation: '/splash',
       refreshListenable: _authRouterRefresh,
 
       redirect: (context, state) {
         final authState = authBloc.state;
         final location = state.matchedLocation;
+
+        debugPrint(
+          '>>> ROUTER REDIRECT | uri=${state.uri} | matched=$location | auth=${authState.runtimeType}',
+        );
 
         final isSplash = location == '/splash';
         final isLogin = location == '/login';
@@ -244,31 +251,105 @@ class AppRouter {
 
             final bloc = extra?['bloc'] as EducationContentBloc?;
 
-            if (content == null) {
-              return Scaffold(
-                appBar: AppBar(title: const Text('محتوای آموزشی')),
-                body: const Center(
-                  child: Text(
-                    'اطلاعات محتوا در دسترس نیست. لطفاً از لیست مطالب وارد شوید.',
+            final contentIdStr = state.uri.queryParameters['contentId'];
+
+            final contentId = contentIdStr != null
+                ? int.tryParse(contentIdStr)
+                : null;
+
+            final topicIdStr = state.uri.queryParameters['topicId'];
+
+            final topicId = topicIdStr != null
+                ? int.tryParse(topicIdStr)
+                : null;
+
+            final topicTitle =
+                extra?['topicTitle'] as String? ??
+                state.uri.queryParameters['topicTitle'];
+
+            final packageIdStr = state.uri.queryParameters['packageId'];
+
+            final packageId =
+                extra?['packageId'] as int? ??
+                (packageIdStr != null ? int.tryParse(packageIdStr) : null);
+
+            final packageTitle =
+                extra?['packageTitle'] as String? ??
+                state.uri.queryParameters['packageTitle'];
+
+            debugPrint(
+              'EducationContentDetail route: '
+              'contentId=$contentId, topicId=$topicId',
+            );
+
+            // Normal navigation: content is already available.
+            if (content != null) {
+              if (bloc != null) {
+                return BlocProvider<EducationContentBloc>.value(
+                  value: bloc,
+                  child: EducationContentDetailPage(
+                    content: content,
+                    topicId: topicId,
+                    topicTitle: topicTitle,
+                    packageId: packageId,
+                    packageTitle: packageTitle,
                   ),
+                );
+              }
+
+              return BlocProvider<EducationContentBloc>(
+                create: (_) => sl<EducationContentBloc>(),
+                child: EducationContentDetailPage(
+                  content: content,
+                  topicId: topicId,
+                  topicTitle: topicTitle,
+                  packageId: packageId,
+                  packageTitle: packageTitle,
                 ),
               );
             }
 
-            if (bloc != null) {
-              return BlocProvider<EducationContentBloc>.value(
-                value: bloc,
-                child: EducationContentDetailPage(content: content),
+            // Refresh/direct URL navigation.
+            if (contentId != null && contentId > 0) {
+              if (bloc != null) {
+                return BlocProvider<EducationContentBloc>.value(
+                  value: bloc,
+                  child: EducationContentDetailPage(
+                    contentId: contentId,
+                    topicId: topicId,
+                    topicTitle: topicTitle,
+                    packageId: packageId,
+                    packageTitle: packageTitle,
+                  ),
+                );
+              }
+
+              return BlocProvider<EducationContentBloc>(
+                create: (_) => sl<EducationContentBloc>(),
+                child: EducationContentDetailPage(
+                  contentId: contentId,
+                  topicId: topicId,
+                  topicTitle: topicTitle,
+                  packageId: packageId,
+                  packageTitle: packageTitle,
+                ),
               );
             }
 
-            return BlocProvider<EducationContentBloc>(
-              create: (context) => sl<EducationContentBloc>(),
-              child: EducationContentDetailPage(content: content),
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text(
+                  '\u0645\u062d\u062a\u0648\u0627\u06cc \u0622\u0645\u0648\u0632\u0634\u06cc',
+                ),
+              ),
+              body: const Center(
+                child: Text(
+                  '\u0627\u0637\u0644\u0627\u0639\u0627\u062a \u0645\u062d\u062a\u0648\u0627 \u062f\u0631 \u062f\u0633\u062a\u0631\u0633 \u0646\u06cc\u0633\u062a.',
+                ),
+              ),
             );
           },
         ),
-
         // =================== Quiz List ===================
         GoRoute(
           path: '/quiz-list',
@@ -316,6 +397,21 @@ class AppRouter {
                 ? state.extra as Map<String, dynamic>
                 : null;
 
+            // Essential state comes from the URL.
+            final questionIdStr = state.uri.queryParameters['questionId'];
+            final topicIdStr = state.uri.queryParameters['topicId'];
+
+            final questionId = questionIdStr != null
+                ? int.tryParse(questionIdStr)
+                : null;
+
+            final topicId = topicIdStr != null
+                ? int.tryParse(topicIdStr)
+                : null;
+
+            // Optional optimization: use the Question object from extra
+            // when navigating normally. On refresh, extra is unavailable
+            // and QuestionDetailPage loads the question by ID.
             final rawQuestion = extra?['question'];
 
             Question? question;
@@ -338,18 +434,39 @@ class AppRouter {
                 ? rawIndex.toInt()
                 : (rawIndex != null ? int.tryParse('$rawIndex') ?? 1 : 1);
 
-            if (question == null) {
+            final topicTitle =
+                extra?['topicTitle'] as String? ??
+                state.uri.queryParameters['topicTitle'];
+
+            final packageIdStr = state.uri.queryParameters['packageId'];
+
+            final packageId =
+                extra?['packageId'] as int? ??
+                (packageIdStr != null ? int.tryParse(packageIdStr) : null);
+
+            final packageTitle =
+                extra?['packageTitle'] as String? ??
+                state.uri.queryParameters['packageTitle'];
+
+            // questionId and topicId are required for a refresh-safe URL.
+            if (questionId == null || topicId == null || topicId <= 0) {
               return Scaffold(
                 appBar: AppBar(title: const Text('سوال')),
                 body: const Center(
-                  child: Text(
-                    'اطلاعات سوال در دسترس نیست. لطفاً از لیست سوالات وارد شوید.',
-                  ),
+                  child: Text('شناسه سوال یا سرفصل معتبر نیست.'),
                 ),
               );
             }
 
-            return QuestionDetailPage(question: question, index: index);
+            return QuestionDetailPage(
+              question: question,
+              questionId: questionId,
+              index: index,
+              topicId: topicId,
+              topicTitle: topicTitle,
+              packageId: packageId,
+              packageTitle: packageTitle,
+            );
           },
         ),
 
@@ -361,6 +478,21 @@ class AppRouter {
                 ? state.extra as Map<String, dynamic>
                 : null;
 
+            final questionIdStr = state.uri.queryParameters['questionId'];
+
+            final topicIdStr = state.uri.queryParameters['topicId'];
+
+            final questionId = questionIdStr != null
+                ? int.tryParse(questionIdStr)
+                : null;
+
+            final topicId = topicIdStr != null
+                ? int.tryParse(topicIdStr)
+                : null;
+
+            final imageType =
+                state.uri.queryParameters['imageType'] ?? 'question';
+
             final imageUrl =
                 extra?['imageUrl'] as String? ??
                 state.uri.queryParameters['imageUrl'] ??
@@ -371,7 +503,56 @@ class AppRouter {
                 state.uri.queryParameters['title'] ??
                 'تصویر';
 
-            return _ImageViewerPage(imageUrl: imageUrl, title: title);
+            final rawQuestion = extra?['question'];
+
+            Question? question;
+
+            if (rawQuestion is Question) {
+              question = rawQuestion;
+            } else if (rawQuestion is Map) {
+              try {
+                question = QuestionModel.fromJson(
+                  Map<String, dynamic>.from(rawQuestion),
+                );
+              } catch (e) {
+                debugPrint(
+                  'Error parsing Question from image viewer extra: $e',
+                );
+              }
+            }
+
+            final rawIndex = extra?['index'];
+
+            final index = (rawIndex is num)
+                ? rawIndex.toInt()
+                : (rawIndex != null ? int.tryParse('$rawIndex') ?? 1 : 1);
+
+            final topicTitle =
+                extra?['topicTitle'] as String? ??
+                state.uri.queryParameters['topicTitle'];
+
+            final packageIdStr = state.uri.queryParameters['packageId'];
+
+            final packageId =
+                extra?['packageId'] as int? ??
+                (packageIdStr != null ? int.tryParse(packageIdStr) : null);
+
+            final packageTitle =
+                extra?['packageTitle'] as String? ??
+                state.uri.queryParameters['packageTitle'];
+
+            return _ImageViewerPage(
+              imageUrl: imageUrl,
+              title: title,
+              question: question,
+              questionId: questionId,
+              topicId: topicId,
+              imageType: imageType,
+              index: index,
+              topicTitle: topicTitle,
+              packageId: packageId,
+              packageTitle: packageTitle,
+            );
           },
         ),
       ],
@@ -390,20 +571,198 @@ class AuthGateScreen extends StatelessWidget {
   }
 }
 
-class _ImageViewerPage extends StatelessWidget {
+class _ImageViewerPage extends StatefulWidget {
   final String imageUrl;
   final String title;
 
-  const _ImageViewerPage({required this.imageUrl, required this.title});
+  final Question? question;
+  final int? questionId;
+  final int? topicId;
+  final String imageType;
+
+  final int? index;
+  final String? topicTitle;
+  final int? packageId;
+  final String? packageTitle;
+
+  const _ImageViewerPage({
+    required this.imageUrl,
+    required this.title,
+    this.question,
+    this.questionId,
+    this.topicId,
+    required this.imageType,
+    this.index,
+    this.topicTitle,
+    this.packageId,
+    this.packageTitle,
+  });
+
+  @override
+  State<_ImageViewerPage> createState() => _ImageViewerPageState();
+}
+
+class _ImageViewerPageState extends State<_ImageViewerPage> {
+  Question? _question;
+  String _imageUrl = '';
+  bool _loadRequested = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _question = widget.question;
+    _imageUrl = widget.imageUrl;
+
+    if (_question != null && _imageUrl.isEmpty) {
+      _imageUrl = _resolveImage(_question!);
+    }
+  }
+
+  String _resolveImage(Question question) {
+    if (widget.imageType == 'question') {
+      return question.fullPageImage ?? '';
+    }
+
+    if (widget.imageType == 'answer') {
+      return question.detailedAnswer?.fullPageImage ?? '';
+    }
+
+    return '';
+  }
+
+  void _goBackToQuestionDetail(BuildContext context) {
+    if (widget.questionId == null ||
+        widget.topicId == null ||
+        widget.topicId! <= 0) {
+      context.go('/home');
+      return;
+    }
+
+    final uri = Uri(
+      path: '/question-detail',
+      queryParameters: {
+        'questionId': '${widget.questionId}',
+        'topicId': '${widget.topicId}',
+      },
+    ).toString();
+
+    context.go(
+      uri,
+      extra: {
+        'question': _question,
+        'index': widget.index,
+        'topicId': widget.topicId,
+        'topicTitle': widget.topicTitle,
+        'packageId': widget.packageId,
+        'packageTitle': widget.packageTitle,
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_question == null &&
+        _imageUrl.isEmpty &&
+        !_loadRequested &&
+        widget.questionId != null &&
+        widget.topicId != null &&
+        widget.topicId! > 0) {
+      _loadRequested = true;
+
+      return BlocProvider(
+        create: (_) => getIt<QuestionBloc>()
+          ..add(
+            GetQuestionByIdEvent(
+              topicId: widget.topicId!,
+              questionId: widget.questionId!,
+            ),
+          ),
+        child: BlocConsumer<QuestionBloc, QuestionState>(
+          listener: (context, state) {
+            if (state is QuestionDetailLoaded) {
+              setState(() {
+                _question = state.question;
+                _imageUrl = _resolveImage(state.question);
+              });
+            }
+          },
+          builder: (context, state) {
+            if (state is QuestionDetailLoading || state is QuestionInitial) {
+              return _buildLoadingScaffold();
+            }
+
+            if (state is QuestionDetailError) {
+              return _buildErrorScaffold(state.message);
+            }
+
+            return _buildScaffold(context);
+          },
+        ),
+      );
+    }
+
+    return _buildScaffold(context);
+  }
+
+  Widget _buildLoadingScaffold() {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: Text(title, style: const TextStyle(color: Colors.white)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            _goBackToQuestionDetail(context);
+          },
+        ),
+        title: Text(widget.title, style: const TextStyle(color: Colors.white)),
+      ),
+      body: const Center(child: CircularProgressIndicator(color: Colors.white)),
+    );
+  }
+
+  Widget _buildErrorScaffold(String message) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            _goBackToQuestionDetail(context);
+          },
+        ),
+        title: const Text('خطا', style: TextStyle(color: Colors.white)),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            message,
+            style: const TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            _goBackToQuestionDetail(context);
+          },
+        ),
+        title: Text(widget.title, style: const TextStyle(color: Colors.white)),
       ),
       body: Center(
         child: InteractiveViewer(
@@ -411,7 +770,7 @@ class _ImageViewerPage extends StatelessWidget {
           scaleEnabled: true,
           minScale: 0.5,
           maxScale: 5.0,
-          child: _buildImage(context, imageUrl),
+          child: _buildImage(context, _imageUrl),
         ),
       ),
     );

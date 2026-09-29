@@ -1,7 +1,8 @@
-import 'package:education_app/features/quiz/domain/entities/question.dart';
+﻿import 'package:education_app/features/quiz/domain/entities/question.dart';
 import 'package:education_app/features/quiz/domain/entities/detailed_answer.dart';
 import 'package:education_app/shared/widgets/latex_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:education_app/injection_container.dart';
 import 'package:education_app/features/comment/domain/usecases/toggle_like.dart';
 import 'package:education_app/features/comment/presentation/widgets/comment_section_widget.dart';
@@ -10,15 +11,28 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:education_app/shared/widgets/dio_network_svg_image.dart';
 import 'package:education_app/core/utils/url_helper.dart';
 import 'package:go_router/go_router.dart';
+import 'package:education_app/features/quiz/presentation/bloc/question_bloc.dart';
+import 'package:education_app/features/quiz/presentation/bloc/question_event.dart';
+import 'package:education_app/features/quiz/presentation/bloc/question_state.dart';
 
 class QuestionDetailPage extends StatefulWidget {
-  final Question question;
+  final Question? question;
+  final int questionId;
   final int index;
+  final int? topicId;
+  final String? topicTitle;
+  final int? packageId;
+  final String? packageTitle;
 
   const QuestionDetailPage({
     super.key,
-    required this.question,
+    this.question,
+    required this.questionId,
     required this.index,
+    this.topicId,
+    this.topicTitle,
+    this.packageId,
+    this.packageTitle,
   });
 
   @override
@@ -26,6 +40,8 @@ class QuestionDetailPage extends StatefulWidget {
 }
 
 class _QuestionDetailPageState extends State<QuestionDetailPage> {
+  Question? _question;
+  bool _loadRequested = false;
   bool _isAnswerVisible = false;
   bool _showComments = false;
   bool _isLiked = false;
@@ -37,17 +53,27 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
   int _questionViewMode = 0;
   int _answerViewMode = 0;
 
-  final TransformationController _questionTransformController = TransformationController();
-  final TransformationController _answerTransformController = TransformationController();
+  final TransformationController _questionTransformController =
+      TransformationController();
+  final TransformationController _answerTransformController =
+      TransformationController();
 
   @override
   void initState() {
     super.initState();
-    _isLiked = widget.question.isLiked;
-    if (widget.question.detailedAnswer != null) {
-      _isAnswerLiked = widget.question.detailedAnswer!.isLiked;
+
+    _question = widget.question;
+
+    if (_question != null) {
+      _isLiked = _question!.isLiked;
+
+      if (_question!.detailedAnswer != null) {
+        _isAnswerLiked = _question!.detailedAnswer!.isLiked;
+      }
     }
   }
+
+  Question get _currentQuestion => _question!;
 
   @override
   void dispose() {
@@ -76,36 +102,31 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
 
   Future<void> _toggleLike() async {
     final toggleLike = getIt<ToggleLike>();
-    final result = await toggleLike(ToggleLikeParams(
-      targetId: widget.question.id,
-      targetType: 1,
-    ));
-    result.fold(
-      (failure) {},
-      (isLiked) {
-        setState(() {
-          _isLiked = isLiked;
-        });
-      },
+    final result = await toggleLike(
+      ToggleLikeParams(targetId: _currentQuestion.id, targetType: 1),
     );
+    result.fold((failure) {}, (isLiked) {
+      setState(() {
+        _isLiked = isLiked;
+      });
+    });
   }
 
   Future<void> _toggleAnswerLike() async {
-    if (widget.question.detailedAnswer == null) return;
+    if (_currentQuestion.detailedAnswer == null) return;
 
     final toggleLike = getIt<ToggleLike>();
-    final result = await toggleLike(ToggleLikeParams(
-      targetId: widget.question.detailedAnswer!.id,
-      targetType: 2,
-    ));
-    result.fold(
-      (failure) {},
-      (isLiked) {
-        setState(() {
-          _isAnswerLiked = isLiked;
-        });
-      },
+    final result = await toggleLike(
+      ToggleLikeParams(
+        targetId: _currentQuestion.detailedAnswer!.id,
+        targetType: 2,
+      ),
     );
+    result.fold((failure) {}, (isLiked) {
+      setState(() {
+        _isAnswerLiked = isLiked;
+      });
+    });
   }
 
   void _selectOption(int optionIndex) {
@@ -122,12 +143,12 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
           : colorScheme.surface;
     }
 
-    if (optionIndex == widget.question.correctOption) {
+    if (optionIndex == _currentQuestion.correctOption) {
       return AppColors.quizCorrectBackground;
     }
 
     if (_selectedOption == optionIndex &&
-        _selectedOption != widget.question.correctOption) {
+        _selectedOption != _currentQuestion.correctOption) {
       return AppColors.quizWrongBackground;
     }
 
@@ -137,12 +158,12 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
   IconData? _getOptionIcon(int optionIndex) {
     if (!_isAnswerVisible) return null;
 
-    if (optionIndex == widget.question.correctOption) {
+    if (optionIndex == _currentQuestion.correctOption) {
       return Icons.check_circle_rounded;
     }
 
     if (_selectedOption == optionIndex &&
-        _selectedOption != widget.question.correctOption) {
+        _selectedOption != _currentQuestion.correctOption) {
       return Icons.cancel_rounded;
     }
 
@@ -152,37 +173,155 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
   Color? _getOptionIconColor(int optionIndex) {
     if (!_isAnswerVisible) return null;
 
-    if (optionIndex == widget.question.correctOption) {
+    if (optionIndex == _currentQuestion.correctOption) {
       return AppColors.success;
     }
 
     if (_selectedOption == optionIndex &&
-        _selectedOption != widget.question.correctOption) {
+        _selectedOption != _currentQuestion.correctOption) {
       return AppColors.error;
     }
 
     return null;
   }
 
-  void _showFullScreenImage(String imageUrl, String title) {
-    context.push(
-      '/image-viewer',
+  void _showFullScreenImage(
+    String imageUrl,
+    String title, {
+    required String imageType,
+  }) {
+    final uri = Uri(
+      path: '/image-viewer',
+      queryParameters: {
+        'questionId': '${_currentQuestion.id}',
+        'topicId': '${widget.topicId}',
+        'imageType': imageType,
+      },
+    ).toString();
+
+    context.go(
+      uri,
       extra: {
         'imageUrl': imageUrl,
         'title': title,
+
+        // ??????? ???? ???? ???? Back
+        'question': _currentQuestion,
+        'index': widget.index,
+        'topicId': widget.topicId,
+        'topicTitle': widget.topicTitle,
+        'packageId': widget.packageId,
+        'packageTitle': widget.packageTitle,
       },
     );
   }
-
   @override
   Widget build(BuildContext context) {
+    if (_question == null) {
+      return BlocProvider(
+        create: (_) => getIt<QuestionBloc>(),
+        child: BlocConsumer<QuestionBloc, QuestionState>(
+          listener: (context, state) {
+            if (state is QuestionDetailLoaded) {
+              setState(() {
+                _question = state.question;
+                _isLiked = state.question.isLiked;
+
+                if (state.question.detailedAnswer != null) {
+                  _isAnswerLiked = state.question.detailedAnswer!.isLiked;
+                }
+              });
+            }
+          },
+          builder: (context, state) {
+            if (!_loadRequested) {
+              _loadRequested = true;
+
+              if (widget.topicId != null && widget.topicId! > 0) {
+                context.read<QuestionBloc>().add(
+                  GetQuestionByIdEvent(
+                    topicId: widget.topicId!,
+                    questionId: widget.questionId,
+                  ),
+                );
+              }
+            }
+
+            if (state is QuestionDetailLoading ||
+                state is QuestionInitial) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            if (state is QuestionDetailError) {
+              return Scaffold(
+                appBar: AppBar(
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () {
+                      context.go('/quiz-list?topicId=${widget.topicId}');
+                    },
+                  ),
+                  title: const Text('???'),
+                ),
+                body: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            if (_question == null) {
+              return const Scaffold(
+                body: Center(
+                  child: Text('??????? ???? ?? ????? ????.'),
+                ),
+              );
+            }
+
+            return _buildQuestionScaffold(context);
+          },
+        ),
+      );
+    }
+
+    return _buildQuestionScaffold(context);
+  }
+
+  Widget _buildQuestionScaffold(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final hasFullImage = widget.question.fullPageImage != null;
+    final hasFullImage = _currentQuestion.fullPageImage != null;
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text('سوال ${widget.index}'),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            final uri = Uri(
+              path: '/quiz-list',
+              queryParameters: {
+                if (widget.topicId != null) 'topicId': '${widget.topicId}',
+                if (widget.topicTitle != null) 'topicTitle': widget.topicTitle!,
+                if (widget.packageId != null)
+                  'packageId': '${widget.packageId}',
+                if (widget.packageTitle != null)
+                  'packageTitle': widget.packageTitle!,
+              },
+            ).toString();
+
+            context.go(uri);
+          },
+        ),
+        title: Text('???? ${widget.index}'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -200,19 +339,21 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        if (widget.question.difficultyLevelName != null)
+                        if (_currentQuestion.difficultyLevelName != null)
                           Chip(
-                            label: Text(widget.question.difficultyLevelName!),
-                            backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                            label: Text(_currentQuestion.difficultyLevelName!),
+                            backgroundColor: colorScheme.primary.withValues(
+                              alpha: 0.1,
+                            ),
                             labelStyle: textTheme.labelMedium?.copyWith(
                               color: colorScheme.primary,
                             ),
                           )
                         else
                           const SizedBox.shrink(),
-                        if (widget.question.questionYear != 0)
+                        if (_currentQuestion.questionYear != 0)
                           Text(
-                            'سال: ${widget.question.questionYear}',
+                            '???: ${_currentQuestion.questionYear}',
                             style: textTheme.bodySmall,
                           ),
                       ],
@@ -225,12 +366,12 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         segments: [
                           const ButtonSegment<int>(
                             value: 0,
-                            label: Text('نمایش متنی'),
+                            label: Text('????? ????'),
                             icon: Icon(Icons.text_fields_rounded, size: 18),
                           ),
                           ButtonSegment<int>(
                             value: 1,
-                            label: const Text('تصویر کامل'),
+                            label: const Text('????? ????'),
                             icon: Icon(
                               Icons.image_outlined,
                               size: 18,
@@ -242,7 +383,8 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         onSelectionChanged: (Set<int> newSelection) {
                           setState(() {
                             _questionViewMode = newSelection.first;
-                            _questionTransformController.value = Matrix4.identity();
+                            _questionTransformController.value =
+                                Matrix4.identity();
                           });
                         },
                       ),
@@ -253,24 +395,30 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                     if (_questionViewMode == 0) ...[
                       // --- TEXT MODE ---
                       LatexText(
-                        widget.question.questionText,
+                        _currentQuestion.questionText,
                         style: textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
 
                       // Embedded Content Images (excluding full page)
-                      if (widget.question.contentImages.isNotEmpty) ...[
+                      if (_currentQuestion.contentImages.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         SizedBox(
                           height: 180,
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
-                            itemCount: widget.question.contentImages.length,
-                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            itemCount: _currentQuestion.contentImages.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 8),
                             itemBuilder: (context, index) {
-                              final image = widget.question.contentImages[index];
-                              return _buildImage(image.imageUrl, 180, colorScheme);
+                              final image =
+                                  _currentQuestion.contentImages[index];
+                              return _buildImage(
+                                image.imageUrl,
+                                180,
+                                colorScheme,
+                              );
                             },
                           ),
                         ),
@@ -279,8 +427,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                       // --- FULL IMAGE MODE ---
                       if (hasFullImage) ...[
                         _buildZoomableImageCard(
-                          imageUrl: widget.question.fullPageImage!,
-                          title: 'تصویر کامل سوال ${widget.index}',
+                          imageUrl: _currentQuestion.fullPageImage!,
+                          imageType: 'question',
+                          title: '????? ???? ???? ${widget.index}',
                           controller: _questionTransformController,
                           colorScheme: colorScheme,
                           textTheme: textTheme,
@@ -290,17 +439,26 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                            color: colorScheme.surfaceContainerHighest
+                                .withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: colorScheme.outlineVariant),
+                            border: Border.all(
+                              color: colorScheme.outlineVariant,
+                            ),
                           ),
                           child: Column(
                             children: [
-                              Icon(Icons.image_not_supported_outlined, size: 48, color: colorScheme.outline),
+                              Icon(
+                                Icons.image_not_supported_outlined,
+                                size: 48,
+                                color: colorScheme.outline,
+                              ),
                               const SizedBox(height: 12),
                               Text(
-                                'تصویر کامل برای این سوال ثبت نشده است.',
-                                style: textTheme.bodyMedium?.copyWith(color: colorScheme.outline),
+                                '????? ???? ???? ??? ???? ??? ???? ???.',
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.outline,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 12),
@@ -310,8 +468,11 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                                     _questionViewMode = 0;
                                   });
                                 },
-                                icon: const Icon(Icons.arrow_back_rounded, size: 16),
-                                label: const Text('بازگشت به نمایش متنی'),
+                                icon: const Icon(
+                                  Icons.arrow_back_rounded,
+                                  size: 16,
+                                ),
+                                label: const Text('?????? ?? ????? ????'),
                               ),
                             ],
                           ),
@@ -323,10 +484,30 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
 
                     // Options (Conditional: Full text in Text mode, Compact Row in Image mode)
                     if (_questionViewMode == 0) ...[
-                      _buildOption(1, widget.question.option1, colorScheme, textTheme),
-                      _buildOption(2, widget.question.option2, colorScheme, textTheme),
-                      _buildOption(3, widget.question.option3, colorScheme, textTheme),
-                      _buildOption(4, widget.question.option4, colorScheme, textTheme),
+                      _buildOption(
+                        1,
+                        _currentQuestion.option1,
+                        colorScheme,
+                        textTheme,
+                      ),
+                      _buildOption(
+                        2,
+                        _currentQuestion.option2,
+                        colorScheme,
+                        textTheme,
+                      ),
+                      _buildOption(
+                        3,
+                        _currentQuestion.option3,
+                        colorScheme,
+                        textTheme,
+                      ),
+                      _buildOption(
+                        4,
+                        _currentQuestion.option4,
+                        colorScheme,
+                        textTheme,
+                      ),
                     ] else ...[
                       _buildCompactOptionsRow(colorScheme, textTheme),
                     ],
@@ -345,16 +526,19 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                               : colorScheme.primary,
                         ),
                         child: Text(
-                          _isAnswerVisible ? 'مخفی کردن پاسخ تشریحی' : 'نمایش پاسخ تشریحی',
+                          _isAnswerVisible
+                              ? '???? ???? ???? ??????'
+                              : '????? ???? ??????',
                         ),
                       ),
                     ),
 
                     // Detailed Answer Section
-                    if (_isAnswerVisible && widget.question.detailedAnswer != null) ...[
+                    if (_isAnswerVisible &&
+                        _currentQuestion.detailedAnswer != null) ...[
                       const SizedBox(height: 24),
                       _buildDetailedAnswerSection(
-                        widget.question.detailedAnswer!,
+                        _currentQuestion.detailedAnswer!,
                         colorScheme,
                         textTheme,
                       ),
@@ -375,7 +559,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                   children: [
                     IconButton(
                       icon: Icon(
-                        _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        _isLiked
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
                       ),
                       color: _isLiked ? AppColors.error : colorScheme.outline,
                       onPressed: _toggleLike,
@@ -386,7 +572,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                             ? Icons.chat_bubble_rounded
                             : Icons.chat_bubble_outline_rounded,
                       ),
-                      color: _showComments ? colorScheme.primary : colorScheme.outline,
+                      color: _showComments
+                          ? colorScheme.primary
+                          : colorScheme.outline,
                       onPressed: _toggleComments,
                     ),
                   ],
@@ -397,10 +585,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             // Question Comments
             if (_showComments) ...[
               const SizedBox(height: 16),
-              CommentSectionWidget(
-                targetId: widget.question.id,
-                targetType: 1,
-              ),
+              CommentSectionWidget(targetId: _currentQuestion.id, targetType: 1),
             ],
           ],
         ),
@@ -429,7 +614,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'پاسخ تشریحی:',
+                '???? ??????:',
                 style: textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.success,
@@ -438,8 +623,8 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               if (hasAnswerFullImage)
                 SegmentedButton<int>(
                   segments: const [
-                    ButtonSegment<int>(value: 0, label: Text('متن')),
-                    ButtonSegment<int>(value: 1, label: Text('تصویر')),
+                    ButtonSegment<int>(value: 0, label: Text('???')),
+                    ButtonSegment<int>(value: 1, label: Text('?????')),
                   ],
                   selected: {_answerViewMode},
                   style: const ButtonStyle(
@@ -458,10 +643,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
           const SizedBox(height: 12),
 
           if (_answerViewMode == 0 || !hasAnswerFullImage) ...[
-            LatexText(
-              answer.answerText,
-              style: textTheme.bodyMedium,
-            ),
+            LatexText(answer.answerText, style: textTheme.bodyMedium),
 
             // Answer Images
             if (answer.contentImages.isNotEmpty) ...[
@@ -482,7 +664,8 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
           ] else ...[
             _buildZoomableImageCard(
               imageUrl: answer.fullPageImage!,
-              title: 'تصویر پاسخ تشریحی سوال ${widget.index}',
+              imageType: 'answer',
+              title: '????? ???? ?????? ???? ${widget.index}',
               controller: _answerTransformController,
               colorScheme: colorScheme,
               textTheme: textTheme,
@@ -492,10 +675,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
           // Author
           if (answer.answerAuthor != null) ...[
             const SizedBox(height: 8),
-            Text(
-              'نویسنده: ${answer.answerAuthor}',
-              style: textTheme.bodySmall,
-            ),
+            Text('???????: ${answer.answerAuthor}', style: textTheme.bodySmall),
           ],
 
           const SizedBox(height: 16),
@@ -531,10 +711,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
           // Answer Comments
           if (_showAnswerComments) ...[
             const SizedBox(height: 8),
-            CommentSectionWidget(
-              targetId: answer.id,
-              targetType: 2,
-            ),
+            CommentSectionWidget(targetId: answer.id, targetType: 2),
           ],
         ],
       ),
@@ -544,6 +721,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
   Widget _buildZoomableImageCard({
     required String imageUrl,
     required String title,
+    required String imageType,
     required TransformationController controller,
     required ColorScheme colorScheme,
     required TextTheme textTheme,
@@ -563,24 +741,30 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
             child: Row(
               children: [
-                Icon(Icons.pinch_outlined, size: 16, color: colorScheme.outline),
+                Icon(
+                  Icons.pinch_outlined,
+                  size: 16,
+                  color: colorScheme.outline,
+                ),
                 const SizedBox(width: 6),
                 Text(
-                  'قابلیت زوم و جابه‌جایی تصویر',
-                  style: textTheme.bodySmall?.copyWith(color: colorScheme.outline),
+                  '?????? ??? ? ????????? ?????',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.outline,
+                  ),
                 ),
                 const Spacer(),
                 IconButton(
-                  tooltip: 'بازنشانی زوم',
+                  tooltip: '???????? ???',
                   icon: const Icon(Icons.restart_alt_rounded, size: 18),
                   onPressed: () {
                     controller.value = Matrix4.identity();
                   },
                 ),
                 IconButton(
-                  tooltip: 'تمام صفحه',
+                  tooltip: '???? ????',
                   icon: const Icon(Icons.fullscreen_rounded, size: 20),
-                  onPressed: () => _showFullScreenImage(imageUrl, title),
+                  onPressed: () => _showFullScreenImage(imageUrl, title, imageType: imageType),
                 ),
               ],
             ),
@@ -606,8 +790,14 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     );
   }
 
-  Widget _buildNetworkOrAssetImage(String imagePath, double height, BoxFit fit) {
-    final resolvedPath = imagePath.startsWith('assets/') ? imagePath : UrlHelper.resolve(imagePath);
+  Widget _buildNetworkOrAssetImage(
+    String imagePath,
+    double height,
+    BoxFit fit,
+  ) {
+    final resolvedPath = imagePath.startsWith('assets/')
+        ? imagePath
+        : UrlHelper.resolve(imagePath);
     final isSvg = resolvedPath.toLowerCase().endsWith('.svg');
     final isNetwork = resolvedPath.toLowerCase().startsWith('http');
 
@@ -628,7 +818,11 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             );
           },
           errorBuilder: (context, error, stackTrace) => Center(
-            child: Icon(Icons.broken_image_rounded, size: 48, color: Theme.of(context).colorScheme.outline),
+            child: Icon(
+              Icons.broken_image_rounded,
+              size: 48,
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
         );
       }
@@ -676,30 +870,26 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               height: 32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.surfaceContainerHighest,
               ),
               child: Center(
                 child: Text(
                   '$index',
                   style: textTheme.labelLarge?.copyWith(
-                    color: isSelected ? AppColors.onPrimary : colorScheme.onSurface,
+                    color: isSelected
+                        ? AppColors.onPrimary
+                        : colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: LatexText(
-                text,
-                style: textTheme.bodyLarge,
-              ),
-            ),
+            Expanded(child: LatexText(text, style: textTheme.bodyLarge)),
             if (_getOptionIcon(index) != null)
-              Icon(
-                _getOptionIcon(index),
-                color: _getOptionIconColor(index),
-              ),
+              Icon(_getOptionIcon(index), color: _getOptionIconColor(index)),
           ],
         ),
       ),
@@ -712,7 +902,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.6)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+        ),
       ),
       child: Column(
         children: [
@@ -720,7 +912,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'انتخاب گزینه پاسخ:',
+                '?????? ????? ????:',
                 style: textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onSurfaceVariant,
@@ -728,7 +920,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               ),
               if (_selectedOption != null && !_isAnswerVisible)
                 Text(
-                  'گزینه $_selectedOption انتخاب شده',
+                  '????? $_selectedOption ?????? ???',
                   style: textTheme.labelMedium?.copyWith(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.w600,
@@ -757,8 +949,12 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     TextTheme textTheme,
   ) {
     final isSelected = _selectedOption == index;
-    final isCorrect = _isAnswerVisible && index == widget.question.correctOption;
-    final isWrong = _isAnswerVisible && isSelected && index != widget.question.correctOption;
+    final isCorrect =
+        _isAnswerVisible && index == _currentQuestion.correctOption;
+    final isWrong =
+        _isAnswerVisible &&
+        isSelected &&
+        index != _currentQuestion.correctOption;
 
     Color bgColor = colorScheme.surface;
     Color borderColor = colorScheme.outlineVariant;
@@ -787,7 +983,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     }
 
     final persianNumbers = ['۰', '۱', '۲', '۳', '۴'];
-    final numberText = index >= 1 && index <= 4 ? persianNumbers[index] : '$index';
+    final numberText = index >= 1 && index <= 4
+        ? persianNumbers[index]
+        : '$index';
 
     return InkWell(
       onTap: () => _selectOption(index),
@@ -809,7 +1007,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                     color: colorScheme.primary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -833,7 +1031,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               ],
             ),
             Text(
-              'گزینه',
+              '?????',
               style: textTheme.labelSmall?.copyWith(
                 color: isSelected && !_isAnswerVisible
                     ? AppColors.onPrimary.withValues(alpha: 0.8)
@@ -847,3 +1045,14 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
