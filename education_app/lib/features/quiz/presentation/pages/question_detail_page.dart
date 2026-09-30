@@ -1,4 +1,5 @@
-﻿import 'package:education_app/features/quiz/domain/entities/question.dart';
+import 'package:education_app/features/quiz/domain/entities/question.dart';
+import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/features/quiz/domain/entities/detailed_answer.dart';
 import 'package:education_app/shared/widgets/latex_text.dart';
 import 'package:flutter/material.dart';
@@ -205,7 +206,6 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
         'imageUrl': imageUrl,
         'title': title,
 
-        // ??????? ???? ???? ???? Back
         'question': _currentQuestion,
         'index': widget.index,
         'topicId': widget.topicId,
@@ -265,7 +265,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                       context.go('/quiz-list?topicId=${widget.topicId}');
                     },
                   ),
-                  title: const Text('???'),
+                  title: Text(AppLocalizations.of(context)!.back),
                 ),
                 body: Center(
                   child: Padding(
@@ -280,9 +280,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             }
 
             if (_question == null) {
-              return const Scaffold(
+              return Scaffold(
                 body: Center(
-                  child: Text('??????? ???? ?? ????? ????.'),
+                  child: Text(AppLocalizations.of(context)!.noFullQuestionImage),
                 ),
               );
             }
@@ -321,7 +321,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             context.go(uri);
           },
         ),
-        title: Text('???? ${widget.index}'),
+        title: Text(AppLocalizations.of(context)!.questionNumber(widget.index)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -353,7 +353,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                           const SizedBox.shrink(),
                         if (_currentQuestion.questionYear != 0)
                           Text(
-                            '???: ${_currentQuestion.questionYear}',
+                            ': ',
                             style: textTheme.bodySmall,
                           ),
                       ],
@@ -364,14 +364,14 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                     Center(
                       child: SegmentedButton<int>(
                         segments: [
-                          const ButtonSegment<int>(
+                          ButtonSegment<int>(
                             value: 0,
-                            label: Text('????? ????'),
+                            label: Text(AppLocalizations.of(context)!.textView),
                             icon: Icon(Icons.text_fields_rounded, size: 18),
                           ),
                           ButtonSegment<int>(
                             value: 1,
-                            label: const Text('????? ????'),
+                            label: Text(AppLocalizations.of(context)!.fullImage),
                             icon: Icon(
                               Icons.image_outlined,
                               size: 18,
@@ -429,7 +429,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         _buildZoomableImageCard(
                           imageUrl: _currentQuestion.fullPageImage!,
                           imageType: 'question',
-                          title: '????? ???? ???? ${widget.index}',
+                          title: AppLocalizations.of(context)!.fullQuestionImage(widget.index),
                           controller: _questionTransformController,
                           colorScheme: colorScheme,
                           textTheme: textTheme,
@@ -455,7 +455,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                '????? ???? ???? ??? ???? ??? ???? ???.',
+                                AppLocalizations.of(context)!.noFullQuestionImage,
                                 style: textTheme.bodyMedium?.copyWith(
                                   color: colorScheme.outline,
                                 ),
@@ -472,7 +472,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                                   Icons.arrow_back_rounded,
                                   size: 16,
                                 ),
-                                label: const Text('?????? ?? ????? ????'),
+                                label: Text(AppLocalizations.of(context)!.backToTextView),
                               ),
                             ],
                           ),
@@ -527,8 +527,8 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         ),
                         child: Text(
                           _isAnswerVisible
-                              ? '???? ???? ???? ??????'
-                              : '????? ???? ??????',
+                              ? AppLocalizations.of(context)!.hideDetailedAnswer
+                              : AppLocalizations.of(context)!.viewDetailedAnswer,
                         ),
                       ),
                     ),
@@ -614,7 +614,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '???? ??????:',
+                ':',
                 style: textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.success,
@@ -622,9 +622,15 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               ),
               if (hasAnswerFullImage)
                 SegmentedButton<int>(
-                  segments: const [
-                    ButtonSegment<int>(value: 0, label: Text('???')),
-                    ButtonSegment<int>(value: 1, label: Text('?????')),
+                  segments: [
+                    ButtonSegment<int>(
+                      value: 0,
+                      label: Text(AppLocalizations.of(context)!.text),
+                    ),
+                    ButtonSegment<int>(
+                      value: 1,
+                      label: Text(AppLocalizations.of(context)!.image),
+                    ),
                   ],
                   selected: {_answerViewMode},
                   style: const ButtonStyle(
@@ -665,7 +671,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             _buildZoomableImageCard(
               imageUrl: answer.fullPageImage!,
               imageType: 'answer',
-              title: '????? ???? ?????? ???? ${widget.index}',
+              title: AppLocalizations.of(context)!.detailedAnswerImage(widget.index),
               controller: _answerTransformController,
               colorScheme: colorScheme,
               textTheme: textTheme,
@@ -675,7 +681,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
           // Author
           if (answer.answerAuthor != null) ...[
             const SizedBox(height: 8),
-            Text('???????: ${answer.answerAuthor}', style: textTheme.bodySmall),
+            Text(': ', style: textTheme.bodySmall),
           ],
 
           const SizedBox(height: 16),
@@ -748,21 +754,21 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  '?????? ??? ? ????????? ?????',
+                  AppLocalizations.of(context)!.imageZoomPan,
                   style: textTheme.bodySmall?.copyWith(
                     color: colorScheme.outline,
                   ),
                 ),
                 const Spacer(),
                 IconButton(
-                  tooltip: '???????? ???',
+                  tooltip: AppLocalizations.of(context)!.resetZoom,
                   icon: const Icon(Icons.restart_alt_rounded, size: 18),
                   onPressed: () {
                     controller.value = Matrix4.identity();
                   },
                 ),
                 IconButton(
-                  tooltip: '???? ????',
+                  tooltip: AppLocalizations.of(context)!.fullscreen,
                   icon: const Icon(Icons.fullscreen_rounded, size: 20),
                   onPressed: () => _showFullScreenImage(imageUrl, title, imageType: imageType),
                 ),
@@ -912,7 +918,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '?????? ????? ????:',
+                ':',
                 style: textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onSurfaceVariant,
@@ -920,7 +926,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               ),
               if (_selectedOption != null && !_isAnswerVisible)
                 Text(
-                  '????? $_selectedOption ?????? ???',
+                  AppLocalizations.of(context)!.optionSelected(_selectedOption!),
                   style: textTheme.labelMedium?.copyWith(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.w600,
@@ -1031,7 +1037,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               ],
             ),
             Text(
-              '?????',
+              AppLocalizations.of(context)!.option,
               style: textTheme.labelSmall?.copyWith(
                 color: isSelected && !_isAnswerVisible
                     ? AppColors.onPrimary.withValues(alpha: 0.8)

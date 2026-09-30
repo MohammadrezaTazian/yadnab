@@ -169,4 +169,102 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invalidPhone => 'Phone number must be 11 digits starting with 09';
+
+  @override
+  String get courseTopics => 'Course Topics';
+
+  @override
+  String get loadingTopics => 'Loading topics';
+
+  @override
+  String get errorLoadingTopics => 'Error loading topics';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get noTopicsAvailable => 'No topics available';
+
+  @override
+  String get viewDetailedAnswer => 'View Detailed Answer';
+
+  @override
+  String get hideDetailedAnswer => 'Hide Detailed Answer';
+
+  @override
+  String get questionYear => 'Year';
+
+  @override
+  String get questionDesigner => 'Designer';
+
+  @override
+  String get answerAuthor => 'Answer Author';
+
+  @override
+  String get noQuestions => 'No questions available';
+
+  @override
+  String get correctOption => 'Correct Option';
+
+  @override
+  String get yourSelection => 'Your Selection';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String questionNumber(int number) {
+    return 'Question $number';
+  }
+
+  @override
+  String get textView => 'Text';
+
+  @override
+  String get fullImage => 'Full Image';
+
+  @override
+  String fullQuestionImage(int number) {
+    return 'Full Question Image $number';
+  }
+
+  @override
+  String get noFullQuestionImage => 'No full image is registered for this question.';
+
+  @override
+  String get backToTextView => 'Back to Text View';
+
+  @override
+  String get text => 'Text';
+
+  @override
+  String get image => 'Image';
+
+  @override
+  String get detailedAnswer => 'Detailed Answer';
+
+  @override
+  String detailedAnswerImage(int number) {
+    return 'Detailed Answer Image for Question $number';
+  }
+
+  @override
+  String get imageZoomPan => 'Zoom and pan image';
+
+  @override
+  String get resetZoom => 'Reset Zoom';
+
+  @override
+  String get fullscreen => 'Fullscreen';
+
+  @override
+  String get selectAnswerOption => 'Select Answer Option';
+
+  @override
+  String optionSelected(int option) {
+    return 'Option $option selected';
+  }
+
+  @override
+  String get option => 'Option';
 }

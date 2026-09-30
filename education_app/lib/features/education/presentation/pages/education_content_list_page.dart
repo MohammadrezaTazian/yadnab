@@ -25,7 +25,9 @@ class EducationContentListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => sl<EducationContentBloc>()..add(GetEducationContentsByTopicEvent(topicId)),
+      create: (context) =>
+          sl<EducationContentBloc>()
+            ..add(GetEducationContentsByTopicEvent(topicId)),
       child: _EducationContentListView(
         topicId: topicId,
         topicTitle: topicTitle,
@@ -50,7 +52,8 @@ class _EducationContentListView extends StatefulWidget {
   });
 
   @override
-  State<_EducationContentListView> createState() => _EducationContentListViewState();
+  State<_EducationContentListView> createState() =>
+      _EducationContentListViewState();
 }
 
 class _EducationContentListViewState extends State<_EducationContentListView>
@@ -88,7 +91,8 @@ class _EducationContentListViewState extends State<_EducationContentListView>
 
     return BlocConsumer<EducationContentBloc, EducationContentState>(
       listenWhen: (previous, current) {
-        if (previous is EducationContentLoaded && current is EducationContentLoaded) {
+        if (previous is EducationContentLoaded &&
+            current is EducationContentLoaded) {
           return previous.isSearching != current.isSearching;
         }
         return current is EducationContentLoaded && current.isSearching;
@@ -108,11 +112,14 @@ class _EducationContentListViewState extends State<_EducationContentListView>
         }
       },
       builder: (context, state) {
-        final isSearching = state is EducationContentLoaded && state.isSearching;
-        final searchQuery = state is EducationContentLoaded ? state.searchQuery : '';
+        final isSearching =
+            state is EducationContentLoaded && state.isSearching;
+        final searchQuery = state is EducationContentLoaded
+            ? state.searchQuery
+            : '';
 
         return Scaffold(
-            appBar: AppBar(
+          appBar: AppBar(
             title: Text(widget.topicTitle),
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -120,16 +127,16 @@ class _EducationContentListViewState extends State<_EducationContentListView>
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else if (widget.packageId != null && widget.packageId! > 0) {
+                if (widget.packageId != null && widget.packageId! > 0) {
                   final uri = Uri(
                     path: '/topics',
                     queryParameters: {
                       'packageId': '${widget.packageId}',
-                      if (widget.packageTitle != null) 'title': widget.packageTitle!,
+                      if (widget.packageTitle != null)
+                        'title': widget.packageTitle!,
                     },
                   ).toString();
+
                   context.go(uri);
                 } else {
                   context.go('/home');
@@ -137,19 +144,27 @@ class _EducationContentListViewState extends State<_EducationContentListView>
               },
             ),
             titleTextStyle: TextStyle(
-              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              color: isDark
+                  ? AppColors.textPrimaryDark
+                  : AppColors.textPrimaryLight,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
             iconTheme: IconThemeData(
-              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              color: isDark
+                  ? AppColors.textPrimaryDark
+                  : AppColors.textPrimaryLight,
             ),
             actions: [
               SearchAppBarAction(
                 isSearching: isSearching,
-                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
                 onPressed: () {
-                  context.read<EducationContentBloc>().add(ToggleEducationContentSearchVisibilityEvent());
+                  context.read<EducationContentBloc>().add(
+                    ToggleEducationContentSearchVisibilityEvent(),
+                  );
                 },
               ),
               const SizedBox(width: 4),
@@ -164,10 +179,14 @@ class _EducationContentListViewState extends State<_EducationContentListView>
                 hasQuery: searchQuery.isNotEmpty,
                 hintText: 'جستجوی درس‌ها یا مدرس...',
                 onChanged: (query) {
-                  context.read<EducationContentBloc>().add(SearchEducationContentEvent(query));
+                  context.read<EducationContentBloc>().add(
+                    SearchEducationContentEvent(query),
+                  );
                 },
                 onClear: () {
-                  context.read<EducationContentBloc>().add(ClearEducationContentSearchEvent());
+                  context.read<EducationContentBloc>().add(
+                    ClearEducationContentSearchEvent(),
+                  );
                 },
               ),
               Expanded(
@@ -187,7 +206,9 @@ class _EducationContentListViewState extends State<_EducationContentListView>
                             subtitle: '«$searchQuery» در آموزش‌ها پیدا نشد',
                           );
                         }
-                        return const Center(child: Text('آموزشی برای این مورد یافت نشد'));
+                        return const Center(
+                          child: Text('آموزشی برای این مورد یافت نشد'),
+                        );
                       }
 
                       return ListView.builder(
@@ -199,7 +220,9 @@ class _EducationContentListViewState extends State<_EducationContentListView>
                             margin: const EdgeInsets.only(bottom: 12),
                             child: ListTile(
                               leading: Icon(
-                                content.mediaType == 'Video' ? Icons.play_circle_fill : Icons.article,
+                                content.mediaType == 'Video'
+                                    ? Icons.play_circle_fill
+                                    : Icons.article,
                                 color: Colors.blue,
                               ),
                               title: HighlightedText(
@@ -210,12 +233,19 @@ class _EducationContentListViewState extends State<_EducationContentListView>
                                 text: content.teacherName ?? 'نامشخص',
                                 query: searchQuery,
                                 style: textTheme.bodySmall?.copyWith(
-                                  color: isDark ? AppColors.textTertiaryDark : AppColors.textSecondaryLight,
+                                  color: isDark
+                                      ? AppColors.textTertiaryDark
+                                      : AppColors.textSecondaryLight,
                                 ),
                               ),
-                              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16,
+                              ),
                               onTap: () async {
-                                final bloc = context.read<EducationContentBloc>();                                final uri = Uri(
+                                final bloc = context
+                                    .read<EducationContentBloc>();
+                                final uri = Uri(
                                   path: '/education-content-detail',
                                   queryParameters: {
                                     'contentId': '${content.id}',
@@ -228,11 +258,18 @@ class _EducationContentListViewState extends State<_EducationContentListView>
                                   extra: {
                                     'content': content,
                                     'bloc': bloc,
+                                    'topicId': widget.topicId,
+                                    'topicTitle': widget.topicTitle,
+                                    'packageId': widget.packageId,
+                                    'packageTitle': widget.packageTitle,
                                   },
-                                );
-                                // Refetch education contents to get updated isLiked status
+                                ); // Refetch education contents to get updated isLiked status
                                 if (context.mounted) {
-                                  bloc.add(GetEducationContentsByTopicEvent(widget.topicId));
+                                  bloc.add(
+                                    GetEducationContentsByTopicEvent(
+                                      widget.topicId,
+                                    ),
+                                  );
                                 }
                               },
                             ),
@@ -251,7 +288,3 @@ class _EducationContentListViewState extends State<_EducationContentListView>
     );
   }
 }
-
-
-
-

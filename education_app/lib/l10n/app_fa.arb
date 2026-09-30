@@ -66,4 +66,51 @@
   "noQuestions": "سوال موجود نیست",
   "correctOption": "گزینه صحیح",
   "yourSelection": "انتخاب شما"
+
+  ,
+  "back": "بازگشت",
+  "questionNumber": "سوال {number}",
+  "@questionNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "textView": "نمایش متنی",
+  "fullImage": "تصویر کامل",
+  "fullQuestionImage": "تصویر کامل سوال {number}",
+  "@fullQuestionImage": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "noFullQuestionImage": "تصویر کامل برای این سوال ثبت نشده است.",
+  "backToTextView": "بازگشت به نمایش متنی",
+  "text": "متن",
+  "image": "تصویر",
+  "detailedAnswer": "پاسخ تشریحی",
+  "detailedAnswerImage": "تصویر پاسخ تشریحی سوال {number}",
+  "@detailedAnswerImage": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "imageZoomPan": "قابلیت زوم و جابه‌جایی تصویر",
+  "resetZoom": "بازنشانی زوم",
+  "fullscreen": "تمام صفحه",
+  "selectAnswerOption": "انتخاب گزینه پاسخ",
+  "optionSelected": "گزینه {option} انتخاب شده",
+  "@optionSelected": {
+    "placeholders": {
+      "option": {
+        "type": "int"
+      }
+    }
+  },
+  "option": "گزینه"
 }

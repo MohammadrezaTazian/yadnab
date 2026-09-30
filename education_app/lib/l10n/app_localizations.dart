@@ -418,6 +418,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Phone number must be 11 digits starting with 09'**
   String get invalidPhone;
+
+  /// No description provided for @courseTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Topics'**
+  String get courseTopics;
+
+  /// No description provided for @loadingTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading topics'**
+  String get loadingTopics;
+
+  /// No description provided for @errorLoadingTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading topics'**
+  String get errorLoadingTopics;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @noTopicsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No topics available'**
+  String get noTopicsAvailable;
+
+  /// No description provided for @viewDetailedAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'View Detailed Answer'**
+  String get viewDetailedAnswer;
+
+  /// No description provided for @hideDetailedAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide Detailed Answer'**
+  String get hideDetailedAnswer;
+
+  /// No description provided for @questionYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get questionYear;
+
+  /// No description provided for @questionDesigner.
+  ///
+  /// In en, this message translates to:
+  /// **'Designer'**
+  String get questionDesigner;
+
+  /// No description provided for @answerAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer Author'**
+  String get answerAuthor;
+
+  /// No description provided for @noQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions available'**
+  String get noQuestions;
+
+  /// No description provided for @correctOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct Option'**
+  String get correctOption;
+
+  /// No description provided for @yourSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Selection'**
+  String get yourSelection;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @questionNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {number}'**
+  String questionNumber(int number);
+
+  /// No description provided for @textView.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get textView;
+
+  /// No description provided for @fullImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Image'**
+  String get fullImage;
+
+  /// No description provided for @fullQuestionImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Question Image {number}'**
+  String fullQuestionImage(int number);
+
+  /// No description provided for @noFullQuestionImage.
+  ///
+  /// In en, this message translates to:
+  /// **'No full image is registered for this question.'**
+  String get noFullQuestionImage;
+
+  /// No description provided for @backToTextView.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Text View'**
+  String get backToTextView;
+
+  /// No description provided for @text.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get text;
+
+  /// No description provided for @image.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get image;
+
+  /// No description provided for @detailedAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed Answer'**
+  String get detailedAnswer;
+
+  /// No description provided for @detailedAnswerImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed Answer Image for Question {number}'**
+  String detailedAnswerImage(int number);
+
+  /// No description provided for @imageZoomPan.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom and pan image'**
+  String get imageZoomPan;
+
+  /// No description provided for @resetZoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Zoom'**
+  String get resetZoom;
+
+  /// No description provided for @fullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Fullscreen'**
+  String get fullscreen;
+
+  /// No description provided for @selectAnswerOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Answer Option'**
+  String get selectAnswerOption;
+
+  /// No description provided for @optionSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Option {option} selected'**
+  String optionSelected(int option);
+
+  /// No description provided for @option.
+  ///
+  /// In en, this message translates to:
+  /// **'Option'**
+  String get option;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

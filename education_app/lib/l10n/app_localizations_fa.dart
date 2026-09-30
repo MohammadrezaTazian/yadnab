@@ -169,4 +169,102 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get invalidPhone => 'شماره تلفن باید 11 رقم و با 09 شروع شود';
+
+  @override
+  String get courseTopics => 'سرفصل‌های دوره';
+
+  @override
+  String get loadingTopics => 'در حال بارگذاری سرفصل‌ها';
+
+  @override
+  String get errorLoadingTopics => 'خطا در بارگذاری سرفصل‌ها';
+
+  @override
+  String get retry => 'تلاش مجدد';
+
+  @override
+  String get noTopicsAvailable => 'سرفصلی موجود نیست';
+
+  @override
+  String get viewDetailedAnswer => 'نمایش پاسخ تشریحی';
+
+  @override
+  String get hideDetailedAnswer => 'مخفی کردن پاسخ تشریحی';
+
+  @override
+  String get questionYear => 'سال';
+
+  @override
+  String get questionDesigner => 'طراح';
+
+  @override
+  String get answerAuthor => 'نویسنده پاسخ';
+
+  @override
+  String get noQuestions => 'سوال موجود نیست';
+
+  @override
+  String get correctOption => 'گزینه صحیح';
+
+  @override
+  String get yourSelection => 'انتخاب شما';
+
+  @override
+  String get back => 'بازگشت';
+
+  @override
+  String questionNumber(int number) {
+    return 'سوال $number';
+  }
+
+  @override
+  String get textView => 'نمایش متنی';
+
+  @override
+  String get fullImage => 'تصویر کامل';
+
+  @override
+  String fullQuestionImage(int number) {
+    return 'تصویر کامل سوال $number';
+  }
+
+  @override
+  String get noFullQuestionImage => 'تصویر کامل برای این سوال ثبت نشده است.';
+
+  @override
+  String get backToTextView => 'بازگشت به نمایش متنی';
+
+  @override
+  String get text => 'متن';
+
+  @override
+  String get image => 'تصویر';
+
+  @override
+  String get detailedAnswer => 'پاسخ تشریحی';
+
+  @override
+  String detailedAnswerImage(int number) {
+    return 'تصویر پاسخ تشریحی سوال $number';
+  }
+
+  @override
+  String get imageZoomPan => 'قابلیت زوم و جابه‌جایی تصویر';
+
+  @override
+  String get resetZoom => 'بازنشانی زوم';
+
+  @override
+  String get fullscreen => 'تمام صفحه';
+
+  @override
+  String get selectAnswerOption => 'انتخاب گزینه پاسخ';
+
+  @override
+  String optionSelected(int option) {
+    return 'گزینه $option انتخاب شده';
+  }
+
+  @override
+  String get option => 'گزینه';
 }

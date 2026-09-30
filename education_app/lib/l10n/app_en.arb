@@ -66,4 +66,51 @@
   "noQuestions": "No questions available",
   "correctOption": "Correct Option",
   "yourSelection": "Your Selection"
+
+  ,
+  "back": "Back",
+  "questionNumber": "Question {number}",
+  "@questionNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "textView": "Text",
+  "fullImage": "Full Image",
+  "fullQuestionImage": "Full Question Image {number}",
+  "@fullQuestionImage": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "noFullQuestionImage": "No full image is registered for this question.",
+  "backToTextView": "Back to Text View",
+  "text": "Text",
+  "image": "Image",
+  "detailedAnswer": "Detailed Answer",
+  "detailedAnswerImage": "Detailed Answer Image for Question {number}",
+  "@detailedAnswerImage": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "imageZoomPan": "Zoom and pan image",
+  "resetZoom": "Reset Zoom",
+  "fullscreen": "Fullscreen",
+  "selectAnswerOption": "Select Answer Option",
+  "optionSelected": "Option {option} selected",
+  "@optionSelected": {
+    "placeholders": {
+      "option": {
+        "type": "int"
+      }
+    }
+  },
+  "option": "Option"
 }
