@@ -1,5 +1,6 @@
-allprojects {
+﻿allprojects {
     repositories {
+        maven { url = uri("https://maven.myket.ir") }
         google()
         mavenCentral()
     }
@@ -19,3 +20,4 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+

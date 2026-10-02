@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
@@ -16,9 +16,8 @@ class ConfigService {
   Future<void> load() async {
     try {
       if (kIsWeb) {
-        // On Web, try to fetch config.json from the server root
+        // On Web, load config.json from the server root
         try {
-          // Prevent caching with a timestamp parameter
           final response = await Dio().get(
             'config.json?v=${DateTime.now().millisecondsSinceEpoch}',
             options: Options(responseType: ResponseType.plain),
@@ -28,19 +27,28 @@ class ConfigService {
           debugPrint('Loaded config from web: $_apiBaseUrl');
           return;
         } catch (e) {
-          debugPrint('Failed to load external config.json on web, falling back to assets: $e');
+          debugPrint(
+            'Failed to load external config.json on web, falling back to assets: $e',
+          );
         }
       }
 
-      // Fallback or Mobile: Load from assets
+      // Release build uses production API.
+      if (kReleaseMode) {
+        _apiBaseUrl = 'http://87.248.145.101:81/api';
+        debugPrint('Loaded production API: $_apiBaseUrl');
+        return;
+      }
+
+      // Debug / local development uses assets/config.json.
       final jsonString = await rootBundle.loadString('assets/config.json');
       final jsonConfig = json.decode(jsonString);
       _apiBaseUrl = jsonConfig['apiBaseUrl'];
       debugPrint('Loaded config from assets: $_apiBaseUrl');
-
     } catch (e) {
       debugPrint('Error loading config: $e');
-      // Hard fallback if everything fails
+
+      // Local fallback for development only.
       _apiBaseUrl = 'http://localhost:5100/api';
     }
   }
