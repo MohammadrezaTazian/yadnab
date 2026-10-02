@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
           );
 
           return MaterialApp.router(
-            title: 'Education App',
+            title: 'Yadnab | یادناب',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.getLightTheme(settingsState.fontSize),
             darkTheme: AppTheme.getDarkTheme(settingsState.fontSize),

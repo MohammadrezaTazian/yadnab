@@ -42,7 +42,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  t?.appTitle ?? 'Education App',
+                  t?.appTitle ?? 'Yadnab | یادناب',
                   style: TextStyle(
                     color: AppColors.onPrimary,
                     fontSize: 22,
