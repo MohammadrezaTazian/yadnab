@@ -168,11 +168,14 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                                 ],
                         ),
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.menu_book,
-                          size: 60,
-                          color: AppColors.iconHeaderOverlay,
+                      child:  Center(
+                        child: Center(
+                          child: Image.asset(
+                            'images/logos/yadnab_logo.png',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                     ),
@@ -632,5 +635,3 @@ class _TopicTreeItemState extends State<_TopicTreeItem> {
     );
   }
 }
-
-

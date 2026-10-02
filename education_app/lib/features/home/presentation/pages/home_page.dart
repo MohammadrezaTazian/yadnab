@@ -131,10 +131,13 @@ class _HomePageContentState extends State<_HomePageContent>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.school_rounded,
-                              size: 60,
-                              color: AppColors.onPrimary.withValues(alpha: 0.9),
+                            ClipOval(
+                              child: Image.asset(
+                                'images/logos/yadnab_logo.png',
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.contain,
+                              ),
                             ),
                             const SizedBox(height: 10),
                             Text(

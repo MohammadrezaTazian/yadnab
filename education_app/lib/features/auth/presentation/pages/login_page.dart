@@ -67,10 +67,7 @@ class _LoginPageState extends State<LoginPage>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.settings_rounded,
-            color: AppColors.onPrimary,
-          ),
+          icon: Icon(Icons.settings_rounded, color: AppColors.onPrimary),
           onPressed: () => context.push('/settings'),
         ),
       ),
@@ -90,7 +87,8 @@ class _LoginPageState extends State<LoginPage>
                   backgroundColor: AppColors.success,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               );
             } else if (state is AuthAuthenticated) {
@@ -102,16 +100,15 @@ class _LoginPageState extends State<LoginPage>
                   backgroundColor: AppColors.error,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               );
             }
           },
           builder: (context, state) {
             if (state is AuthAuthenticated) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
             return Center(
               child: FadeTransition(
@@ -139,10 +136,13 @@ class _LoginPageState extends State<LoginPage>
                                   : AppColors.primaryGradientLight,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.school_rounded,
-                              size: 50,
-                              color: AppColors.onPrimary,
+                            child: ClipOval(
+                              child: Image.asset(
+                                'images/logos/yadnab_logo.png',
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
 
@@ -155,9 +155,7 @@ class _LoginPageState extends State<LoginPage>
                               decoration: BoxDecoration(
                                 color: colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(15),
-                                border: Border.all(
-                                  color: colorScheme.outline,
-                                ),
+                                border: Border.all(color: colorScheme.outline),
                               ),
                               child: TextFormField(
                                 controller: _phoneController,
@@ -165,24 +163,34 @@ class _LoginPageState extends State<LoginPage>
                                 style: textTheme.bodyLarge,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return AppLocalizations.of(context)!.phoneRequired;
+                                    return AppLocalizations.of(
+                                      context,
+                                    )!.phoneRequired;
                                   }
                                   final phoneRegex = RegExp(r'^09\d{9}$');
                                   if (!phoneRegex.hasMatch(value)) {
-                                    return AppLocalizations.of(context)!.invalidPhone;
+                                    return AppLocalizations.of(
+                                      context,
+                                    )!.invalidPhone;
                                   }
                                   return null;
                                 },
                                 decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(context)!.phone,
+                                  labelText: AppLocalizations.of(
+                                    context,
+                                  )!.phone,
                                   hintText: '09121234567',
                                   hintStyle: textTheme.bodyMedium?.copyWith(
-                                    color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.5,
+                                    ),
                                   ),
                                   labelStyle: textTheme.bodyMedium,
                                   border: InputBorder.none,
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 16),
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
                                   prefixIcon: Container(
                                     margin: const EdgeInsets.all(8),
                                     padding: const EdgeInsets.all(8),
@@ -221,7 +229,8 @@ class _LoginPageState extends State<LoginPage>
                                       height: 56,
                                       textStyle: textTheme.headlineMedium,
                                       decoration: BoxDecoration(
-                                        color: colorScheme.surfaceContainerHighest,
+                                        color:
+                                            colorScheme.surfaceContainerHighest,
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
                                           color: colorScheme.outline,
@@ -234,7 +243,8 @@ class _LoginPageState extends State<LoginPage>
                                       height: 56,
                                       textStyle: textTheme.headlineMedium,
                                       decoration: BoxDecoration(
-                                        color: colorScheme.surfaceContainerHighest,
+                                        color:
+                                            colorScheme.surfaceContainerHighest,
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
                                           color: colorScheme.primary,
@@ -244,11 +254,11 @@ class _LoginPageState extends State<LoginPage>
                                     ),
                                     onCompleted: (pin) {
                                       context.read<AuthBloc>().add(
-                                            VerifyOtpEvent(
-                                              _phoneController.text,
-                                              pin,
-                                            ),
-                                          );
+                                        VerifyOtpEvent(
+                                          _phoneController.text,
+                                          pin,
+                                        ),
+                                      );
                                     },
                                   ),
                                 ),
@@ -263,16 +273,16 @@ class _LoginPageState extends State<LoginPage>
                               if (!_otpSent) {
                                 if (_formKey.currentState!.validate()) {
                                   context.read<AuthBloc>().add(
-                                        SendOtpEvent(_phoneController.text),
-                                      );
+                                    SendOtpEvent(_phoneController.text),
+                                  );
                                 }
                               } else {
                                 context.read<AuthBloc>().add(
-                                      VerifyOtpEvent(
-                                        _phoneController.text,
-                                        _otpController.text,
-                                      ),
-                                    );
+                                  VerifyOtpEvent(
+                                    _phoneController.text,
+                                    _otpController.text,
+                                  ),
+                                );
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -300,4 +310,3 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 }
-
