@@ -70,26 +70,13 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
   generate: true
 
-l10n:
-  arb-dir: lib/l10n
-  template-arb-file: app_en.arb
-  output-localization-file: app_localizations.dart
-  output-class: AppLocalizations
-
-  # To add assets to your application, add an assets section, like this:
   assets:
-  - assets/images/icons/
-  - assets/images/logos/
-  - assets/config.json
+    - assets/images/logos/
+    - assets/config.json
 
-  # To add custom fonts to your application, add a fonts section here,
   fonts:
     - family: Vazir
       fonts:
@@ -98,6 +85,12 @@ l10n:
           weight: 700
         - asset: assets/fonts/Vazir/Vazir-Light.ttf
           weight: 300
+
+l10n:
+  arb-dir: lib/l10n
+  template-arb-file: app_en.arb
+  output-localization-file: app_localizations.dart
+  output-class: AppLocalizations
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
