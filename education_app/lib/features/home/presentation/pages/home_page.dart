@@ -133,7 +133,7 @@ class _HomePageContentState extends State<_HomePageContent>
                           children: [
                             ClipOval(
                               child: Image.asset(
-                                'images/logos/yadnab_logo.png',
+                                'assets/images/logos/yadnab_logo.png',
                                 width: 80,
                                 height: 80,
                                 fit: BoxFit.contain,

@@ -168,10 +168,10 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
                                 ],
                         ),
                       ),
-                      child:  Center(
+                      child: Center(
                         child: Center(
                           child: Image.asset(
-                            'images/logos/yadnab_logo.png',
+                            'assets/images/logos/yadnab_logo.png',
                             width: 80,
                             height: 80,
                             fit: BoxFit.contain,
