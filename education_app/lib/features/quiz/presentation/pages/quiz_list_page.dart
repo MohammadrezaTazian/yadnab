@@ -1,5 +1,6 @@
 ﻿import 'package:education_app/shared/widgets/latex_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../presentation/bloc/question_bloc.dart';
 import '../../presentation/bloc/question_event.dart';
@@ -113,182 +114,206 @@ class _QuizListPageContentState extends State<_QuizListPageContent>
         final isSearching = state is QuestionLoaded && state.isSearching;
         final searchQuery = state is QuestionLoaded ? state.searchQuery : '';
 
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(widget.topicTitle),
-            centerTitle: true,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else if (widget.packageId != null && widget.packageId! > 0) {
-                  final uri = Uri(
-                    path: '/topics',
-                    queryParameters: {
-                      'packageId': '${widget.packageId}',
-                      if (widget.packageTitle != null)
-                        'title': widget.packageTitle!,
-                    },
-                  ).toString();
-                  context.go(uri);
-                } else {
-                  context.go('/home');
-                }
-              },
-            ),
-            actions: [
-              SearchAppBarAction(
-                isSearching: isSearching,
-                color: isDark
-                    ? AppColors.textPrimaryDark
-                    : AppColors.textPrimaryLight,
-                onPressed: () {
-                  context.read<QuestionBloc>().add(
-                    ToggleQuestionsSearchVisibilityEvent(),
-                  );
-                },
-              ),
-              const SizedBox(width: 4),
-            ],
-          ),
-          body: Column(
-            children: [
-              AppSearchBar(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                animation: _searchBarAnimation,
-                hasQuery: searchQuery.isNotEmpty,
-                hintText: 'جستجوی سوالات...',
-                onChanged: (query) {
-                  context.read<QuestionBloc>().add(SearchQuestionsEvent(query));
-                },
-                onClear: () {
-                  context.read<QuestionBloc>().add(ClearQuestionsSearchEvent());
-                },
-              ),
-              Expanded(
-                child: Builder(
-                  builder: (context) {
-                    if (state is QuestionLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is QuestionLoaded) {
-                      final questions = state.filteredQuestions;
+        return PopScope(
+          canPop: defaultTargetPlatform != TargetPlatform.android,
+          onPopInvokedWithResult: (didPop, result) {
+            debugPrint(
+              'QUIZ LIST BACK: didPop=$didPop, platform=$defaultTargetPlatform',
+            );
 
-                      if (questions.isEmpty) {
-                        if (searchQuery.isNotEmpty) {
-                          return SearchEmptyState(
-                            query: searchQuery,
-                            subtitle: '«$searchQuery» در سوالات پیدا نشد',
+            if (!didPop && defaultTargetPlatform == TargetPlatform.android) {
+              final uri = Uri(
+                path: '/topics',
+                queryParameters: {
+                  if (widget.packageId != null && widget.packageId! > 0)
+                    'packageId': '${widget.packageId}',
+                  if (widget.packageTitle != null)
+                    'title': widget.packageTitle!,
+                },
+              ).toString();
+
+              context.go(uri);
+            }
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(widget.topicTitle),
+              centerTitle: true,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else if (widget.packageId != null &&
+                      widget.packageId! > 0) {
+                    final uri = Uri(
+                      path: '/topics',
+                      queryParameters: {
+                        'packageId': '${widget.packageId}',
+                        if (widget.packageTitle != null)
+                          'title': widget.packageTitle!,
+                      },
+                    ).toString();
+                    context.go(uri);
+                  } else {
+                    context.go('/home');
+                  }
+                },
+              ),
+              actions: [
+                SearchAppBarAction(
+                  isSearching: isSearching,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
+                  onPressed: () {
+                    context.read<QuestionBloc>().add(
+                      ToggleQuestionsSearchVisibilityEvent(),
+                    );
+                  },
+                ),
+                const SizedBox(width: 4),
+              ],
+            ),
+            body: Column(
+              children: [
+                AppSearchBar(
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  animation: _searchBarAnimation,
+                  hasQuery: searchQuery.isNotEmpty,
+                  hintText: 'جستجوی سوالات...',
+                  onChanged: (query) {
+                    context.read<QuestionBloc>().add(
+                      SearchQuestionsEvent(query),
+                    );
+                  },
+                  onClear: () {
+                    context.read<QuestionBloc>().add(
+                      ClearQuestionsSearchEvent(),
+                    );
+                  },
+                ),
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      if (state is QuestionLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is QuestionLoaded) {
+                        final questions = state.filteredQuestions;
+
+                        if (questions.isEmpty) {
+                          if (searchQuery.isNotEmpty) {
+                            return SearchEmptyState(
+                              query: searchQuery,
+                              subtitle: '«$searchQuery» در سوالات پیدا نشد',
+                            );
+                          }
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.quiz_outlined,
+                                  size: 64,
+                                  color: colorScheme.outline,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'سوال موجود نیست',
+                                  style: textTheme.bodyLarge,
+                                ),
+                              ],
+                            ),
                           );
                         }
+                        return ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: questions.length,
+                          itemBuilder: (context, index) {
+                            final question = questions[index];
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                leading: CircleAvatar(
+                                  backgroundColor: colorScheme.primary,
+                                  foregroundColor: colorScheme.onPrimary,
+                                  child: Text('${index + 1}'),
+                                ),
+                                title: searchQuery.isNotEmpty
+                                    ? HighlightedText(
+                                        text: question.questionText,
+                                        query: searchQuery,
+                                        style: textTheme.bodyLarge,
+                                      )
+                                    : LatexText(
+                                        question.questionText,
+                                        style: textTheme.bodyLarge,
+                                      ),
+                                trailing: Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 16,
+                                  color: colorScheme.outline,
+                                ),
+                                onTap: () async {
+                                  final uri = Uri(
+                                    path: '/question-detail',
+                                    queryParameters: {
+                                      'questionId': '${question.id}',
+                                      'topicId': '${widget.topicId}',
+                                    },
+                                  ).toString();
+
+                                  context.go(
+                                    uri,
+                                    extra: {
+                                      'question': question,
+                                      'index': index + 1,
+                                      'topicId': widget.topicId,
+                                      'topicTitle': widget.topicTitle,
+                                      'packageId': widget.packageId,
+                                      'packageTitle': widget.packageTitle,
+                                    },
+                                  );
+                                  if (context.mounted) {
+                                    context.read<QuestionBloc>().add(
+                                      GetQuestionsEvent(widget.topicId),
+                                    );
+                                  }
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      } else if (state is QuestionError) {
                         return Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.quiz_outlined,
+                                Icons.error_outline_rounded,
                                 size: 64,
-                                color: colorScheme.outline,
+                                color: colorScheme.error,
                               ),
                               const SizedBox(height: 16),
-                              Text(
-                                'سوال موجود نیست',
-                                style: textTheme.bodyLarge,
-                              ),
+                              Text(state.message, style: textTheme.bodyLarge),
                             ],
                           ),
                         );
                       }
-                      return ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: questions.length,
-                        itemBuilder: (context, index) {
-                          final question = questions[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              leading: CircleAvatar(
-                                backgroundColor: colorScheme.primary,
-                                foregroundColor: colorScheme.onPrimary,
-                                child: Text('${index + 1}'),
-                              ),
-                              title: searchQuery.isNotEmpty
-                                  ? HighlightedText(
-                                      text: question.questionText,
-                                      query: searchQuery,
-                                      style: textTheme.bodyLarge,
-                                    )
-                                  : LatexText(
-                                      question.questionText,
-                                      style: textTheme.bodyLarge,
-                                    ),
-                              trailing: Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 16,
-                                color: colorScheme.outline,
-                              ),
-                              onTap: () async {
-                                final uri = Uri(
-                                  path: '/question-detail',
-                                  queryParameters: {
-                                    'questionId': '${question.id}',
-                                    'topicId': '${widget.topicId}',
-                                  },
-                                ).toString();
-
-                                context.go(
-                                  uri,
-                                  extra: {
-                                    'question': question,
-                                    'index': index + 1,
-                                    'topicId': widget.topicId,
-                                    'topicTitle': widget.topicTitle,
-                                    'packageId': widget.packageId,
-                                    'packageTitle': widget.packageTitle,
-                                  },
-                                );
-                                if (context.mounted) {
-                                  context.read<QuestionBloc>().add(
-                                    GetQuestionsEvent(widget.topicId),
-                                  );
-                                }
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    } else if (state is QuestionError) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.error_outline_rounded,
-                              size: 64,
-                              color: colorScheme.error,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(state.message, style: textTheme.bodyLarge),
-                          ],
-                        ),
-                      );
-                    }
-                    return const SizedBox();
-                  },
+                      return const SizedBox();
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
   }
 }
-
-
-

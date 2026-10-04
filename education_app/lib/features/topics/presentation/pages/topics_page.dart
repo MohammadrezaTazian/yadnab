@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:education_app/features/topics/presentation/bloc/topic_bloc.dart';
 import 'package:education_app/features/topics/presentation/bloc/topic_event.dart';
@@ -94,189 +95,209 @@ class _TopicsPageContentState extends State<_TopicsPageContent>
             ? state.expandedTopicIds
             : <int>{};
 
-        return Scaffold(
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: isDark
-                    ? [
-                        AppColors.backgroundDark,
-                        AppColors.surfaceDark,
-                        AppColors.backgroundDeepDark,
-                      ]
-                    : [
-                        AppColors.backgroundGradientStartLight,
-                        AppColors.surfaceLight,
-                      ],
+        return PopScope(
+          canPop: defaultTargetPlatform != TargetPlatform.android,
+          onPopInvokedWithResult: (didPop, result) {
+            debugPrint(
+              'TOPICS BACK: didPop=$didPop, platform=$defaultTargetPlatform',
+            );
+
+            if (!didPop && defaultTargetPlatform == TargetPlatform.android) {
+              context.go('/home');
+            }
+          },
+          child: Scaffold(
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: isDark
+                      ? [
+                          AppColors.backgroundDark,
+                          AppColors.surfaceDark,
+                          AppColors.backgroundDeepDark,
+                        ]
+                      : [
+                          AppColors.backgroundGradientStartLight,
+                          AppColors.surfaceLight,
+                        ],
+                ),
               ),
-            ),
-            child: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  expandedHeight: 150.0,
-                  floating: false,
-                  pinned: true,
-                  leading: IconButton(
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.onPrimary,
-                    ),
-                    onPressed: () {
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        context.go('/home');
-                      }
-                    },
-                  ),
-                  actions: [
-                    SearchAppBarAction(
-                      isSearching: isSearching,
-                      color: isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.onPrimary,
-                      onPressed: () {
-                        context.read<TopicBloc>().add(ToggleSearchVisibility());
-                      },
-                    ),
-                    const SizedBox(width: 4),
-                  ],
-                  flexibleSpace: FlexibleSpaceBar(
-                    title: Text(
-                      widget.title,
-                      style: TextStyle(
+              child: CustomScrollView(
+                slivers: [
+                  SliverAppBar(
+                    expandedHeight: 150.0,
+                    floating: false,
+                    pinned: true,
+                    leading: IconButton(
+                      icon: Icon(
+                        Icons.arrow_back,
                         color: isDark
                             ? AppColors.textPrimaryDark
                             : AppColors.onPrimary,
-                        fontWeight: FontWeight.bold,
                       ),
+                      onPressed: () {
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go('/home');
+                        }
+                      },
                     ),
-                    background: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: isDark
-                              ? [AppColors.surfaceDark, AppColors.cardDark]
-                              : [
-                                  AppColors.appBarGradientStartLight,
-                                  AppColors.appBarGradientEndLight,
-                                ],
+                    actions: [
+                      SearchAppBarAction(
+                        isSearching: isSearching,
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.onPrimary,
+                        onPressed: () {
+                          context.read<TopicBloc>().add(
+                            ToggleSearchVisibility(),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                    flexibleSpace: FlexibleSpaceBar(
+                      title: Text(
+                        widget.title,
+                        style: TextStyle(
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.onPrimary,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      child: Center(
+                      background: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: isDark
+                                ? [AppColors.surfaceDark, AppColors.cardDark]
+                                : [
+                                    AppColors.appBarGradientStartLight,
+                                    AppColors.appBarGradientEndLight,
+                                  ],
+                          ),
+                        ),
                         child: Center(
-                          child: Image.asset(
-                            'assets/images/logos/yadnab_logo.png',
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.contain,
+                          child: Center(
+                            child: Image.asset(
+                              'assets/images/logos/yadnab_logo.png',
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                // ---- Search Bar ----
-                SliverAppSearchBar(
-                  controller: _searchController,
-                  focusNode: _searchFocusNode,
-                  animation: _searchBarAnimation,
-                  hasQuery: searchQuery.isNotEmpty,
-                  hintText: 'جستجوی سرفصل‌ها...',
-                  onChanged: (query) {
-                    context.read<TopicBloc>().add(SearchTopics(query));
-                  },
-                  onClear: () {
-                    context.read<TopicBloc>().add(ClearSearch());
-                  },
-                ),
-                if (state is TopicLoading)
-                  const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (state is TopicError)
-                  SliverFillRemaining(
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              size: 60,
-                              color: AppColors.errorIcon,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'خطا در بارگذاری سرفصل‌ها',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: isDark
-                                    ? AppColors.textSecondaryDark
-                                    : AppColors.textPrimaryLight,
+                  // ---- Search Bar ----
+                  SliverAppSearchBar(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    animation: _searchBarAnimation,
+                    hasQuery: searchQuery.isNotEmpty,
+                    hintText: 'جستجوی سرفصل‌ها...',
+                    onChanged: (query) {
+                      context.read<TopicBloc>().add(SearchTopics(query));
+                    },
+                    onClear: () {
+                      context.read<TopicBloc>().add(ClearSearch());
+                    },
+                  ),
+                  if (state is TopicLoading)
+                    const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (state is TopicError)
+                    SliverFillRemaining(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: 60,
+                                color: AppColors.errorIcon,
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              state.message,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: isDark
-                                    ? AppColors.textTertiaryDark
-                                    : AppColors.textSecondaryLight,
+                              const SizedBox(height: 16),
+                              Text(
+                                'خطا در بارگذاری سرفصل‌ها',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textPrimaryLight,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                context.read<TopicBloc>().add(
-                                  LoadTopics(widget.packageId),
-                                );
-                              },
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('تلاش مجدد'),
-                            ),
-                          ],
+                              const SizedBox(height: 8),
+                              Text(
+                                state.message,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: isDark
+                                      ? AppColors.textTertiaryDark
+                                      : AppColors.textSecondaryLight,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  context.read<TopicBloc>().add(
+                                    LoadTopics(widget.packageId),
+                                  );
+                                },
+                                icon: const Icon(Icons.refresh),
+                                label: const Text('تلاش مجدد'),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  )
-                else if (state is TopicLoaded)
-                  if (state.filteredTopics.isEmpty && searchQuery.isNotEmpty)
-                    SliverSearchEmptyState(
-                      query: searchQuery,
-                      subtitle: '«$searchQuery» در سرفصل‌ها پیدا نشد',
                     )
+                  else if (state is TopicLoaded)
+                    if (state.filteredTopics.isEmpty && searchQuery.isNotEmpty)
+                      SliverSearchEmptyState(
+                        query: searchQuery,
+                        subtitle: '«$searchQuery» در سرفصل‌ها پیدا نشد',
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.all(16.0),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final topic = state.filteredTopics[index];
+                            return _TopicTreeItem(
+                              topic: topic,
+                              index: index,
+                              isDark: isDark,
+                              searchQuery: searchQuery,
+                              expandedTopicIds: expandedTopicIds,
+                              onLeafTap: (t) => _showContentSelectionSheet(
+                                context,
+                                t,
+                                isDark,
+                              ),
+                            );
+                          }, childCount: state.filteredTopics.length),
+                        ),
+                      )
                   else
-                    SliverPadding(
-                      padding: const EdgeInsets.all(16.0),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final topic = state.filteredTopics[index];
-                          return _TopicTreeItem(
-                            topic: topic,
-                            index: index,
-                            isDark: isDark,
-                            searchQuery: searchQuery,
-                            expandedTopicIds: expandedTopicIds,
-                            onLeafTap: (t) =>
-                                _showContentSelectionSheet(context, t, isDark),
-                          );
-                        }, childCount: state.filteredTopics.length),
-                      ),
-                    )
-                else
-                  const SliverFillRemaining(
-                    child: Center(child: Text('داده‌ای یافت نشد')),
-                  ),
-              ],
+                    const SliverFillRemaining(
+                      child: Center(child: Text('داده‌ای یافت نشد')),
+                    ),
+                ],
+              ),
             ),
           ),
         );

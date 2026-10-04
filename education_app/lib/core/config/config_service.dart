@@ -44,6 +44,12 @@ class ConfigService {
       final jsonString = await rootBundle.loadString('assets/config.json');
       final jsonConfig = json.decode(jsonString);
       _apiBaseUrl = jsonConfig['apiBaseUrl'];
+
+      // Android Emulator accesses the Windows host through 10.0.2.2.
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        _apiBaseUrl = _apiBaseUrl.replaceFirst('localhost', '10.0.2.2');
+      }
+
       debugPrint('Loaded config from assets: $_apiBaseUrl');
     } catch (e) {
       debugPrint('Error loading config: $e');

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../injection_container.dart';
 import '../../../../shared/theme/app_colors.dart';
@@ -118,170 +119,192 @@ class _EducationContentListViewState extends State<_EducationContentListView>
             ? state.searchQuery
             : '';
 
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(widget.topicTitle),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            centerTitle: true,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                if (widget.packageId != null && widget.packageId! > 0) {
-                  final uri = Uri(
-                    path: '/topics',
-                    queryParameters: {
-                      'packageId': '${widget.packageId}',
-                      if (widget.packageTitle != null)
-                        'title': widget.packageTitle!,
-                    },
-                  ).toString();
+        return PopScope(
+          canPop: defaultTargetPlatform != TargetPlatform.android,
+          onPopInvokedWithResult: (didPop, result) {
+            debugPrint(
+              'EDUCATION CONTENT BACK: didPop=$didPop, platform=$defaultTargetPlatform',
+            );
 
-                  context.go(uri);
-                } else {
-                  context.go('/home');
-                }
-              },
-            ),
-            titleTextStyle: TextStyle(
-              color: isDark
-                  ? AppColors.textPrimaryDark
-                  : AppColors.textPrimaryLight,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-            iconTheme: IconThemeData(
-              color: isDark
-                  ? AppColors.textPrimaryDark
-                  : AppColors.textPrimaryLight,
-            ),
-            actions: [
-              SearchAppBarAction(
-                isSearching: isSearching,
+            if (!didPop && defaultTargetPlatform == TargetPlatform.android) {
+              final uri = Uri(
+                path: '/topics',
+                queryParameters: {
+                  if (widget.packageId != null && widget.packageId! > 0)
+                    'packageId': '${widget.packageId}',
+                  if (widget.packageTitle != null)
+                    'title': widget.packageTitle!,
+                },
+              ).toString();
+
+              context.go(uri);
+            }
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(widget.topicTitle),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  if (widget.packageId != null && widget.packageId! > 0) {
+                    final uri = Uri(
+                      path: '/topics',
+                      queryParameters: {
+                        'packageId': '${widget.packageId}',
+                        if (widget.packageTitle != null)
+                          'title': widget.packageTitle!,
+                      },
+                    ).toString();
+
+                    context.go(uri);
+                  } else {
+                    context.go('/home');
+                  }
+                },
+              ),
+              titleTextStyle: TextStyle(
                 color: isDark
                     ? AppColors.textPrimaryDark
                     : AppColors.textPrimaryLight,
-                onPressed: () {
-                  context.read<EducationContentBloc>().add(
-                    ToggleEducationContentSearchVisibilityEvent(),
-                  );
-                },
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(width: 4),
-            ],
-          ),
-          body: Column(
-            children: [
-              AppSearchBar(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                animation: _searchBarAnimation,
-                hasQuery: searchQuery.isNotEmpty,
-                hintText: 'جستجوی درس‌ها یا مدرس...',
-                onChanged: (query) {
-                  context.read<EducationContentBloc>().add(
-                    SearchEducationContentEvent(query),
-                  );
-                },
-                onClear: () {
-                  context.read<EducationContentBloc>().add(
-                    ClearEducationContentSearchEvent(),
-                  );
-                },
+              iconTheme: IconThemeData(
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
               ),
-              Expanded(
-                child: Builder(
-                  builder: (context) {
-                    if (state is EducationContentLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is EducationContentError) {
-                      return Center(child: Text(state.message));
-                    } else if (state is EducationContentLoaded) {
-                      final contents = state.filteredContents;
-
-                      if (contents.isEmpty) {
-                        if (searchQuery.isNotEmpty) {
-                          return SearchEmptyState(
-                            query: searchQuery,
-                            subtitle: '«$searchQuery» در آموزش‌ها پیدا نشد',
-                          );
-                        }
-                        return const Center(
-                          child: Text('آموزشی برای این مورد یافت نشد'),
-                        );
-                      }
-
-                      return ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: contents.length,
-                        itemBuilder: (context, index) {
-                          final content = contents[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              leading: Icon(
-                                content.mediaType == 'Video'
-                                    ? Icons.play_circle_fill
-                                    : Icons.article,
-                                color: Colors.blue,
-                              ),
-                              title: HighlightedText(
-                                text: content.title,
-                                query: searchQuery,
-                              ),
-                              subtitle: HighlightedText(
-                                text: content.teacherName ?? 'نامشخص',
-                                query: searchQuery,
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: isDark
-                                      ? AppColors.textTertiaryDark
-                                      : AppColors.textSecondaryLight,
-                                ),
-                              ),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios,
-                                size: 16,
-                              ),
-                              onTap: () async {
-                                final bloc = context
-                                    .read<EducationContentBloc>();
-                                final uri = Uri(
-                                  path: '/education-content-detail',
-                                  queryParameters: {
-                                    'contentId': '${content.id}',
-                                    'topicId': '${widget.topicId}',
-                                  },
-                                ).toString();
-
-                                context.go(
-                                  uri,
-                                  extra: {
-                                    'content': content,
-                                    'bloc': bloc,
-                                    'topicId': widget.topicId,
-                                    'topicTitle': widget.topicTitle,
-                                    'packageId': widget.packageId,
-                                    'packageTitle': widget.packageTitle,
-                                  },
-                                ); // Refetch education contents to get updated isLiked status
-                                if (context.mounted) {
-                                  bloc.add(
-                                    GetEducationContentsByTopicEvent(
-                                      widget.topicId,
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    }
-                    return const SizedBox();
+              actions: [
+                SearchAppBarAction(
+                  isSearching: isSearching,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
+                  onPressed: () {
+                    context.read<EducationContentBloc>().add(
+                      ToggleEducationContentSearchVisibilityEvent(),
+                    );
                   },
                 ),
-              ),
-            ],
+                const SizedBox(width: 4),
+              ],
+            ),
+            body: Column(
+              children: [
+                AppSearchBar(
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  animation: _searchBarAnimation,
+                  hasQuery: searchQuery.isNotEmpty,
+                  hintText: 'جستجوی درس‌ها یا مدرس...',
+                  onChanged: (query) {
+                    context.read<EducationContentBloc>().add(
+                      SearchEducationContentEvent(query),
+                    );
+                  },
+                  onClear: () {
+                    context.read<EducationContentBloc>().add(
+                      ClearEducationContentSearchEvent(),
+                    );
+                  },
+                ),
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      if (state is EducationContentLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is EducationContentError) {
+                        return Center(child: Text(state.message));
+                      } else if (state is EducationContentLoaded) {
+                        final contents = state.filteredContents;
+
+                        if (contents.isEmpty) {
+                          if (searchQuery.isNotEmpty) {
+                            return SearchEmptyState(
+                              query: searchQuery,
+                              subtitle: '«$searchQuery» در آموزش‌ها پیدا نشد',
+                            );
+                          }
+                          return const Center(
+                            child: Text('آموزشی برای این مورد یافت نشد'),
+                          );
+                        }
+
+                        return ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: contents.length,
+                          itemBuilder: (context, index) {
+                            final content = contents[index];
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: ListTile(
+                                leading: Icon(
+                                  content.mediaType == 'Video'
+                                      ? Icons.play_circle_fill
+                                      : Icons.article,
+                                  color: Colors.blue,
+                                ),
+                                title: HighlightedText(
+                                  text: content.title,
+                                  query: searchQuery,
+                                ),
+                                subtitle: HighlightedText(
+                                  text: content.teacherName ?? 'نامشخص',
+                                  query: searchQuery,
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: isDark
+                                        ? AppColors.textTertiaryDark
+                                        : AppColors.textSecondaryLight,
+                                  ),
+                                ),
+                                trailing: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
+                                ),
+                                onTap: () async {
+                                  final bloc = context
+                                      .read<EducationContentBloc>();
+                                  final uri = Uri(
+                                    path: '/education-content-detail',
+                                    queryParameters: {
+                                      'contentId': '${content.id}',
+                                      'topicId': '${widget.topicId}',
+                                    },
+                                  ).toString();
+
+                                  context.go(
+                                    uri,
+                                    extra: {
+                                      'content': content,
+                                      'bloc': bloc,
+                                      'topicId': widget.topicId,
+                                      'topicTitle': widget.topicTitle,
+                                      'packageId': widget.packageId,
+                                      'packageTitle': widget.packageTitle,
+                                    },
+                                  ); // Refetch education contents to get updated isLiked status
+                                  if (context.mounted) {
+                                    bloc.add(
+                                      GetEducationContentsByTopicEvent(
+                                        widget.topicId,
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      }
+                      return const SizedBox();
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

@@ -15,6 +15,7 @@ import 'package:go_router/go_router.dart';
 import 'package:education_app/features/quiz/presentation/bloc/question_bloc.dart';
 import 'package:education_app/features/quiz/presentation/bloc/question_event.dart';
 import 'package:education_app/features/quiz/presentation/bloc/question_state.dart';
+import 'package:flutter/foundation.dart';
 
 class QuestionDetailPage extends StatefulWidget {
   final Question? question;
@@ -215,6 +216,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     if (_question == null) {
@@ -247,12 +249,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               }
             }
 
-            if (state is QuestionDetailLoading ||
-                state is QuestionInitial) {
+            if (state is QuestionDetailLoading || state is QuestionInitial) {
               return const Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(),
-                ),
+                body: Center(child: CircularProgressIndicator()),
               );
             }
 
@@ -270,10 +269,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                 body: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Text(
-                      state.message,
-                      textAlign: TextAlign.center,
-                    ),
+                    child: Text(state.message, textAlign: TextAlign.center),
                   ),
                 ),
               );
@@ -282,7 +278,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             if (_question == null) {
               return Scaffold(
                 body: Center(
-                  child: Text(AppLocalizations.of(context)!.noFullQuestionImage),
+                  child: Text(
+                    AppLocalizations.of(context)!.noFullQuestionImage,
+                  ),
                 ),
               );
             }
@@ -300,294 +298,342 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final hasFullImage = _currentQuestion.fullPageImage != null;
+    return PopScope(
+      canPop: defaultTargetPlatform != TargetPlatform.android,
+      onPopInvokedWithResult: (didPop, result) {
+        debugPrint(
+          'QUESTION DETAIL BACK: didPop=$didPop, platform=$defaultTargetPlatform',
+        );
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            final uri = Uri(
-              path: '/quiz-list',
-              queryParameters: {
-                if (widget.topicId != null) 'topicId': '${widget.topicId}',
-                if (widget.topicTitle != null) 'topicTitle': widget.topicTitle!,
-                if (widget.packageId != null)
-                  'packageId': '${widget.packageId}',
-                if (widget.packageTitle != null)
-                  'packageTitle': widget.packageTitle!,
-              },
-            ).toString();
+        if (!didPop && defaultTargetPlatform == TargetPlatform.android) {
+          final uri = Uri(
+            path: '/quiz-list',
+            queryParameters: {
+              if (widget.topicId != null) 'topicId': '${widget.topicId}',
+              if (widget.topicTitle != null) 'topicTitle': widget.topicTitle!,
+              if (widget.packageId != null) 'packageId': '${widget.packageId}',
+              if (widget.packageTitle != null)
+                'packageTitle': widget.packageTitle!,
+            },
+          ).toString();
 
-            context.go(uri);
-          },
+          context.go(uri);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              final uri = Uri(
+                path: '/quiz-list',
+                queryParameters: {
+                  if (widget.topicId != null) 'topicId': '${widget.topicId}',
+                  if (widget.topicTitle != null)
+                    'topicTitle': widget.topicTitle!,
+                  if (widget.packageId != null)
+                    'packageId': '${widget.packageId}',
+                  if (widget.packageTitle != null)
+                    'packageTitle': widget.packageTitle!,
+                },
+              ).toString();
+
+              context.go(uri);
+            },
+          ),
+          title: Text(
+            AppLocalizations.of(context)!.questionNumber(widget.index),
+          ),
+          centerTitle: true,
         ),
-        title: Text(AppLocalizations.of(context)!.questionNumber(widget.index)),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Main Question Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Question Metadata and Mode Switcher
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (_currentQuestion.difficultyLevelName != null)
-                          Chip(
-                            label: Text(_currentQuestion.difficultyLevelName!),
-                            backgroundColor: colorScheme.primary.withValues(
-                              alpha: 0.1,
-                            ),
-                            labelStyle: textTheme.labelMedium?.copyWith(
-                              color: colorScheme.primary,
-                            ),
-                          )
-                        else
-                          const SizedBox.shrink(),
-                        if (_currentQuestion.questionYear != 0)
-                          Text(
-                            ': ',
-                            style: textTheme.bodySmall,
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Main Question Card
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Question Metadata and Mode Switcher
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (_currentQuestion.difficultyLevelName != null)
+                            Chip(
+                              label: Text(
+                                _currentQuestion.difficultyLevelName!,
+                              ),
+                              backgroundColor: colorScheme.primary.withValues(
+                                alpha: 0.1,
+                              ),
+                              labelStyle: textTheme.labelMedium?.copyWith(
+                                color: colorScheme.primary,
+                              ),
+                            )
+                          else
+                            const SizedBox.shrink(),
+                          if (_currentQuestion.questionYear != 0)
+                            Text(': ', style: textTheme.bodySmall),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
 
-                    // View Mode Tabs (Segmented Button)
-                    Center(
-                      child: SegmentedButton<int>(
-                        segments: [
-                          ButtonSegment<int>(
-                            value: 0,
-                            label: Text(AppLocalizations.of(context)!.textView),
-                            icon: Icon(Icons.text_fields_rounded, size: 18),
+                      // View Mode Tabs (Segmented Button)
+                      Center(
+                        child: SegmentedButton<int>(
+                          segments: [
+                            ButtonSegment<int>(
+                              value: 0,
+                              label: Text(
+                                AppLocalizations.of(context)!.textView,
+                              ),
+                              icon: Icon(Icons.text_fields_rounded, size: 18),
+                            ),
+                            ButtonSegment<int>(
+                              value: 1,
+                              label: Text(
+                                AppLocalizations.of(context)!.fullImage,
+                              ),
+                              icon: Icon(
+                                Icons.image_outlined,
+                                size: 18,
+                                color: hasFullImage
+                                    ? null
+                                    : colorScheme.outline,
+                              ),
+                            ),
+                          ],
+                          selected: {_questionViewMode},
+                          onSelectionChanged: (Set<int> newSelection) {
+                            setState(() {
+                              _questionViewMode = newSelection.first;
+                              _questionTransformController.value =
+                                  Matrix4.identity();
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Question Content based on selected View Mode
+                      if (_questionViewMode == 0) ...[
+                        // --- TEXT MODE ---
+                        LatexText(
+                          _currentQuestion.questionText,
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
-                          ButtonSegment<int>(
-                            value: 1,
-                            label: Text(AppLocalizations.of(context)!.fullImage),
-                            icon: Icon(
-                              Icons.image_outlined,
-                              size: 18,
-                              color: hasFullImage ? null : colorScheme.outline,
+                        ),
+
+                        // Embedded Content Images (excluding full page)
+                        if (_currentQuestion.contentImages.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 180,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _currentQuestion.contentImages.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: 8),
+                              itemBuilder: (context, index) {
+                                final image =
+                                    _currentQuestion.contentImages[index];
+                                return _buildImage(
+                                  image.imageUrl,
+                                  180,
+                                  colorScheme,
+                                );
+                              },
                             ),
                           ),
                         ],
-                        selected: {_questionViewMode},
-                        onSelectionChanged: (Set<int> newSelection) {
-                          setState(() {
-                            _questionViewMode = newSelection.first;
-                            _questionTransformController.value =
-                                Matrix4.identity();
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Question Content based on selected View Mode
-                    if (_questionViewMode == 0) ...[
-                      // --- TEXT MODE ---
-                      LatexText(
-                        _currentQuestion.questionText,
-                        style: textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      // Embedded Content Images (excluding full page)
-                      if (_currentQuestion.contentImages.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 180,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _currentQuestion.contentImages.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 8),
-                            itemBuilder: (context, index) {
-                              final image =
-                                  _currentQuestion.contentImages[index];
-                              return _buildImage(
-                                image.imageUrl,
-                                180,
-                                colorScheme,
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ] else ...[
-                      // --- FULL IMAGE MODE ---
-                      if (hasFullImage) ...[
-                        _buildZoomableImageCard(
-                          imageUrl: _currentQuestion.fullPageImage!,
-                          imageType: 'question',
-                          title: AppLocalizations.of(context)!.fullQuestionImage(widget.index),
-                          controller: _questionTransformController,
-                          colorScheme: colorScheme,
-                          textTheme: textTheme,
-                        ),
                       ] else ...[
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerHighest
-                                .withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: colorScheme.outlineVariant,
-                            ),
+                        // --- FULL IMAGE MODE ---
+                        if (hasFullImage) ...[
+                          _buildZoomableImageCard(
+                            imageUrl: _currentQuestion.fullPageImage!,
+                            imageType: 'question',
+                            title: AppLocalizations.of(
+                              context,
+                            )!.fullQuestionImage(widget.index),
+                            controller: _questionTransformController,
+                            colorScheme: colorScheme,
+                            textTheme: textTheme,
                           ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.image_not_supported_outlined,
-                                size: 48,
-                                color: colorScheme.outline,
+                        ] else ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: colorScheme.surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: colorScheme.outlineVariant,
                               ),
-                              const SizedBox(height: 12),
-                              Text(
-                                AppLocalizations.of(context)!.noFullQuestionImage,
-                                style: textTheme.bodyMedium?.copyWith(
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 48,
                                   color: colorScheme.outline,
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 12),
-                              OutlinedButton.icon(
-                                onPressed: () {
-                                  setState(() {
-                                    _questionViewMode = 0;
-                                  });
-                                },
-                                icon: const Icon(
-                                  Icons.arrow_back_rounded,
-                                  size: 16,
+                                const SizedBox(height: 12),
+                                Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.noFullQuestionImage,
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.outline,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                label: Text(AppLocalizations.of(context)!.backToTextView),
-                              ),
-                            ],
+                                const SizedBox(height: 12),
+                                OutlinedButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      _questionViewMode = 0;
+                                    });
+                                  },
+                                  icon: const Icon(
+                                    Icons.arrow_back_rounded,
+                                    size: 16,
+                                  ),
+                                  label: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.backToTextView,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                        ],
+                      ],
+
+                      const SizedBox(height: 24),
+
+                      // Options (Conditional: Full text in Text mode, Compact Row in Image mode)
+                      if (_questionViewMode == 0) ...[
+                        _buildOption(
+                          1,
+                          _currentQuestion.option1,
+                          colorScheme,
+                          textTheme,
+                        ),
+                        _buildOption(
+                          2,
+                          _currentQuestion.option2,
+                          colorScheme,
+                          textTheme,
+                        ),
+                        _buildOption(
+                          3,
+                          _currentQuestion.option3,
+                          colorScheme,
+                          textTheme,
+                        ),
+                        _buildOption(
+                          4,
+                          _currentQuestion.option4,
+                          colorScheme,
+                          textTheme,
+                        ),
+                      ] else ...[
+                        _buildCompactOptionsRow(colorScheme, textTheme),
+                      ],
+
+                      const SizedBox(height: 24),
+
+                      // Toggle Answer Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _toggleAnswer,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            backgroundColor: _isAnswerVisible
+                                ? colorScheme.outline
+                                : colorScheme.primary,
+                          ),
+                          child: Text(
+                            _isAnswerVisible
+                                ? AppLocalizations.of(
+                                    context,
+                                  )!.hideDetailedAnswer
+                                : AppLocalizations.of(
+                                    context,
+                                  )!.viewDetailedAnswer,
+                          ),
+                        ),
+                      ),
+
+                      // Detailed Answer Section
+                      if (_isAnswerVisible &&
+                          _currentQuestion.detailedAnswer != null) ...[
+                        const SizedBox(height: 24),
+                        _buildDetailedAnswerSection(
+                          _currentQuestion.detailedAnswer!,
+                          colorScheme,
+                          textTheme,
                         ),
                       ],
                     ],
-
-                    const SizedBox(height: 24),
-
-                    // Options (Conditional: Full text in Text mode, Compact Row in Image mode)
-                    if (_questionViewMode == 0) ...[
-                      _buildOption(
-                        1,
-                        _currentQuestion.option1,
-                        colorScheme,
-                        textTheme,
-                      ),
-                      _buildOption(
-                        2,
-                        _currentQuestion.option2,
-                        colorScheme,
-                        textTheme,
-                      ),
-                      _buildOption(
-                        3,
-                        _currentQuestion.option3,
-                        colorScheme,
-                        textTheme,
-                      ),
-                      _buildOption(
-                        4,
-                        _currentQuestion.option4,
-                        colorScheme,
-                        textTheme,
-                      ),
-                    ] else ...[
-                      _buildCompactOptionsRow(colorScheme, textTheme),
-                    ],
-
-                    const SizedBox(height: 24),
-
-                    // Toggle Answer Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _toggleAnswer,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          backgroundColor: _isAnswerVisible
-                              ? colorScheme.outline
-                              : colorScheme.primary,
-                        ),
-                        child: Text(
-                          _isAnswerVisible
-                              ? AppLocalizations.of(context)!.hideDetailedAnswer
-                              : AppLocalizations.of(context)!.viewDetailedAnswer,
-                        ),
-                      ),
-                    ),
-
-                    // Detailed Answer Section
-                    if (_isAnswerVisible &&
-                        _currentQuestion.detailedAnswer != null) ...[
-                      const SizedBox(height: 24),
-                      _buildDetailedAnswerSection(
-                        _currentQuestion.detailedAnswer!,
-                        colorScheme,
-                        textTheme,
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
-
-            // Question Actions
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        _isLiked
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_border_rounded,
-                      ),
-                      color: _isLiked ? AppColors.error : colorScheme.outline,
-                      onPressed: _toggleLike,
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        _showComments
-                            ? Icons.chat_bubble_rounded
-                            : Icons.chat_bubble_outline_rounded,
-                      ),
-                      color: _showComments
-                          ? colorScheme.primary
-                          : colorScheme.outline,
-                      onPressed: _toggleComments,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Question Comments
-            if (_showComments) ...[
               const SizedBox(height: 16),
-              CommentSectionWidget(targetId: _currentQuestion.id, targetType: 1),
+
+              // Question Actions
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          _isLiked
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                        ),
+                        color: _isLiked ? AppColors.error : colorScheme.outline,
+                        onPressed: _toggleLike,
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          _showComments
+                              ? Icons.chat_bubble_rounded
+                              : Icons.chat_bubble_outline_rounded,
+                        ),
+                        color: _showComments
+                            ? colorScheme.primary
+                            : colorScheme.outline,
+                        onPressed: _toggleComments,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Question Comments
+              if (_showComments) ...[
+                const SizedBox(height: 16),
+                CommentSectionWidget(
+                  targetId: _currentQuestion.id,
+                  targetType: 1,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -671,7 +717,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
             _buildZoomableImageCard(
               imageUrl: answer.fullPageImage!,
               imageType: 'answer',
-              title: AppLocalizations.of(context)!.detailedAnswerImage(widget.index),
+              title: AppLocalizations.of(
+                context,
+              )!.detailedAnswerImage(widget.index),
               controller: _answerTransformController,
               colorScheme: colorScheme,
               textTheme: textTheme,
@@ -770,7 +818,11 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                 IconButton(
                   tooltip: AppLocalizations.of(context)!.fullscreen,
                   icon: const Icon(Icons.fullscreen_rounded, size: 20),
-                  onPressed: () => _showFullScreenImage(imageUrl, title, imageType: imageType),
+                  onPressed: () => _showFullScreenImage(
+                    imageUrl,
+                    title,
+                    imageType: imageType,
+                  ),
                 ),
               ],
             ),
@@ -926,7 +978,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               ),
               if (_selectedOption != null && !_isAnswerVisible)
                 Text(
-                  AppLocalizations.of(context)!.optionSelected(_selectedOption!),
+                  AppLocalizations.of(
+                    context,
+                  )!.optionSelected(_selectedOption!),
                   style: textTheme.labelMedium?.copyWith(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.w600,
@@ -1051,14 +1105,3 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-

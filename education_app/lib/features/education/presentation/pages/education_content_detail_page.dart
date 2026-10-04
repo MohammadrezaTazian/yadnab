@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/education_content.dart';
@@ -41,6 +42,20 @@ class _EducationContentDetailPageState
     extends State<EducationContentDetailPage> {
   bool _showComments = false;
 
+  void _goBackToEducationContent() {
+    final uri = Uri(
+      path: '/education-content',
+      queryParameters: {
+        if (widget.topicId != null) 'topicId': '${widget.topicId}',
+        if (widget.topicTitle != null) 'topicTitle': widget.topicTitle!,
+        if (widget.packageId != null) 'packageId': '${widget.packageId}',
+        if (widget.packageTitle != null) 'packageTitle': widget.packageTitle!,
+      },
+    );
+
+    context.go(uri.toString());
+  }
+
   @override
   void initState() {
     super.initState();
@@ -81,44 +96,67 @@ class _EducationContentDetailPageState
         }
 
         if (currentContent == null) {
-          return Scaffold(
-            appBar: AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  final uri = Uri(
-                    path: '/education-content',
-                    queryParameters: {
-                      if (widget.topicId != null)
-                        'topicId': '${widget.topicId}',
-                      if (widget.topicTitle != null)
-                        'topicTitle': widget.topicTitle!,
-                      if (widget.packageId != null)
-                        'packageId': '${widget.packageId}',
-                      if (widget.packageTitle != null)
-                        'packageTitle': widget.packageTitle!,
-                    },
-                  );
+          return PopScope(
+            canPop: defaultTargetPlatform != TargetPlatform.android,
+            onPopInvokedWithResult: (didPop, result) {
+              debugPrint(
+                'EDUCATION CONTENT DETAIL BACK: didPop=$didPop, platform=$defaultTargetPlatform',
+              );
 
-                  context.go(uri.toString());
-                },
+              if (!didPop && defaultTargetPlatform == TargetPlatform.android) {
+                _goBackToEducationContent();
+              }
+            },
+            child: Scaffold(
+              appBar: AppBar(
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    final uri = Uri(
+                      path: '/education-content',
+                      queryParameters: {
+                        if (widget.topicId != null)
+                          'topicId': '${widget.topicId}',
+                        if (widget.topicTitle != null)
+                          'topicTitle': widget.topicTitle!,
+                        if (widget.packageId != null)
+                          'packageId': '${widget.packageId}',
+                        if (widget.packageTitle != null)
+                          'packageTitle': widget.packageTitle!,
+                      },
+                    );
+
+                    context.go(uri.toString());
+                  },
+                ),
+                title: const Text(
+                  '\u0645\u062d\u062a\u0648\u0627\u06cc \u0622\u0645\u0648\u0632\u0634\u06cc',
+                ),
               ),
-              title: const Text(
-                '\u0645\u062d\u062a\u0648\u0627\u06cc \u0622\u0645\u0648\u0632\u0634\u06cc',
+              body: Center(
+                child: state is EducationContentError
+                    ? Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(state.message, textAlign: TextAlign.center),
+                      )
+                    : const CircularProgressIndicator(),
               ),
-            ),
-            body: Center(
-              child: state is EducationContentError
-                  ? Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(state.message, textAlign: TextAlign.center),
-                    )
-                  : const CircularProgressIndicator(),
             ),
           );
         }
 
-        return Scaffold(
+       return PopScope(
+  canPop: defaultTargetPlatform != TargetPlatform.android,
+  onPopInvokedWithResult: (didPop, result) {
+    debugPrint(
+      'EDUCATION CONTENT DETAIL BACK: didPop=$didPop, platform=$defaultTargetPlatform',
+    );
+
+    if (!didPop && defaultTargetPlatform == TargetPlatform.android) {
+      _goBackToEducationContent();
+    }
+  },
+  child: Scaffold(
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
@@ -363,6 +401,7 @@ class _EducationContentDetailPageState
                 ],
               ],
             ),
+          ),
           ),
         );
       },
