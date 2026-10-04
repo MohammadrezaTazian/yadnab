@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:education_app/features/settings/presentation/bloc/settings_bloc.dart';
 import 'package:education_app/features/settings/presentation/bloc/settings_event.dart';
@@ -8,6 +9,7 @@ import 'package:education_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/shared/widgets/app_drawer.dart';
 import 'package:education_app/shared/theme/app_colors.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -21,147 +23,173 @@ class SettingsPage extends StatelessWidget {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
         final isAuthenticated = authState is AuthAuthenticated;
-        return Scaffold(
-          drawer: isAuthenticated ? const AppDrawer() : null,
-          appBar: AppBar(
-            title: Text(
-              AppLocalizations.of(context)!.settings,
-              style: textTheme.titleLarge?.copyWith(
-                color: AppColors.onPrimary,
+        return PopScope(
+          canPop: defaultTargetPlatform != TargetPlatform.android,
+          onPopInvokedWithResult: (didPop, result) {
+            debugPrint(
+              'SETTINGS BACK: didPop=$didPop, platform=$defaultTargetPlatform',
+            );
+
+            if (!didPop && defaultTargetPlatform == TargetPlatform.android) {
+              context.go(isAuthenticated ? '/home' : '/login');
+            }
+          },
+          child: Scaffold(
+            drawer: isAuthenticated ? const AppDrawer() : null,
+            appBar: AppBar(
+              title: Text(
+                AppLocalizations.of(context)!.settings,
+                style: textTheme.titleLarge?.copyWith(
+                  color: AppColors.onPrimary,
+                ),
+              ),
+              centerTitle: true,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              flexibleSpace: Container(
+                decoration: BoxDecoration(
+                  gradient: isDark
+                      ? AppColors.headerGradientDark
+                      : AppColors.headerGradientLight,
+                ),
               ),
             ),
-            centerTitle: true,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: isDark
-                    ? AppColors.headerGradientDark
-                    : AppColors.headerGradientLight,
-              ),
-            ),
-          ),
-          body: Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-            ),
-            child: BlocBuilder<SettingsBloc, SettingsState>(
-              builder: (context, state) {
-                return ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    _buildSectionTitle(context, AppLocalizations.of(context)!.appearance),
-                    _buildSettingCard(
-                      context,
-                      children: [
-                        SwitchListTile(
-                          title: Text(
-                            AppLocalizations.of(context)!.darkMode,
-                            style: textTheme.bodyLarge,
-                          ),
-                          value: state.isDarkMode,
-                          onChanged: (value) {
-                            context.read<SettingsBloc>().add(ChangeThemeEvent(value));
-                          },
-                          secondary: Icon(
-                            Icons.dark_mode_rounded,
-                            color: colorScheme.primary,
-                          ),
-                          activeThumbColor: colorScheme.primary,
-                        ),
-                        const Divider(),
-                        ListTile(
-                          title: Text(
-                            AppLocalizations.of(context)!.fontSize,
-                            style: textTheme.bodyLarge,
-                          ),
-                          subtitle: Slider(
-                            value: state.fontSize,
-                            min: 12.0,
-                            max: 24.0,
-                            divisions: 6,
-                            label: state.fontSize.round().toString(),
-                            activeColor: colorScheme.primary,
-                            onChanged: (value) {
-                              context.read<SettingsBloc>().add(ChangeFontSizeEvent(value));
-                            },
-                          ),
-                          leading: Icon(
-                            Icons.text_fields_rounded,
-                            color: colorScheme.tertiary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    _buildSectionTitle(context, AppLocalizations.of(context)!.language),
-                    _buildSettingCard(
-                      context,
-                      children: [
-                        ListTile(
-                          title: Text(
-                            AppLocalizations.of(context)!.language,
-                            style: textTheme.bodyLarge,
-                          ),
-                          leading: Icon(
-                            Icons.language_rounded,
-                            color: colorScheme.secondary,
-                          ),
-                          trailing: DropdownButton<String>(
-                            value: state.languageCode,
-                            dropdownColor: colorScheme.surfaceContainerHighest,
-                            style: textTheme.bodyMedium,
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'fa',
-                                child: Text('فارسی'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'en',
-                                child: Text('English'),
-                              ),
-                            ],
-                            onChanged: (String? newValue) {
-                              if (newValue != null) {
-                                context.read<SettingsBloc>().add(ChangeLanguageEvent(newValue));
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    _buildSectionTitle(context, AppLocalizations.of(context)!.reset),
-                    _buildSettingCard(
-                      context,
-                      children: [
-                        ListTile(
-                          title: Text(
-                            AppLocalizations.of(context)!.resetToDefault,
-                            style: textTheme.bodyLarge,
-                          ),
-                          subtitle: Text(
-                            AppLocalizations.of(context)!.resetDescription,
-                            style: textTheme.bodySmall,
-                          ),
-                          leading: Icon(
-                            Icons.restore_rounded,
-                            color: AppColors.error,
-                          ),
-                          trailing: ElevatedButton(
-                            onPressed: () => _showResetDialog(context),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.error,
-                              foregroundColor: AppColors.onPrimary,
+            body: Container(
+              decoration: BoxDecoration(color: colorScheme.surface),
+              child: BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  return ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      _buildSectionTitle(
+                        context,
+                        AppLocalizations.of(context)!.appearance,
+                      ),
+                      _buildSettingCard(
+                        context,
+                        children: [
+                          SwitchListTile(
+                            title: Text(
+                              AppLocalizations.of(context)!.darkMode,
+                              style: textTheme.bodyLarge,
                             ),
-                            child: Text(AppLocalizations.of(context)!.reset),
+                            value: state.isDarkMode,
+                            onChanged: (value) {
+                              context.read<SettingsBloc>().add(
+                                ChangeThemeEvent(value),
+                              );
+                            },
+                            secondary: Icon(
+                              Icons.dark_mode_rounded,
+                              color: colorScheme.primary,
+                            ),
+                            activeThumbColor: colorScheme.primary,
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              },
+                          const Divider(),
+                          ListTile(
+                            title: Text(
+                              AppLocalizations.of(context)!.fontSize,
+                              style: textTheme.bodyLarge,
+                            ),
+                            subtitle: Slider(
+                              value: state.fontSize,
+                              min: 12.0,
+                              max: 24.0,
+                              divisions: 6,
+                              label: state.fontSize.round().toString(),
+                              activeColor: colorScheme.primary,
+                              onChanged: (value) {
+                                context.read<SettingsBloc>().add(
+                                  ChangeFontSizeEvent(value),
+                                );
+                              },
+                            ),
+                            leading: Icon(
+                              Icons.text_fields_rounded,
+                              color: colorScheme.tertiary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      _buildSectionTitle(
+                        context,
+                        AppLocalizations.of(context)!.language,
+                      ),
+                      _buildSettingCard(
+                        context,
+                        children: [
+                          ListTile(
+                            title: Text(
+                              AppLocalizations.of(context)!.language,
+                              style: textTheme.bodyLarge,
+                            ),
+                            leading: Icon(
+                              Icons.language_rounded,
+                              color: colorScheme.secondary,
+                            ),
+                            trailing: DropdownButton<String>(
+                              value: state.languageCode,
+                              dropdownColor:
+                                  colorScheme.surfaceContainerHighest,
+                              style: textTheme.bodyMedium,
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'fa',
+                                  child: Text('فارسی'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'en',
+                                  child: Text('English'),
+                                ),
+                              ],
+                              onChanged: (String? newValue) {
+                                if (newValue != null) {
+                                  context.read<SettingsBloc>().add(
+                                    ChangeLanguageEvent(newValue),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      _buildSectionTitle(
+                        context,
+                        AppLocalizations.of(context)!.reset,
+                      ),
+                      _buildSettingCard(
+                        context,
+                        children: [
+                          ListTile(
+                            title: Text(
+                              AppLocalizations.of(context)!.resetToDefault,
+                              style: textTheme.bodyLarge,
+                            ),
+                            subtitle: Text(
+                              AppLocalizations.of(context)!.resetDescription,
+                              style: textTheme.bodySmall,
+                            ),
+                            leading: Icon(
+                              Icons.restore_rounded,
+                              color: AppColors.error,
+                            ),
+                            trailing: ElevatedButton(
+                              onPressed: () => _showResetDialog(context),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.error,
+                                foregroundColor: AppColors.onPrimary,
+                              ),
+                              child: Text(AppLocalizations.of(context)!.reset),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         );
@@ -183,10 +211,7 @@ class SettingsPage extends StatelessWidget {
           ),
           title: Row(
             children: [
-              Icon(
-                Icons.warning_amber_rounded,
-                color: AppColors.warning,
-              ),
+              Icon(Icons.warning_amber_rounded, color: AppColors.warning),
               const SizedBox(width: 10),
               Text(
                 AppLocalizations.of(context)!.confirmReset,
@@ -211,8 +236,12 @@ class SettingsPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 context.read<SettingsBloc>().add(const ChangeThemeEvent(false));
-                context.read<SettingsBloc>().add(const ChangeLanguageEvent('fa'));
-                context.read<SettingsBloc>().add(const ChangeFontSizeEvent(14.0));
+                context.read<SettingsBloc>().add(
+                  const ChangeLanguageEvent('fa'),
+                );
+                context.read<SettingsBloc>().add(
+                  const ChangeFontSizeEvent(14.0),
+                );
 
                 Navigator.of(dialogContext).pop();
 
@@ -245,24 +274,21 @@ class SettingsPage extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+        ),
       ),
     );
   }
 
-  Widget _buildSettingCard(BuildContext context, {required List<Widget> children}) {
-
+  Widget _buildSettingCard(
+    BuildContext context, {
+    required List<Widget> children,
+  }) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: children,
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Column(children: children),
     );
   }
 }
-

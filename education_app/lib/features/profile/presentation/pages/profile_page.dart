@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
@@ -100,268 +101,287 @@ class _ProfilePageState extends State<ProfilePage> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Scaffold(
-      drawer: const AppDrawer(),
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.profile),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            onPressed: () {
-              context.read<AuthBloc>().add(LogoutEvent());
-              context.go('/login');
-            },
-          ),
-        ],
-      ),
-      body: Container(
-        decoration: BoxDecoration(color: colorScheme.surface),
-        child: BlocConsumer<ProfileBloc, ProfileState>(
-          listener: (context, state) {
-            if (state is ProfileLoaded) {
-              _updateControllers(state.user);
-            } else if (state is ProfileError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: AppColors.error,
-                ),
-              );
-            } else if (state is ProfileUpdating) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(AppLocalizations.of(context)!.loading),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
-            }
-          },
-          builder: (context, state) {
-            if (state is ProfileLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is ProfileLoaded || state is ProfileUpdated) {
-              final user = (state is ProfileLoaded)
-                  ? state.user
-                  : (state as ProfileUpdated).user;
+    return PopScope(
+      canPop: defaultTargetPlatform != TargetPlatform.android,
+      onPopInvokedWithResult: (didPop, result) {
+        debugPrint(
+          'PROFILE BACK: didPop=$didPop, platform=$defaultTargetPlatform',
+        );
 
-              if (_firstNameController.text.isEmpty &&
-                  (user.firstName ?? '').isNotEmpty) {
-                _updateControllers(user);
+        if (!didPop && defaultTargetPlatform == TargetPlatform.android) {
+          context.go('/home');
+        }
+      },
+      child: Scaffold(
+        drawer: const AppDrawer(),
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.profile),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout_rounded),
+              onPressed: () {
+                context.read<AuthBloc>().add(LogoutEvent());
+                context.go('/login');
+              },
+            ),
+          ],
+        ),
+        body: Container(
+          decoration: BoxDecoration(color: colorScheme.surface),
+          child: BlocConsumer<ProfileBloc, ProfileState>(
+            listener: (context, state) {
+              if (state is ProfileLoaded) {
+                _updateControllers(state.user);
+              } else if (state is ProfileError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+              } else if (state is ProfileUpdating) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.loading),
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
               }
+            },
+            builder: (context, state) {
+              if (state is ProfileLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is ProfileLoaded || state is ProfileUpdated) {
+                final user = (state is ProfileLoaded)
+                    ? state.user
+                    : (state as ProfileUpdated).user;
 
-              return ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            // Profile Picture
-                            Stack(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: isDark
-                                        ? AppColors.primaryGradientDark
-                                        : AppColors.primaryGradientLight,
-                                  ),
-                                  child: Container(
-                                    width: 130,
-                                    height: 130,
+                if (_firstNameController.text.isEmpty &&
+                    (user.firstName ?? '').isNotEmpty) {
+                  _updateControllers(user);
+                }
+
+                return ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              // Profile Picture
+                              Stack(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: colorScheme.surface,
                                       shape: BoxShape.circle,
+                                      gradient: isDark
+                                          ? AppColors.primaryGradientDark
+                                          : AppColors.primaryGradientLight,
                                     ),
-                                    child: ClipOval(
-                                      child:
-                                          user.profilePicture != null &&
-                                              user.profilePicture!.isNotEmpty
-                                          ? Image.memory(
-                                              const Base64Decoder().convert(
-                                                user.profilePicture!,
+                                    child: Container(
+                                      width: 130,
+                                      height: 130,
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.surface,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: ClipOval(
+                                        child:
+                                            user.profilePicture != null &&
+                                                user.profilePicture!.isNotEmpty
+                                            ? Image.memory(
+                                                const Base64Decoder().convert(
+                                                  user.profilePicture!,
+                                                ),
+                                                fit: BoxFit.cover,
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) {
+                                                      return Icon(
+                                                        Icons.person_rounded,
+                                                        size: 60,
+                                                        color:
+                                                            colorScheme.primary,
+                                                      );
+                                                    },
+                                              )
+                                            : Icon(
+                                                Icons.person_rounded,
+                                                size: 60,
+                                                color: colorScheme.primary,
                                               ),
-                                              fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                    return Icon(
-                                                      Icons.person_rounded,
-                                                      size: 60,
-                                                      color:
-                                                          colorScheme.primary,
-                                                    );
-                                                  },
-                                            )
-                                          : Icon(
-                                              Icons.person_rounded,
-                                              size: 60,
-                                              color: colorScheme.primary,
-                                            ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: GestureDetector(
-                                    onTap: () => _pickAndUploadImage(context),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        gradient: isDark
-                                            ? AppColors.primaryGradientDark
-                                            : AppColors.primaryGradientLight,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: colorScheme.surface,
-                                          width: 3,
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: GestureDetector(
+                                      onTap: () => _pickAndUploadImage(context),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          gradient: isDark
+                                              ? AppColors.primaryGradientDark
+                                              : AppColors.primaryGradientLight,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: colorScheme.surface,
+                                            width: 3,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.camera_alt_rounded,
+                                          size: 20,
+                                          color: AppColors.onPrimary,
                                         ),
                                       ),
-                                      child: Icon(
-                                        Icons.camera_alt_rounded,
-                                        size: 20,
-                                        color: AppColors.onPrimary,
-                                      ),
                                     ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Phone Number Display
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: colorScheme.primary.withValues(
-                                  alpha: 0.1,
-                                ),
-                                borderRadius: BorderRadius.circular(15),
-                                border: Border.all(
-                                  color: colorScheme.primary.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.phone_rounded,
-                                    color: colorScheme.primary,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    user.phoneNumber,
-                                    style: textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.primary,
-                                    ),
-                                    textDirection: TextDirection.ltr,
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(height: 24),
+                              const SizedBox(height: 16),
 
-                            // Form Fields
-                            _buildProfileField(
-                              context,
-                              controller: _firstNameController,
-                              icon: Icons.person_rounded,
-                              label: AppLocalizations.of(context)!.firstName,
-                              hint: AppLocalizations.of(
-                                context,
-                              )!.enterFirstName,
-                              iconColor: colorScheme.primary,
-                            ),
-                            const SizedBox(height: 16),
-                            _buildProfileField(
-                              context,
-                              controller: _lastNameController,
-                              icon: Icons.family_restroom_rounded,
-                              label: AppLocalizations.of(context)!.lastName,
-                              hint: AppLocalizations.of(context)!.enterLastName,
-                              iconColor: colorScheme.secondary,
-                            ),
-                            const SizedBox(height: 16),
-                            _buildProfileField(
-                              context,
-                              controller: _emailController,
-                              icon: Icons.email_rounded,
-                              label: AppLocalizations.of(context)!.email,
-                              hint: AppLocalizations.of(context)!.enterEmail,
-                              iconColor: AppColors.accentLight,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return null;
-                                }
-                                final emailRegex = RegExp(
-                                  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                                );
-                                if (!emailRegex.hasMatch(value)) {
-                                  return AppLocalizations.of(
-                                    context,
-                                  )!.invalidEmail;
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            _buildEducationalLevelDropdown(
-                              context,
-                              (state is ProfileLoaded)
-                                  ? state.educationalLevels
-                                  : (state as ProfileUpdated).educationalLevels,
-                            ),
-                            const SizedBox(height: 32),
-
-                            // Save Button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 55,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    context.read<ProfileBloc>().add(
-                                      UpdateProfileEvent(
-                                        firstName: _firstNameController.text,
-                                        lastName: _lastNameController.text,
-                                        email: _emailController.text,
-                                        educationalLevelId:
-                                            _selectedEducationalLevelId,
+                              // Phone Number Display
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(
+                                    color: colorScheme.primary.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.phone_rounded,
+                                      color: colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      user.phoneNumber,
+                                      style: textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: colorScheme.primary,
                                       ),
-                                    );
+                                      textDirection: TextDirection.ltr,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Form Fields
+                              _buildProfileField(
+                                context,
+                                controller: _firstNameController,
+                                icon: Icons.person_rounded,
+                                label: AppLocalizations.of(context)!.firstName,
+                                hint: AppLocalizations.of(
+                                  context,
+                                )!.enterFirstName,
+                                iconColor: colorScheme.primary,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildProfileField(
+                                context,
+                                controller: _lastNameController,
+                                icon: Icons.family_restroom_rounded,
+                                label: AppLocalizations.of(context)!.lastName,
+                                hint: AppLocalizations.of(
+                                  context,
+                                )!.enterLastName,
+                                iconColor: colorScheme.secondary,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildProfileField(
+                                context,
+                                controller: _emailController,
+                                icon: Icons.email_rounded,
+                                label: AppLocalizations.of(context)!.email,
+                                hint: AppLocalizations.of(context)!.enterEmail,
+                                iconColor: AppColors.accentLight,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return null;
                                   }
+                                  final emailRegex = RegExp(
+                                    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                                  );
+                                  if (!emailRegex.hasMatch(value)) {
+                                    return AppLocalizations.of(
+                                      context,
+                                    )!.invalidEmail;
+                                  }
+                                  return null;
                                 },
-                                child: Text(
-                                  AppLocalizations.of(context)!.saveChanges,
-                                  style: textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.onPrimary,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildEducationalLevelDropdown(
+                                context,
+                                (state is ProfileLoaded)
+                                    ? state.educationalLevels
+                                    : (state as ProfileUpdated)
+                                          .educationalLevels,
+                              ),
+                              const SizedBox(height: 32),
+
+                              // Save Button
+                              SizedBox(
+                                width: double.infinity,
+                                height: 55,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      context.read<ProfileBloc>().add(
+                                        UpdateProfileEvent(
+                                          firstName: _firstNameController.text,
+                                          lastName: _lastNameController.text,
+                                          email: _emailController.text,
+                                          educationalLevelId:
+                                              _selectedEducationalLevelId,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Text(
+                                    AppLocalizations.of(context)!.saveChanges,
+                                    style: textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.onPrimary,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            }
-            return const SizedBox();
-          },
+                  ],
+                );
+              }
+              return const SizedBox();
+            },
+          ),
         ),
       ),
     );

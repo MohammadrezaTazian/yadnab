@@ -2,6 +2,7 @@
 import 'package:education_app/features/quiz/presentation/bloc/question_event.dart';
 import 'package:education_app/features/quiz/presentation/bloc/question_state.dart';
 import 'package:education_app/features/settings/presentation/pages/settings_page.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -662,6 +663,22 @@ class _ImageViewerPageState extends State<_ImageViewerPage> {
 
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      canPop: defaultTargetPlatform != TargetPlatform.android,
+      onPopInvokedWithResult: (didPop, result) {
+        debugPrint(
+          'IMAGE VIEWER BACK: didPop=$didPop, platform=$defaultTargetPlatform',
+        );
+
+        if (!didPop && defaultTargetPlatform == TargetPlatform.android) {
+          _goBackToQuestionDetail(context);
+        }
+      },
+      child: _buildImageViewerContent(context),
+    );
+  }
+
+  Widget _buildImageViewerContent(BuildContext context) {
     if (_question == null &&
         _imageUrl.isEmpty &&
         !_loadRequested &&
