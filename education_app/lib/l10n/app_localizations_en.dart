@@ -27,6 +27,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get login => 'Login';
 
   @override
+  String get editPhoneNumber => 'Edit phone number';
+
+  @override
   String get enterCode => 'Enter Code';
 
   @override

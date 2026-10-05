@@ -202,7 +202,24 @@ class _LoginPageState extends State<LoginPage>
                               ),
                             ),
                           ),
+                        if (otpVisible)
+                          Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: TextButton.icon(
+                              onPressed: () {
+                                _otpController.clear();
 
+                                context.read<AuthBloc>().add(
+                                  EditPhoneNumberEvent(),
+                                );
+                              },
+                              icon: const Icon(Icons.edit_outlined),
+                              label: Text(
+                                AppLocalizations.of(context)!
+                                    .editPhoneNumber,
+                              ),
+                            ),
+                          ),
                           const SizedBox(height: 20),
 
                           if (otpVisible)

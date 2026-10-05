@@ -27,6 +27,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get login => 'ورود';
 
   @override
+  String get editPhoneNumber => 'ویرایش شماره موبایل';
+
+  @override
   String get enterCode => 'کد را وارد کنید';
 
   @override

@@ -5,6 +5,7 @@
   "mobileNumber": "Mobile Number",
   "verificationCode": "Verification Code",
   "login": "Login",
+  "editPhoneNumber": "Edit phone number",
   "enterCode": "Enter Code",
   "resendCode": "Resend Code",
   "seconds": "seconds",

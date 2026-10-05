@@ -131,6 +131,12 @@ abstract class AppLocalizations {
   /// **'Login'**
   String get login;
 
+  /// No description provided for @editPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit phone number'**
+  String get editPhoneNumber;
+
   /// No description provided for @enterCode.
   ///
   /// In en, this message translates to:

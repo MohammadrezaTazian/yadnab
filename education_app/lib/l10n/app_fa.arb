@@ -5,6 +5,7 @@
   "mobileNumber": "شماره موبایل",
   "verificationCode": "کد تایید",
   "login": "ورود",
+  "editPhoneNumber": "ویرایش شماره موبایل",
   "enterCode": "کد را وارد کنید",
   "resendCode": "ارسال مجدد کد",
   "seconds": "ثانیه",

@@ -19,6 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Timer? _otpTimer;
   int _remainingSeconds = 0;
   String? _pendingOtp;
+  int _otpRequestVersion = 0;
 
   AuthBloc({
     required this.sendOtpUseCase,
@@ -28,6 +29,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }) : super(AuthInitial()) {
     on<SendOtpEvent>(_onSendOtp);
     on<ResendOtpEvent>(_onResendOtp);
+    on<EditPhoneNumberEvent>(_onEditPhoneNumber);
     on<OtpTimerTickEvent>(_onOtpTimerTick);
     on<VerifyOtpEvent>(_onVerifyOtp);
     on<LogoutEvent>(_onLogout);
@@ -51,6 +53,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _sendOtp(String phoneNumber, Emitter<AuthState> emit) async {
+    final requestVersion = ++_otpRequestVersion;
     _pendingOtp = null;
     _startOtpTimer();
 
@@ -59,7 +62,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final otp = await sendOtpUseCase(phoneNumber);
 
-      if (isClosed) {
+      if (isClosed || requestVersion != _otpRequestVersion) {
         return;
       }
 
@@ -78,7 +81,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await _performVerifyOtp(phoneNumber, pendingOtp, emit);
       }
     } catch (e) {
-      if (isClosed) {
+      if (isClosed || requestVersion != _otpRequestVersion) {
         return;
       }
 
@@ -88,6 +91,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       emit(OtpState(status: OtpStatus.error, errorMessage: e.toString()));
     }
+  }
+
+  void _onEditPhoneNumber(EditPhoneNumberEvent event, Emitter<AuthState> emit) {
+    _otpRequestVersion++;
+
+    _stopOtpTimer();
+    _remainingSeconds = 0;
+    _pendingOtp = null;
+
+    emit(AuthUnauthenticated());
   }
 
   void _startOtpTimer() {
