@@ -1,10 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:education_app/features/auth/domain/entities/user.dart';
 import 'package:education_app/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:education_app/features/auth/presentation/bloc/auth_state.dart';
 
-// User موقت برای startup check (وقتی token معتبر است ولی user object نداریم)
 class _StartupUser extends User {
   const _StartupUser() : super(id: 0, phoneNumber: '');
 }
@@ -15,6 +16,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LogoutUseCase logoutUseCase;
   final CheckAuthStatusUseCase checkAuthStatusUseCase;
 
+  Timer? _otpTimer;
+  int _remainingSeconds = 0;
+  String? _pendingOtp;
+
   AuthBloc({
     required this.sendOtpUseCase,
     required this.verifyOtpUseCase,
@@ -22,6 +27,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required this.checkAuthStatusUseCase,
   }) : super(AuthInitial()) {
     on<SendOtpEvent>(_onSendOtp);
+    on<ResendOtpEvent>(_onResendOtp);
+    on<OtpTimerTickEvent>(_onOtpTimerTick);
     on<VerifyOtpEvent>(_onVerifyOtp);
     on<LogoutEvent>(_onLogout);
     on<AuthSessionExpiredEvent>(_onAuthSessionExpired);
@@ -29,12 +36,98 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onSendOtp(SendOtpEvent event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
+    await _sendOtp(event.phoneNumber, emit);
+  }
+
+  Future<void> _onResendOtp(
+    ResendOtpEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (_remainingSeconds > 0) {
+      return;
+    }
+
+    await _sendOtp(event.phoneNumber, emit);
+  }
+
+  Future<void> _sendOtp(String phoneNumber, Emitter<AuthState> emit) async {
+    _pendingOtp = null;
+    _startOtpTimer();
+
+    emit(const OtpState(status: OtpStatus.sending, remainingSeconds: 60));
+
     try {
-      final otp = await sendOtpUseCase(event.phoneNumber);
-      emit(OtpSent(otp));
+      final otp = await sendOtpUseCase(phoneNumber);
+
+      if (isClosed) {
+        return;
+      }
+
+      emit(
+        OtpState(
+          status: OtpStatus.ready,
+          remainingSeconds: _remainingSeconds,
+          otp: otp,
+        ),
+      );
+
+      final pendingOtp = _pendingOtp;
+      _pendingOtp = null;
+
+      if (pendingOtp != null && pendingOtp.length == 5) {
+        await _performVerifyOtp(phoneNumber, pendingOtp, emit);
+      }
     } catch (e) {
-      emit(AuthError(e.toString()));
+      if (isClosed) {
+        return;
+      }
+
+      _stopOtpTimer();
+      _remainingSeconds = 0;
+      _pendingOtp = null;
+
+      emit(OtpState(status: OtpStatus.error, errorMessage: e.toString()));
+    }
+  }
+
+  void _startOtpTimer() {
+    _otpTimer?.cancel();
+    _remainingSeconds = 60;
+
+    _otpTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!isClosed) {
+        add(OtpTimerTickEvent());
+      }
+    });
+  }
+
+  void _stopOtpTimer() {
+    _otpTimer?.cancel();
+    _otpTimer = null;
+  }
+
+  void _onOtpTimerTick(OtpTimerTickEvent event, Emitter<AuthState> emit) {
+    if (_remainingSeconds <= 1) {
+      _remainingSeconds = 0;
+      _stopOtpTimer();
+
+      if (state is OtpState) {
+        final currentState = state as OtpState;
+
+        emit(
+          currentState.copyWith(status: OtpStatus.expired, remainingSeconds: 0),
+        );
+      }
+
+      return;
+    }
+
+    _remainingSeconds--;
+
+    if (state is OtpState) {
+      final currentState = state as OtpState;
+
+      emit(currentState.copyWith(remainingSeconds: _remainingSeconds));
     }
   }
 
@@ -42,12 +135,67 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     VerifyOtpEvent event,
     Emitter<AuthState> emit,
   ) async {
-    emit(AuthLoading());
+    if (state is OtpState) {
+      final otpState = state as OtpState;
+
+      if (otpState.status == OtpStatus.sending) {
+        _pendingOtp = event.otp;
+        return;
+      }
+
+      if (otpState.status == OtpStatus.verifying) {
+        return;
+      }
+    }
+
+    await _performVerifyOtp(event.phoneNumber, event.otp, emit);
+  }
+
+  Future<void> _performVerifyOtp(
+    String phoneNumber,
+    String otp,
+    Emitter<AuthState> emit,
+  ) async {
+    if (otp.length != 5) {
+      return;
+    }
+
+    _stopOtpTimer();
+
+    final currentOtpState = state is OtpState ? state as OtpState : null;
+
+    emit(
+      OtpState(
+        status: OtpStatus.verifying,
+        remainingSeconds:
+            currentOtpState?.remainingSeconds ?? _remainingSeconds,
+        otp: currentOtpState?.otp,
+      ),
+    );
+
     try {
-      final user = await verifyOtpUseCase(event.phoneNumber, event.otp);
+      final user = await verifyOtpUseCase(phoneNumber, otp);
+
+      if (isClosed) {
+        return;
+      }
+
       emit(AuthAuthenticated(user));
     } catch (e) {
-      emit(AuthError(e.toString()));
+      if (isClosed) {
+        return;
+      }
+
+      final otpState = state is OtpState ? state as OtpState : null;
+
+      emit(
+        OtpState(
+          status: OtpStatus.error,
+          remainingSeconds: otpState?.remainingSeconds ?? _remainingSeconds,
+          otp: otpState?.otp,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
@@ -72,8 +220,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
+
     try {
       final isAuthenticated = await checkAuthStatusUseCase();
+
       if (isAuthenticated) {
         emit(const AuthAuthenticated(_StartupUser()));
       } else {
@@ -82,5 +232,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (_) {
       emit(AuthUnauthenticated());
     }
+  }
+
+  @override
+  Future<void> close() {
+    _stopOtpTimer();
+    return super.close();
   }
 }

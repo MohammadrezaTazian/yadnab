@@ -16,6 +16,17 @@ class SendOtpEvent extends AuthEvent {
   List<Object?> get props => [phoneNumber];
 }
 
+class ResendOtpEvent extends AuthEvent {
+  final String phoneNumber;
+
+  const ResendOtpEvent(this.phoneNumber);
+
+  @override
+  List<Object?> get props => [phoneNumber];
+}
+
+class OtpTimerTickEvent extends AuthEvent {}
+
 class VerifyOtpEvent extends AuthEvent {
   final String phoneNumber;
   final String otp;

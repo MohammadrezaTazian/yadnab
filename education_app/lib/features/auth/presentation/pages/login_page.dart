@@ -20,7 +20,6 @@ class _LoginPageState extends State<LoginPage>
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
-  bool _otpSent = false;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -79,24 +78,14 @@ class _LoginPageState extends State<LoginPage>
         ),
         child: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
-            if (state is OtpSent) {
-              setState(() => _otpSent = true);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('کد تایید: ${state.otp}'),
-                  backgroundColor: AppColors.success,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              );
-            } else if (state is AuthAuthenticated) {
+            if (state is AuthAuthenticated) {
               context.go('/home');
-            } else if (state is AuthError) {
+            } else if (state is OtpState &&
+                state.status == OtpStatus.error &&
+                state.errorMessage != null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.message),
+                  content: Text(state.errorMessage!),
                   backgroundColor: AppColors.error,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
@@ -107,9 +96,13 @@ class _LoginPageState extends State<LoginPage>
             }
           },
           builder: (context, state) {
+            final otpState = state is OtpState ? state : null;
+            final otpVisible = otpState != null;
+
             if (state is AuthAuthenticated) {
               return const Center(child: CircularProgressIndicator());
             }
+
             return Center(
               child: FadeTransition(
                 opacity: _fadeAnimation,
@@ -161,6 +154,7 @@ class _LoginPageState extends State<LoginPage>
                                 controller: _phoneController,
                                 keyboardType: TextInputType.phone,
                                 style: textTheme.bodyLarge,
+                                readOnly: otpVisible,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return AppLocalizations.of(
@@ -211,7 +205,7 @@ class _LoginPageState extends State<LoginPage>
 
                           const SizedBox(height: 20),
 
-                          if (_otpSent)
+                          if (otpVisible)
                             Column(
                               children: [
                                 Text(
@@ -224,6 +218,8 @@ class _LoginPageState extends State<LoginPage>
                                   child: Pinput(
                                     controller: _otpController,
                                     length: 5,
+                                    enabled:
+                                        otpState.status != OtpStatus.verifying,
                                     defaultPinTheme: PinTheme(
                                       width: 56,
                                       height: 56,
@@ -255,13 +251,40 @@ class _LoginPageState extends State<LoginPage>
                                     onCompleted: (pin) {
                                       context.read<AuthBloc>().add(
                                         VerifyOtpEvent(
-                                          _phoneController.text,
+                                          _phoneController.text.trim(),
                                           pin,
                                         ),
                                       );
                                     },
                                   ),
                                 ),
+                                const SizedBox(height: 12),
+
+                                if (otpState.status == OtpStatus.verifying)
+                                  const CircularProgressIndicator()
+                                else if (otpState.remainingSeconds > 0)
+                                  Text(
+                                    '00:${otpState.remainingSeconds.toString().padLeft(2, '0')}',
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                else if (otpState.status ==
+                                        OtpStatus.expired ||
+                                    otpState.status == OtpStatus.error)
+                                  TextButton(
+                                    onPressed: () {
+                                      context.read<AuthBloc>().add(
+                                        ResendOtpEvent(
+                                          _phoneController.text.trim(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      AppLocalizations.of(context)!.resendCode,
+                                    ),
+                                  ),
                               ],
                             ),
 
@@ -269,33 +292,49 @@ class _LoginPageState extends State<LoginPage>
 
                           // Button
                           ElevatedButton(
-                            onPressed: () {
-                              if (!_otpSent) {
-                                if (_formKey.currentState!.validate()) {
-                                  context.read<AuthBloc>().add(
-                                    SendOtpEvent(_phoneController.text),
-                                  );
-                                }
-                              } else {
-                                context.read<AuthBloc>().add(
-                                  VerifyOtpEvent(
-                                    _phoneController.text,
-                                    _otpController.text,
-                                  ),
-                                );
-                              }
-                            },
+                            onPressed:
+                                otpState?.status == OtpStatus.sending ||
+                                    otpState?.status == OtpStatus.verifying
+                                ? null
+                                : () {
+                                    if (!otpVisible) {
+                                      if (_formKey.currentState!.validate()) {
+                                        context.read<AuthBloc>().add(
+                                          SendOtpEvent(
+                                            _phoneController.text.trim(),
+                                          ),
+                                        );
+                                      }
+                                    } else {
+                                      context.read<AuthBloc>().add(
+                                        VerifyOtpEvent(
+                                          _phoneController.text.trim(),
+                                          _otpController.text,
+                                        ),
+                                      );
+                                    }
+                                  },
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(double.infinity, 50),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
                             ),
-                            child: Text(
-                              !_otpSent
-                                  ? AppLocalizations.of(context)!.sendOtp
-                                  : AppLocalizations.of(context)!.login,
-                            ),
+                            child:
+                                otpState?.status == OtpStatus.sending ||
+                                    otpState?.status == OtpStatus.verifying
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    !otpVisible
+                                        ? AppLocalizations.of(context)!.sendOtp
+                                        : AppLocalizations.of(context)!.login,
+                                  ),
                           ),
                         ],
                       ),
