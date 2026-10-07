@@ -18,7 +18,7 @@ export function generateStaticParams() {
 export async function generateMetadata({
     params,
 }: {
-    params: { locale: string };
+    params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
     const { locale } = await params;
     const messages = await getMessages({ locale });
@@ -64,7 +64,6 @@ export default async function LocaleLayout({
     return (
         <html lang={locale} dir={isRtl ? "rtl" : "ltr"}>
             <body className={`${vazir.variable} font-sans antialiased`}>
-                <script src="/config.js" defer></script>
                 <NextIntlClientProvider messages={messages}>
                     {children}
                 </NextIntlClientProvider>

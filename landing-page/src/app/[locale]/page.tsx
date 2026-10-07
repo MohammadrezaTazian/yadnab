@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 // Icons as SVG components
 const VideoIcon = () => (
@@ -58,14 +58,8 @@ export default function LandingPage() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    const [appUrl, setAppUrl] = useState("http://localhost:5200");
-
-    useEffect(() => {
-        if (typeof window !== 'undefined' && (window as any).YADNAB_CONFIG) {
-            setAppUrl((window as any).YADNAB_CONFIG.APP_URL);
-        }
-    }, []);
-
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+    
     // استفاده از replace به جای href تا history مرورگر پاک بماند
     // این کار باعث می‌شود دکمه Back اندروید به Landing Page برنگردد
     const navigateToApp = (e: React.MouseEvent) => {

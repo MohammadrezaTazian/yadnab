@@ -5,6 +5,9 @@ const withNextIntl = createNextIntlPlugin("./src/i18n.ts");
 
 const nextConfig: NextConfig = {
   output: process.env.NODE_ENV === 'development' ? undefined : 'export',
+  
+  trailingSlash: true,
+
   /* config options here */
 };
 
