@@ -35,7 +35,8 @@ class ConfigService {
 
       // Release build uses production API.
       if (kReleaseMode) {
-        _apiBaseUrl = 'http://87.248.145.101:81/api';
+        // _apiBaseUrl = 'http://87.248.145.101:81/api';
+        _apiBaseUrl = 'https://api.yadnab.ir/api';
         debugPrint('Loaded production API: $_apiBaseUrl');
         return;
       }
