@@ -33,7 +33,7 @@ class CommentRepositoryImpl implements CommentRepository {
         'targetId': targetId,
         'targetType': targetType,
         'content': content,
-        if (parentCommentId != null) 'parentCommentId': parentCommentId,
+        'parentCommentId': ?parentCommentId,
       };
       final jsonResponse = await apiService.addComment(data);
       return Right(CommentModel.fromJson(jsonResponse));

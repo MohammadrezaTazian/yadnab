@@ -34,10 +34,10 @@ class ProfileRemoteDataSource {
     final response = await dio.put(
       '/user/profile',
       data: {
-        if (firstName != null) 'firstName': firstName,
-        if (lastName != null) 'lastName': lastName,
-        if (email != null) 'email': email,
-        if (educationalLevelId != null) 'educationalLevelId': educationalLevelId,
+        'firstName': ?firstName,
+        'lastName': ?lastName,
+        'email': ?email,
+        'educationalLevelId': ?educationalLevelId,
       },
       options: Options(
         headers: {'Authorization': 'Bearer $token'},

@@ -436,7 +436,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                             child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               itemCount: _currentQuestion.contentImages.length,
-                              separatorBuilder: (_, __) =>
+                              separatorBuilder: (_, _) =>
                                   const SizedBox(width: 8),
                               itemBuilder: (context, index) {
                                 final image =
@@ -705,7 +705,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: answer.contentImages.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
                   itemBuilder: (context, index) {
                     final image = answer.contentImages[index];
                     return _buildImage(image.imageUrl, 150, colorScheme);
