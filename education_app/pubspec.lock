@@ -177,6 +177,14 @@ packages:
       url: "https://pub.myket.ir"
     source: hosted
     version: "2.0.0"
+  cupertino_ui:
+    dependency: transitive
+    description:
+      name: cupertino_ui
+      sha256: ea0b8170b40a86262b2fc21ac0625303f52df209dbf6fccc2b98b27eff44f6ce
+      url: "https://pub.myket.ir"
+    source: hosted
+    version: "1.1.2"
   dart_style:
     dependency: transitive
     description:
@@ -589,6 +597,14 @@ packages:
       url: "https://pub.myket.ir"
     source: hosted
     version: "0.13.0"
+  material_ui:
+    dependency: transitive
+    description:
+      name: material_ui
+      sha256: "98ab9eda579ecae623e4b376c603035c5def78ce706f735f30bd632af5814695"
+      url: "https://pub.myket.ir"
+    source: hosted
+    version: "1.6.0"
   meta:
     dependency: transitive
     description:
@@ -673,10 +689,10 @@ packages:
     dependency: "direct main"
     description:
       name: pinput
-      sha256: c41f42ee301505ae2375ec32871c985d3717bf8aee845620465b286e0140aad2
+      sha256: d446a2a0a4b9f4d2f9c4a7e0aa1e5995d4ee09dad1d27c161953ef70b7a54fa4
       url: "https://pub.myket.ir"
     source: hosted
-    version: "5.0.2"
+    version: "7.0.0"
   platform:
     dependency: transitive
     description:
@@ -890,14 +906,6 @@ packages:
       url: "https://pub.myket.ir"
     source: hosted
     version: "1.4.0"
-  universal_platform:
-    dependency: transitive
-    description:
-      name: universal_platform
-      sha256: "64e16458a0ea9b99260ceb5467a214c1f298d647c659af1bff6d3bf82536b1ec"
-      url: "https://pub.myket.ir"
-    source: hosted
-    version: "1.1.0"
   vector_graphics:
     dependency: transitive
     description:
@@ -995,5 +1003,5 @@ packages:
     source: hosted
     version: "3.1.4"
 sdks:
-  dart: ">=3.12.0 <4.0.0"
-  flutter: ">=3.44.0"
+  dart: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
