@@ -1,4 +1,4 @@
-name: education_app
+﻿name: education_app
 description: "A new Flutter project."
 publish_to: 'none' 
 
@@ -34,7 +34,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  build_runner: ^2.16.2
+  build_runner: ^2.15.1
   flutter_gen_runner: ^5.15.0
 
 flutter:
@@ -59,7 +59,5 @@ l10n:
   template-arb-file: app_en.arb
   output-localization-file: app_localizations.dart
   output-class: AppLocalizations
-
-
 
 

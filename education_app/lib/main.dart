@@ -12,11 +12,11 @@ import 'package:education_app/shared/theme/app_theme.dart';
 import 'package:education_app/core/routes/app_router.dart';
 import 'package:education_app/l10n/app_localizations.dart';
 import 'package:education_app/core/config/config_service.dart';
-import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:education_app/core/web_url_strategy/web_url_strategy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  usePathUrlStrategy();
+  configureWebUrlStrategy();
   await ConfigService().load();
   await setupDependencyInjection();
   runApp(const MyApp());
