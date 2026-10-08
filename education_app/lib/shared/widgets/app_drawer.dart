@@ -34,10 +34,13 @@ class AppDrawer extends StatelessWidget {
                     color: AppColors.onPrimary.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.school_rounded,
-                    size: 48,
-                    color: AppColors.onPrimary,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/logos/yadnab_logo.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
