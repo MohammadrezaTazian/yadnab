@@ -59,7 +59,7 @@ export default function LandingPage() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-    
+
     // استفاده از replace به جای href تا history مرورگر پاک بماند
     // این کار باعث می‌شود دکمه Back اندروید به Landing Page برنگردد
     const navigateToApp = (e: React.MouseEvent) => {
@@ -74,8 +74,12 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                                <span className="text-white font-bold text-xl">📚</span>
+                            <div className="w-10 h-10 flex items-center justify-center">
+                                <img
+                                    src="/yadnab_logo.png"
+                                    alt="Yadnab"
+                                    className="w-8 h-8 object-contain"
+                                />
                             </div>
                             <span className="text-white font-bold text-lg">{isRtl ? "یادناب" : "Yadnab"}</span>
                         </div>
@@ -312,8 +316,12 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                                <span className="text-white font-bold text-xl">📚</span>
+                            <div className="w-10 h-10 flex items-center justify-center">
+                                <img
+                                    src="/yadnab_logo.png"
+                                    alt="Yadnab"
+                                    className="w-8 h-8 object-contain"
+                                />
                             </div>
                             <div>
                                 <span className="text-white font-bold">{isRtl ? "یادناب" : "Yadnab"}</span>
