@@ -195,6 +195,58 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* Download Section */}
+            <section id="download" className="py-20 px-4">
+                <div className="max-w-5xl mx-auto">
+                    <div className="p-8 md:p-12 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-3xl border border-purple-500/30 text-center">
+                        <div className="mx-auto mb-6 w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center">
+                            <svg
+                                className="w-9 h-9 text-purple-400"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path d="M17.523 15.341a1 1 0 0 0-1.414 0l-1.109 1.109V9a1 1 0 0 0-2 0v7.45l-1.109-1.109a1 1 0 1 0-1.414 1.414l2.816 2.816a1 1 0 0 0 1.414 0l2.816-2.816a1 1 0 0 0 0-1.414z" />
+                                <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8.009 8.009 0 0 1-8 8z" />
+                            </svg>
+                        </div>
+
+                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                            {t("download.title")}
+                        </h2>
+
+                        <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-8">
+                            {t("download.description")}
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row justify-center gap-4">
+                            <a
+                                href="https://yadnab.ir/downloads/yadnab-arm64-v8a.apk"
+                                download
+                                className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:opacity-90 transition"
+                            >
+                                {t("download.arm64")}
+                            </a>
+
+                            <a
+                                href="https://yadnab.ir/downloads/yadnab-armeabi-v7a.apk"
+                                download
+                                className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-semibold hover:bg-white/20 transition"
+                            >
+                                {t("download.armv7")}
+                            </a>
+
+                            <a
+                                href="https://yadnab.ir/downloads/yadnab-x86_64.apk"
+                                download
+                                className="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-semibold hover:bg-white/20 transition"
+                            >
+                                {t("download.x86_64")}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Features Section */}
             <section id="features" className="py-20 px-4 bg-black/20">
                 <div className="max-w-7xl mx-auto">

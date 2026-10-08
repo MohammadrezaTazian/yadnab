@@ -19,6 +19,13 @@
             "questionsLabel": "Practice Questions"
         }
     },
+    "download": {
+        "title": "Download the Yadnab App",
+        "description": "Download the Android version of Yadnab and continue learning anytime, anywhere.",
+        "arm64": "Download ARM64",
+        "armv7": "Download ARMv7",
+        "x86_64": "Download x86_64"
+    },
     "features": {
         "title": "Why Choose Us?",
         "subtitle": "Features that guarantee your success",
