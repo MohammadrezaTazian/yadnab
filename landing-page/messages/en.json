@@ -126,6 +126,7 @@
         "testimonials": "Testimonials",
         "faq": "FAQ",
         "login": "Login",
-        "register": "Register"
+        "register": "Register",
+        "userPanel": "User Panel"
     }
 }

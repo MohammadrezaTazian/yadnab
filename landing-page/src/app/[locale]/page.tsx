@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // Icons as SVG components
 const VideoIcon = () => (
@@ -60,6 +60,40 @@ export default function LandingPage() {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
+    
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    useEffect(() => {
+        if (!apiUrl) return;
+
+        let active = true;
+
+        fetch(`${apiUrl}/Auth/session`, {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+        })
+            .then(async (response) => {
+                if (!response.ok) return null;
+                return response.json();
+            })
+            .then((data) => {
+                if (active) {
+                    setIsAuthenticated(data?.authenticated === true);
+                }
+            })
+            .catch(() => {
+                if (active) {
+                    setIsAuthenticated(false);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [apiUrl]);
+
     // استفاده از replace به جای href تا history مرورگر پاک بماند
     // این کار باعث می‌شود دکمه Back اندروید به Landing Page برنگردد
     const navigateToApp = (e: React.MouseEvent) => {
@@ -111,7 +145,7 @@ export default function LandingPage() {
                                 onClick={navigateToApp}
                                 className="px-5 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-medium hover:opacity-90 transition"
                             >
-                                {t("nav.register")}
+                                {t(isAuthenticated ? "nav.userPanel" : "nav.register")}
                             </a>
                         </div>
 
@@ -139,7 +173,7 @@ export default function LandingPage() {
                                 <Link href="/en" className={`px-3 py-1 rounded-full text-sm ${locale === "en" ? "bg-purple-500 text-white" : "text-gray-300"}`}>EN</Link>
                             </div>
                             <a href={appUrl} onClick={navigateToApp} className="px-5 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-center font-medium">
-                                {t("nav.register")}
+                                {t(isAuthenticated ? "nav.userPanel" : "nav.register")}
                             </a>
                         </div>
                     </div>

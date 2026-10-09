@@ -5,6 +5,8 @@ import 'package:education_app/core/constants/storage_constants.dart';
 import 'package:education_app/shared/storage/shared_preferences_service.dart';
 import 'package:education_app/injection_container.dart';
 import 'package:flutter/foundation.dart';
+import '../browser_credentials.dart'
+    if (dart.library.js_interop) '../browser_credentials_web.dart';
 
 class AuthInterceptor extends Interceptor {
   void Function()? onSessionExpired;
@@ -13,10 +15,7 @@ class AuthInterceptor extends Interceptor {
   final List<_RetryRequest> _pendingRequests = [];
 
   @override
-  void onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final prefs = getIt<SharedPreferencesService>();
     final token = prefs.getString(StorageConstants.accessToken);
 
@@ -28,10 +27,7 @@ class AuthInterceptor extends Interceptor {
   }
 
   @override
-  void onError(
-    DioException err,
-    ErrorInterceptorHandler handler,
-  ) async {
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
     debugPrint('### AUTH: onError STATUS = ${err.response?.statusCode}');
     debugPrint('### AUTH: onError PATH = ${err.requestOptions.path}');
 
@@ -71,9 +67,7 @@ class AuthInterceptor extends Interceptor {
 
       final prefs = getIt<SharedPreferencesService>();
 
-      final storedRefreshToken = prefs.getString(
-        StorageConstants.refreshToken,
-      );
+      final storedRefreshToken = prefs.getString(StorageConstants.refreshToken);
 
       debugPrint(
         '### AUTH: REFRESH TOKEN NULL = ${storedRefreshToken == null}',
@@ -81,12 +75,9 @@ class AuthInterceptor extends Interceptor {
       debugPrint(
         '### AUTH: REFRESH TOKEN LENGTH = ${storedRefreshToken?.length ?? 0}',
       );
-      debugPrint(
-        '### AUTH: REFRESH ENDPOINT = [${ApiConstants.refreshToken}]',
-      );
+      debugPrint('### AUTH: REFRESH ENDPOINT = [${ApiConstants.refreshToken}]');
 
-      if (storedRefreshToken == null ||
-          storedRefreshToken.isEmpty) {
+      if (storedRefreshToken == null || storedRefreshToken.isEmpty) {
         debugPrint('### AUTH: NO REFRESH TOKEN -> LOGOUT');
 
         await _doLogout();
@@ -105,7 +96,9 @@ class AuthInterceptor extends Interceptor {
           },
         ),
       );
-
+      
+      enableBrowserCredentials(refreshDio);
+      
       final refreshResponse = await refreshDio.post(
         ApiConstants.refreshToken,
         data: jsonEncode(storedRefreshToken),
@@ -114,25 +107,18 @@ class AuthInterceptor extends Interceptor {
       debugPrint(
         '### AUTH: REFRESH RESPONSE STATUS = ${refreshResponse.statusCode}',
       );
-      debugPrint(
-        '### AUTH: REFRESH RESPONSE DATA = ${refreshResponse.data}',
-      );
+      debugPrint('### AUTH: REFRESH RESPONSE DATA = ${refreshResponse.data}');
 
-      final newAccessToken =
-          refreshResponse.data['accessToken'] as String?;
+      final newAccessToken = refreshResponse.data['accessToken'] as String?;
 
-      final newRefreshToken =
-          refreshResponse.data['refreshToken'] as String?;
+      final newRefreshToken = refreshResponse.data['refreshToken'] as String?;
 
-      debugPrint(
-        '### AUTH: NEW ACCESS TOKEN NULL = ${newAccessToken == null}',
-      );
+      debugPrint('### AUTH: NEW ACCESS TOKEN NULL = ${newAccessToken == null}');
       debugPrint(
         '### AUTH: NEW REFRESH TOKEN NULL = ${newRefreshToken == null}',
       );
 
-      if (newAccessToken == null ||
-          newAccessToken.isEmpty) {
+      if (newAccessToken == null || newAccessToken.isEmpty) {
         debugPrint('### AUTH: INVALID REFRESH RESPONSE -> LOGOUT');
 
         await _doLogout();
@@ -142,17 +128,10 @@ class AuthInterceptor extends Interceptor {
 
       debugPrint('### AUTH: SAVING NEW TOKENS');
 
-      await prefs.setString(
-        StorageConstants.accessToken,
-        newAccessToken,
-      );
+      await prefs.setString(StorageConstants.accessToken, newAccessToken);
 
-      if (newRefreshToken != null &&
-          newRefreshToken.isNotEmpty) {
-        await prefs.setString(
-          StorageConstants.refreshToken,
-          newRefreshToken,
-        );
+      if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+        await prefs.setString(StorageConstants.refreshToken, newRefreshToken);
       }
 
       debugPrint('### AUTH: TOKENS SAVED');
@@ -181,9 +160,7 @@ class AuthInterceptor extends Interceptor {
 
           pending.handler.resolve(response);
         } catch (e) {
-          debugPrint(
-            '### AUTH: PENDING REQUEST RETRY FAILED = $e',
-          );
+          debugPrint('### AUTH: PENDING REQUEST RETRY FAILED = $e');
 
           pending.handler.next(pending.error);
         }
@@ -195,9 +172,7 @@ class AuthInterceptor extends Interceptor {
         debugPrint(
           '### AUTH: REFRESH ERROR STATUS = ${e.response?.statusCode}',
         );
-        debugPrint(
-          '### AUTH: REFRESH ERROR DATA = ${e.response?.data}',
-        );
+        debugPrint('### AUTH: REFRESH ERROR DATA = ${e.response?.data}');
       }
 
       debugPrint('### AUTH: STACK TRACE = $stackTrace');
@@ -217,15 +192,8 @@ class AuthInterceptor extends Interceptor {
     }
   }
 
-  Future<Response> _retryRequest(
-    RequestOptions options,
-    String token,
-  ) async {
-    final retryDio = Dio(
-      BaseOptions(
-        baseUrl: options.baseUrl,
-      ),
-    );
+  Future<Response> _retryRequest(RequestOptions options, String token) async {
+    final retryDio = Dio(BaseOptions(baseUrl: options.baseUrl));
 
     return retryDio.request(
       options.path,
@@ -233,10 +201,7 @@ class AuthInterceptor extends Interceptor {
       queryParameters: options.queryParameters,
       options: Options(
         method: options.method,
-        headers: {
-          ...options.headers,
-          'Authorization': 'Bearer $token',
-        },
+        headers: {...options.headers, 'Authorization': 'Bearer $token'},
       ),
     );
   }
@@ -261,6 +226,3 @@ class _RetryRequest {
 
   _RetryRequest(this.error, this.handler);
 }
-
-
-

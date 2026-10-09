@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:education_app/core/constants/api_constants.dart';
 import 'package:education_app/shared/network/interceptors/auth_interceptor.dart';
 import 'package:education_app/shared/network/interceptors/logging_interceptor.dart';
+import 'browser_credentials.dart'
+    if (dart.library.js_interop) 'browser_credentials_web.dart';
 
 class DioClient {
   late final Dio _dio;
@@ -19,6 +21,8 @@ class DioClient {
         },
       ),
     );
+
+    enableBrowserCredentials(_dio);
 
     _authInterceptor = AuthInterceptor();
 

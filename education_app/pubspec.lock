@@ -218,7 +218,7 @@ packages:
     source: hosted
     version: "5.11.1"
   dio_web_adapter:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: dio_web_adapter
       sha256: "3a1b2cd7be71086f38504956e3ebcd2837288d231ff454bafa78021244102bfc"
@@ -689,10 +689,10 @@ packages:
     dependency: "direct main"
     description:
       name: pinput
-      sha256: d446a2a0a4b9f4d2f9c4a7e0aa1e5995d4ee09dad1d27c161953ef70b7a54fa4
+      sha256: c41f42ee301505ae2375ec32871c985d3717bf8aee845620465b286e0140aad2
       url: "https://pub.myket.ir"
     source: hosted
-    version: "7.0.0"
+    version: "5.0.2"
   platform:
     dependency: transitive
     description:
@@ -906,6 +906,14 @@ packages:
       url: "https://pub.myket.ir"
     source: hosted
     version: "1.4.0"
+  universal_platform:
+    dependency: transitive
+    description:
+      name: universal_platform
+      sha256: "64e16458a0ea9b99260ceb5467a214c1f298d647c659af1bff6d3bf82536b1ec"
+      url: "https://pub.myket.ir"
+    source: hosted
+    version: "1.1.0"
   vector_graphics:
     dependency: transitive
     description:
