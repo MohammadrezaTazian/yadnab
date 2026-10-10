@@ -39,8 +39,25 @@ jobs:
       - name: Generate missing iOS platform files
         run: flutter create --platforms=ios --project-name education_app --org com.example .
 
+      - name: Configure production API for Appetize
+        run: |
+          python3 - <<'PY'
+          import json
+
+          path = "assets/config.json"
+
+          with open(path, "r", encoding="utf-8") as file:
+              config = json.load(file)
+
+          config["apiBaseUrl"] = "https://api.yadnab.ir/api"
+
+          with open(path, "w", encoding="utf-8") as file:
+              json.dump(config, file, indent=2)
+              file.write("\n")
+          PY
+
       - name: Build iOS Simulator app
-        run: flutter build ios --simulator --release --no-codesign
+        run: flutter build ios --simulator --debug --no-codesign
 
       - name: Package simulator app
         run: |
