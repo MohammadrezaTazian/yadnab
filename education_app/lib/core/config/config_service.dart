@@ -11,7 +11,7 @@ class ConfigService {
   String _apiBaseUrl = '';
 
   String get apiBaseUrl => _apiBaseUrl;
-  String get imageBaseUrl => _apiBaseUrl.replaceAll('/api', '');
+  String get imageBaseUrl => _apiBaseUrl.replaceFirst(RegExp(r'/api$'), '');
 
   Future<void> load() async {
     try {
