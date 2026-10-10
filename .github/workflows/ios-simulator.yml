@@ -34,11 +34,11 @@ jobs:
           xcodebuild -version
           flutter --version
 
-      - name: Generate missing iOS platform files
-        run: flutter create --platforms=ios --project-name education_app .
-
       - name: Get Flutter dependencies
         run: flutter pub get
+
+      - name: Generate missing iOS platform files
+        run: flutter create --platforms=ios --project-name education_app --org com.example .
 
       - name: Build iOS Simulator app
         run: flutter build ios --simulator --debug --no-codesign
