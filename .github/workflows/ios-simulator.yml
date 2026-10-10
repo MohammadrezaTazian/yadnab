@@ -1,0 +1,59 @@
+
+name: Build Yadnab iOS Simulator
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios-simulator:
+    name: Build iOS Simulator App
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    defaults:
+      run:
+        working-directory: education_app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.6'
+          channel: stable
+          cache: true
+
+      - name: Check Xcode
+        run: |
+          xcode-select -p
+          xcodebuild -version
+          flutter --version
+
+      - name: Generate missing iOS platform files
+        run: flutter create --platforms=ios --project-name education_app .
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build iOS Simulator app
+        run: flutter build ios --simulator --debug --no-codesign
+
+      - name: Package simulator app
+        run: |
+          test -d build/ios/iphonesimulator/Runner.app
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/ios/iphonesimulator/Runner.app \
+            Runner-simulator.zip
+
+      - name: Upload simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: yadnab-ios-simulator
+          path: education_app/Runner-simulator.zip
+          if-no-files-found: error
+          retention-days: 7
