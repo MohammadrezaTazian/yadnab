@@ -1,4 +1,3 @@
-
 name: Build Yadnab iOS Simulator
 
 on:
@@ -50,7 +49,15 @@ jobs:
             build/ios/iphonesimulator/Runner.app \
             Runner-simulator.zip
 
-      - name: Upload simulator app
+      - name: Upload to Appetize
+        uses: appetizeio/github-action-appetize@v1.1.0
+        with:
+          apiToken: ${{ secrets.APPETIZE_API_TOKEN }}
+          appFile: education_app/Runner-simulator.zip
+          platform: ios
+          note: Yadnab iOS Simulator
+
+      - name: Upload simulator app artifact
         uses: actions/upload-artifact@v4
         with:
           name: yadnab-ios-simulator
